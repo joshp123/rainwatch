@@ -45,7 +45,9 @@ On 13 November at 13:30 I sampled Buienradar's nowcast at 94 places in the Nethe
 | Raining, stops | 15:10, DRY | Rain stops in 1 h 40 min | Dry from 15:10 |
 | Raining throughout | Rain | Rain for 2 hours | Heaviest around 14:15 |
 
-The circular uses a clock time because Apple never puts "in 25 min" in a circular complication: its Sunrise/Sunset, World Clock and Calendar complications all name a time. Sentences, where there is room, use minutes, as Dark Sky and Apple Weather do.
+The circular names a clock time, as Apple's Sunrise/Sunset complication does. Apple's own Weather Rain complication shows a rain-cloud glyph over "IN 3M" or "NOW" (MacRumors thread, May 2024, screenshots in `research/prior-art-apple-rain/`), but it never says when rain stops; a clock time with RAIN or DRY works for both. Sentences, where there is room, use minutes, as Dark Sky and Apple Weather do.
+
+The rain rises outwards from the track, so the arc is Buienradar's graph bent round with its baseline inside. Growing inwards would keep the track at the rim like Apple's other gauges, but it turns the graph upside down and pushes heavy rain into the time.
 
 Intensity words follow Buienradar's lines: Drizzle below Light, then Light rain, Rain and Heavy rain. The wording follows the convention Dark Sky set and Apple Weather and Forecast Bar use ("rain starting in 12 minutes", "rain stopping in 55 minutes"), turned so that the dry case answers "can I go now, and for how long". The survey is in `research/copy-survey.md`.
 

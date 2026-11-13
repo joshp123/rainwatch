@@ -130,18 +130,25 @@ struct TimeAxis: View {
 
 /// Circular family, drawn like Apple's own gauges (the Weather temperature gauge sits next to it on
 /// Josh's face): a 240° arc open at the bottom, one value in the middle, a short word in the gap.
-/// The arc is the next two hours, clockwise from now at the lower left. Dry is a thin track; rain
-/// thickens it inwards by intensity. The dot marks the change the middle value names.
+/// The arc is the next two hours, clockwise from now at the lower left. It is Buienradar's graph bent
+/// round: the baseline is the track and rain rises from it towards the rim. The dot marks the change
+/// the middle value names.
 public struct CircularRainGauge: View {
+    /// Inward: the dry track sits at the rim like Apple's gauges and rain thickens towards the
+    /// middle. Outward: the track sits inside and rain rises towards the rim.
+    public enum Growth: Sendable { case inward, outward }
+
     let forecast: RainForecast
     let palette: RainPalette
+    let growth: Growth
 
     static let start = Angle.degrees(150)
     static let sweep = Angle.degrees(240)
 
-    public init(forecast: RainForecast, palette: RainPalette) {
+    public init(forecast: RainForecast, palette: RainPalette, growth: Growth = .outward) {
         self.forecast = forecast
         self.palette = palette
+        self.growth = growth
     }
 
     public var body: some View {
@@ -149,14 +156,16 @@ public struct CircularRainGauge: View {
             let side = min(proxy.size.width, proxy.size.height)
             let half = side / 2
             let stroke = side * 0.06
-            let track = 1 - stroke / side
-            let inner = track - stroke / side
+            let halfStroke = stroke / side
+            let track = growth == .inward ? 1 - halfStroke : 0.76
             let copy = RainCopy(forecast)
             ZStack {
                 ArcLine(startAngle: Self.start, sweep: Self.sweep, radius: track)
                     .stroke(palette.baseline, style: StrokeStyle(lineWidth: stroke, lineCap: .round))
                 RadialRainArea(forecast: forecast, startAngle: Self.start, sweep: Self.sweep,
-                               baseline: 1, full: inner - 0.22, floorAtBaseline: inner)
+                               baseline: growth == .inward ? track + halfStroke : track - halfStroke,
+                               full: growth == .inward ? track - halfStroke - 0.22 : 1,
+                               floorAtBaseline: growth == .inward ? track - halfStroke : track + halfStroke)
                     .fill(palette.rain)
                     .accentable()
                 if let change = copy.change {
@@ -165,14 +174,14 @@ public struct CircularRainGauge: View {
                         .position(x: half + half * track * cos(angle), y: half + half * track * sin(angle))
                 }
                 Text(copy.circular.value)
-                    .font(RainFont.rounded(side * (copy.circular.value.count > 4 ? 0.29 : 0.33), .semibold))
+                    .font(RainFont.rounded(side * (copy.circular.value.count > 4 ? (growth == .inward ? 0.29 : 0.255) : 0.31), .semibold))
                     .foregroundStyle(palette.primary)
                     .offset(y: -side * 0.02)
                 if let label = copy.circular.gapLabel {
                     Text(label)
                         .font(RainFont.rounded(side * 0.19, .bold))
                         .foregroundStyle(label == "RAIN" ? palette.rain : palette.primary)
-                        .position(x: half, y: side * 0.86)
+                        .position(x: half, y: side * (growth == .inward ? 0.86 : 0.83))
                 }
             }
             .frame(width: side, height: side)
