@@ -16,28 +16,34 @@ public struct RectangularRainView: View {
 
     public var body: some View {
         let copy = RainCopy(forecast)
-        VStack(alignment: .leading, spacing: 1) {
-            Label {
-                Text(copy.headline)
-                    .foregroundStyle(palette.primary)
-            } icon: {
-                Image(systemName: "drop.fill")
-                    .foregroundStyle(palette.rain)
-                    .accentable()
+        GeometryReader { proxy in
+            // The line needs about 22 points to show how hard it rains. Slots shorter than the
+            // Modular Ultra one can't hold it under two lines of words, so the second line goes,
+            // as Apple's Heart Rate complication shows one line over its chart.
+            let detail = proxy.size.height >= 74 ? copy.detail : nil
+            VStack(alignment: .leading, spacing: 1) {
+                Label {
+                    Text(copy.headline)
+                        .foregroundStyle(palette.primary)
+                } icon: {
+                    Image(systemName: "drop.fill")
+                        .foregroundStyle(palette.rain)
+                        .accentable()
+                }
+                .labelStyle(HeadlineLabelStyle())
+                // Matched to Apple's Stocks rows beside it on Josh's face, about 16 points.
+                .font(RainFont.rounded(16, .semibold))
+                if let detail {
+                    Text(detail)
+                        .font(RainFont.rounded(13.5, .medium))
+                        .foregroundStyle(palette.rain)
+                        .accentable()
+                }
+                RainChart(forecast: forecast, palette: palette)
+                    .padding(.top, 3)
+                TimeAxis(forecast: forecast, palette: palette)
+                    .padding(.top, 4)
             }
-            .labelStyle(HeadlineLabelStyle())
-            // Matched to Apple's Stocks rows beside it on Josh's face, about 16 points.
-            .font(RainFont.rounded(16, .semibold))
-            if let detail = copy.detail {
-                Text(detail)
-                    .font(RainFont.rounded(13.5, .medium))
-                    .foregroundStyle(palette.rain)
-                    .accentable()
-            }
-            RainChart(forecast: forecast, palette: palette)
-                .padding(.top, 3)
-            TimeAxis(forecast: forecast, palette: palette)
-                .padding(.top, 4)
         }
         .lineLimit(1)
         .accessibilityElement(children: .ignore)

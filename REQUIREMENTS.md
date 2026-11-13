@@ -30,7 +30,7 @@ On 13 November at 13:30 I sampled Buienradar's nowcast at 94 places in the Nethe
 4. A dot marks the moment the headline counts down to, so the words and the line agree.
 5. The words name what is happening now and how long it lasts. They follow the writing guide: plain phrases with their prepositions ("for 30 min", "in 30 min"), no codes or shorthand ("2H+", "30M"), no advice, no millimetres, no probabilities, British English, and nothing implied beyond the two hours shown.
 6. Dry gaps under 10 minutes between two wet stretches count as wet in the words, because nobody can use them. The line still shows them.
-7. The rectangular slot and the Smart Stack show the headline, the next change with clock times, and the full line.
+7. The rectangular slot and the Smart Stack show the headline and the full line, at least about 22 points high so its height still shows how hard it rains. Under the headline they name the next change with clock times where there is room for both, as in the Modular Ultra slot; in shorter slots and the Smart Stack that line gives way to the graph.
 8. The Smart Stack widget surfaces itself when rain is forecast within two hours, so it is on the wrist at the moment of leaving without a face slot.
 9. Colour only repeats what height shows, so tinted faces and Ultra Night Mode lose nothing.
 10. The data can always be trusted. watchOS reloads a complication on the active face about every 15 to 20 minutes and the Smart Stack less often (WWDC26 watchOS Group Lab; `research/freshness.md`), so nothing on the watch is real time. Rain makes age the promise instead:
