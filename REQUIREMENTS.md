@@ -1,4 +1,4 @@
-<!-- Written by AI on 2026.11.13 by model claude opus 5.5. Sources are in ../research/. -->
+<!-- Written by AI on 2026.11.13 by model claude opus 5.5. Sources are in research/. -->
 
 # Rain on the watch: requirements
 
@@ -6,14 +6,14 @@
 
 People open Buienradar as they are about to leave, to find out whether they will get wet, and they change their plans on the answer.
 
-- A study of 16 Buienradar users found that they open it "as they are about to undertake an activity that involves leaving the house", "overwhelmingly" before cycling. They are "motivated ... by a desire to know if they may 'get wet' ... in hopes that they can adapt their plans", and they look one to three hours ahead. They choose what to wear and whether to take an umbrella or the bike, and they "sometimes also delay their plans". Source: Masson and van Es, "Rain on your radar" (2020), read in full in `../research/masson-van-es-2020-rain-on-your-radar.txt`.
+- A study of 16 Buienradar users found that they open it "as they are about to undertake an activity that involves leaving the house", "overwhelmingly" before cycling. They are "motivated ... by a desire to know if they may 'get wet' ... in hopes that they can adapt their plans", and they look one to three hours ahead. They choose what to wear and whether to take an umbrella or the bike, and they "sometimes also delay their plans". Source: Masson and van Es, "Rain on your radar" (2020), read in full in `research/masson-van-es-2020-rain-on-your-radar.txt`.
 - The same study found that many users read the graph line only as "rain" or "no rain". One complained that it assumes people understand millimetres per hour.
 - Dark Sky's founder describes the same job: decide whether to wait 15 minutes before going to the car (The Atlantic, 2026).
 - Josh: "the key point about buienradar is prediction ... 'will i need an umbrella' or 'is it safe to go out now'".
 
 ## What the rain is actually like
 
-On 13 November at 13:30 I sampled Buienradar's nowcast at 94 places in the Netherlands and Europe (`../research/live-data/`). 56 had rain within two hours. The most common wet pattern was showers on and off (27 places), then dry with rain starting later (18). Most Dutch rain was drizzle: Buienradar graph heights of 2 to 20%, or 0.1 to 1 mm/h, often in single five-minute blips.
+On 13 November at 13:30 I sampled Buienradar's nowcast at 94 places in the Netherlands and Europe (`research/live-data/`). 56 had rain within two hours. The most common wet pattern was showers on and off (27 places), then dry with rain starting later (18). Most Dutch rain was drizzle: Buienradar graph heights of 2 to 20%, or 0.1 to 1 mm/h, often in single five-minute blips.
 
 ## What a glance must answer, in order
 
@@ -47,7 +47,7 @@ On 13 November at 13:30 I sampled Buienradar's nowcast at 94 places in the Nethe
 
 The circular uses a clock time because Apple never puts "in 25 min" in a circular complication: its Sunrise/Sunset, World Clock and Calendar complications all name a time. Sentences, where there is room, use minutes, as Dark Sky and Apple Weather do.
 
-Intensity words follow Buienradar's lines: Drizzle below Light, then Light rain, Rain and Heavy rain. The wording follows the convention Dark Sky set and Apple Weather and Forecast Bar use ("rain starting in 12 minutes", "rain stopping in 55 minutes"), turned so that the dry case answers "can I go now, and for how long". The survey is in `../research/copy-survey.md`.
+Intensity words follow Buienradar's lines: Drizzle below Light, then Light rain, Rain and Heavy rain. The wording follows the convention Dark Sky set and Apple Weather and Forecast Bar use ("rain starting in 12 minutes", "rain stopping in 55 minutes"), turned so that the dry case answers "can I go now, and for how long". The survey is in `research/copy-survey.md`.
 
 ## Drawing
 
