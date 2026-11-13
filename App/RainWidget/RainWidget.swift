@@ -134,7 +134,8 @@ struct RainComplicationView: View {
                 .containerBackground(for: .widget) { Color.clear }
         default:
             ViewThatFits {
-                Text("\(RainCopy(forecast).short) \(RainGlyphs.string(forecast))")
+                // Bars only when there is rain; a dry row of bars reads as an underline.
+                Text(forecast.hasRain ? "\(RainCopy(forecast).short) \(RainGlyphs.string(forecast))" : RainCopy(forecast).short)
                 Text(RainCopy(forecast).short)
             }
             .containerBackground(for: .widget) { Color.clear }
@@ -161,11 +162,13 @@ struct RainComplicationView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Label(headline, systemImage: "drop")
                     .font(.system(size: 15, weight: .semibold, design: .rounded))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
                 Text(detail)
                     .font(.system(size: 12.5, weight: .medium, design: .rounded))
                     .foregroundStyle(.secondary)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
             .containerBackground(for: .widget) { palette.stackDry }
         default:
             Text(headline)
@@ -176,7 +179,7 @@ struct RainComplicationView: View {
     private var problemText: (headline: String, detail: String, short: String?) {
         switch entry.problem {
         case let .stale(since):
-            ("No forecast since \(RainCopy.clock(since))", "Open Rain to update", RainCopy.clock(since))
+            ("Last forecast \(RainCopy.clock(since))", "Open Rain to refresh", RainCopy.clock(since))
         case .noLocation:
             ("Location needed", "Open Rain to share it", nil)
         case .noForecast, nil:

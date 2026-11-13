@@ -71,9 +71,9 @@ struct CornerTile<Content: View>: View {
         content
             .frame(width: 100, height: 92, alignment: .topLeading)
             .background(alignment: .topLeading) {
-                UnevenRoundedRectangle(topLeadingRadius: Ultra3.cornerRadius, style: .continuous)
-                    .stroke(.white.opacity(0.14), lineWidth: 1)
-                    .frame(width: 140, height: 130)
+                RoundedRectangle(cornerRadius: Ultra3.cornerRadius, style: .continuous)
+                    .stroke(.white.opacity(0.18), lineWidth: 1)
+                    .frame(width: Ultra3.screen.width, height: Ultra3.screen.height)
             }
             .clipped()
     }
@@ -93,7 +93,7 @@ struct FaceSheet: View {
             GridRow {
                 Color.clear.frame(width: 1, height: 1)
                 ForEach(Self.scenarios, id: \.self) { scenario in
-                    JoshFace(screenshot: screenshot, forecast: scenario.forecast)
+                    JoshFace(screenshot: screenshot, forecast: scenario.forecast(at: JoshFace.clock))
                 }
             }
         }
@@ -105,7 +105,7 @@ struct FaceSheet: View {
 /// The circular gauge alone, large, to judge the drawing.
 struct CircularDetail: View {
     var body: some View {
-        Grid(horizontalSpacing: 22, verticalSpacing: 18) {
+        Grid(alignment: .top, horizontalSpacing: 22, verticalSpacing: 18) {
             ForEach([RainPalette.fullColour, .nightMode].indices, id: \.self) { index in
                 GridRow {
                     ForEach(Scenario.allCases, id: \.self) { scenario in
@@ -147,7 +147,7 @@ struct MiddleComparison: View {
                             .scaleEffect(2.2)
                             .frame(width: 100, height: 100)
                     }
-                    JoshFace(screenshot: screenshot, forecast: Scenario.rainComing.forecast, middle: middle)
+                    JoshFace(screenshot: screenshot, forecast: Scenario.rainComing.forecast(at: JoshFace.clock), middle: middle)
                         .frame(width: Ultra3.screen.width, height: 80, alignment: .top)
                         .clipped()
                 }
@@ -213,14 +213,13 @@ struct AppSheet: View {
 }
 
 try MainActor.assumeIsolated {
-    try render(AppSheet(), to: "app-now.png", scale: 2)
     if let screenshot {
         try render(MiddleComparison(screenshot: screenshot), to: "circular-middles.png")
     }
     if let screenshot {
         try render(FaceSheet(screenshot: screenshot), to: "on-your-face.png", scale: 2)
         for scenario in [Scenario.showerComing, .drizzleStops] {
-            try render(JoshFace(screenshot: screenshot, forecast: scenario.forecast), to: "face-\(scenario).png", scale: 2)
+            try render(JoshFace(screenshot: screenshot, forecast: scenario.forecast(at: JoshFace.clock)), to: "face-\(scenario).png", scale: 2)
         }
     }
     try render(CircularDetail(), to: "circular-detail.png")

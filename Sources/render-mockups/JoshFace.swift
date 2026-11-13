@@ -6,6 +6,9 @@ import SwiftUI
 /// into its slots at true size, next to Apple's own complications. Slot positions were measured
 /// from the screenshot.
 struct JoshFace: View {
+    /// The screenshot shows 14:13 on Friday 13 November.
+    static let clock: Date = Scenario.start.addingTimeInterval(43 * 60)
+
     let screenshot: NSImage
     let forecast: RainForecast
     var middle: CircularRainGauge.Middle = .minutes

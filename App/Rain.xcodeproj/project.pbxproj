@@ -40,7 +40,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		0452624B15554894CC4D1CBE /* rain-watch-mockups */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "rain-watch-mockups"; path = ..; sourceTree = SOURCE_ROOT; };
 		11E5830986D952F71247765B /* RainWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RainWidget.swift; sourceTree = "<group>"; };
 		1F9A00C4F9B89E5A7D762A86 /* RainWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = RainWidget.entitlements; sourceTree = "<group>"; };
 		24A5456AC0840FD7A47E7340 /* RadarPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadarPage.swift; sourceTree = "<group>"; };
@@ -49,6 +48,7 @@
 		76FBC3379322E9F2BB1F03BF /* RainApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RainApp.swift; sourceTree = "<group>"; };
 		9D596FEADDDC9BDA6C9CE992 /* RainWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = RainWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		D0DFCBBAE96F646AA450D859 /* Rain.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Rain.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F8C4BF18348C0C6C2C270C31 /* buienradar-apple-watch */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "buienradar-apple-watch"; path = ..; sourceTree = SOURCE_ROOT; };
 		FD980AE5FE9CA11F1F1DF450 /* Rain.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Rain.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -75,7 +75,7 @@
 		529867CDC413DEB51F6DF7C6 /* Packages */ = {
 			isa = PBXGroup;
 			children = (
-				0452624B15554894CC4D1CBE /* rain-watch-mockups */,
+				F8C4BF18348C0C6C2C270C31 /* buienradar-apple-watch */,
 			);
 			name = Packages;
 			sourceTree = "<group>";

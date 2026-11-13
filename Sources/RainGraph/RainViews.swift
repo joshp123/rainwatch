@@ -39,6 +39,8 @@ public struct RectangularRainView: View {
                 .padding(.top, 4)
         }
         .lineLimit(1)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(copy.spoken)
     }
 }
 
@@ -62,7 +64,8 @@ struct RainChart: View {
         GeometryReader { proxy in
             let size = proxy.size
             ZStack(alignment: .topLeading) {
-                ForEach(RainForecast.scaleLines, id: \.self) { line in
+                // Under 24 points the three lines merge into a band that reads as a ruler.
+                ForEach(size.height >= 24 ? RainForecast.scaleLines : [], id: \.self) { line in
                     Path { path in
                         let y = size.height * (1 - RainCurve.display(line, scale))
                         path.move(to: CGPoint(x: 0, y: y))
@@ -115,7 +118,8 @@ struct TimeAxis: View {
                 Text("Now")
                 ForEach(forecast.hourMarks, id: \.self) { hour in
                     let x = proxy.size.width * forecast.position(of: hour)
-                    if x > 30, x < proxy.size.width - 14 {
+                    // "Now" ends about 22 points in; an hour label any closer reads as "Now 14:00".
+                    if x > 50, x < proxy.size.width - 14 {
                         Text(RainCopy.clock(hour))
                             .fixedSize()
                             .position(x: x, y: proxy.size.height / 2)
@@ -185,6 +189,8 @@ public struct CircularRainGauge: View {
             .frame(width: side, height: side)
         }
         .aspectRatio(1, contentMode: .fit)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(RainCopy(forecast).spoken)
     }
 
     /// The words sit in boxes measured against the ring at 45 points, so they can never touch it:

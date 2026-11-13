@@ -12,11 +12,14 @@ struct RadarPage: View {
     @State private var index = 0.0
     @State private var cameraChanges = 0
     @State private var problem: String?
+    @FocusState private var crownFocused: Bool
+    @State private var dragStart = 0.0
 
     var body: some View {
         MapReader { proxy in
-            Map(initialPosition: .region(MKCoordinateRegion(center: place, latitudinalMeters: 60_000, longitudinalMeters: 60_000)),
-                interactionModes: .pan) {
+            // 120 km across: showers move 30 to 60 km/h, so this shows what can arrive within two hours.
+            Map(initialPosition: .region(MKCoordinateRegion(center: place, latitudinalMeters: 120_000, longitudinalMeters: 120_000)),
+                interactionModes: []) {
                 Annotation("", coordinate: place) {
                     Circle()
                         .fill(.yellow)
@@ -24,17 +27,23 @@ struct RadarPage: View {
                         .overlay(Circle().stroke(.black.opacity(0.6), lineWidth: 2))
                 }
             }
-            .mapStyle(.standard(emphasis: .muted))
+            .mapStyle(.standard(emphasis: .muted, pointsOfInterest: .excludingAll))
             .onMapCameraChange(frequency: .continuous) { cameraChanges += 1 }
             .overlay { rain(proxy) }
         }
-        .overlay(alignment: .topLeading) { timeLabel }
+        .navigationTitle(title)
+        .gesture(DragGesture(minimumDistance: 8).onChanged { drag in
+            // A drag across the screen scrubs about an hour, like the crown.
+            let step = -Double(drag.translation.width / 14)
+            index = min(max(dragStart + step, 0), Double(max(frames.count - 1, 0))).rounded()
+        }.onEnded { _ in dragStart = index })
         .focusable()
+        .focused($crownFocused)
+        .onAppear { crownFocused = true }
         .digitalCrownRotation($index, from: 0, through: Double(max(frames.count - 1, 0)), by: 1,
                               sensitivity: .low, isContinuous: false, isHapticFeedbackEnabled: true)
         .task { await load() }
         .task(id: Int(index)) { await loadImage(at: Int(index)) }
-        .ignoresSafeArea(edges: .bottom)
     }
 
     /// The frame placed by its corners, which keeps it aligned however the map is panned:
@@ -46,34 +55,26 @@ struct RadarPage: View {
            let southEast = proxy.convert(Radar.southEast, to: .local) {
             image
                 .resizable()
-                .opacity(0.85)
+                .interpolation(.high)
+                .antialiased(true)
+                .opacity(0.9)
                 .frame(width: southEast.x - northWest.x, height: southEast.y - northWest.y)
                 .position(x: (northWest.x + southEast.x) / 2, y: (northWest.y + southEast.y) / 2)
                 .allowsHitTesting(false)
         }
     }
 
-    private var timeLabel: some View {
-        Group {
-            if let problem {
-                Text(problem)
-            } else if let frame = frames[safe: Int(index)] {
-                Text(Radar.label(for: frame.date))
-            } else {
-                ProgressView()
-            }
-        }
-        .font(.system(size: 15, weight: .semibold, design: .rounded))
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
-        .background(.black.opacity(0.6), in: Capsule())
-        .padding(.leading, 8)
+    private var title: String {
+        if problem != nil { return "No radar" }
+        guard let frame = frames[safe: Int(index)] else { return "Radar" }
+        return Radar.label(for: frame.date)
     }
 
     private func load() async {
         do {
             frames = try await Radar.frames()
             index = Double(frames.lastIndex { $0.date <= .now } ?? 0)
+            dragStart = index
         } catch {
             problem = "No radar"
         }
@@ -82,8 +83,9 @@ struct RadarPage: View {
     private func loadImage(at index: Int) async {
         guard let frame = frames[safe: index], images[frame.date] == nil,
               let (data, _) = try? await URLSession.shared.data(from: frame.url),
-              let uiImage = UIImage(data: data) else { return }
-        images[frame.date] = Image(uiImage: uiImage)
+              let cgImage = UIImage(data: data)?.cgImage,
+              let recoloured = Radar.forDarkMap(cgImage) else { return }
+        images[frame.date] = Image(decorative: recoloured, scale: 1)
     }
 }
 
@@ -109,11 +111,44 @@ enum Radar {
         }
     }
 
+    /// Buienradar draws light rain pale and heavy rain dark, for its light map. On the watch's dark
+    /// map that hides the heaviest rain, so heavier rain becomes brighter and more opaque instead,
+    /// in Buienradar's blue, with its red kept for downpours.
+    static func forDarkMap(_ image: CGImage) -> CGImage? {
+        let width = image.width, height = image.height
+        var pixels = [UInt8](repeating: 0, count: width * height * 4)
+        let space = CGColorSpaceCreateDeviceRGB()
+        let info = CGImageAlphaInfo.premultipliedLast.rawValue
+        guard let context = CGContext(data: &pixels, width: width, height: height, bitsPerComponent: 8,
+                                      bytesPerRow: width * 4, space: space, bitmapInfo: info) else { return nil }
+        context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
+        for i in stride(from: 0, to: pixels.count, by: 4) {
+            let alpha = Double(pixels[i + 3]) / 255
+            guard alpha > 0.05 else {
+                pixels[i + 3] = 0
+                continue
+            }
+            let r = Double(pixels[i]) / 255 / alpha, g = Double(pixels[i + 1]) / 255 / alpha, b = Double(pixels[i + 2]) / 255 / alpha
+            let downpour = r > b + 0.15
+            let intensity = downpour ? 1 : min(1, max(0, 1 - (0.3 * r + 0.59 * g + 0.11 * b)) * 1.6)
+            // Buienradar's blue (#5A9BD3) for light rain, towards white for heavy, red for downpours.
+            let (cr, cg, cb) = downpour ? (1.0, 0.3, 0.3) : (0.35 + 0.65 * intensity, 0.61 + 0.39 * intensity, 0.83 + 0.17 * intensity)
+            let a = 0.45 + 0.55 * intensity
+            pixels[i] = UInt8(cr * a * 255)
+            pixels[i + 1] = UInt8(cg * a * 255)
+            pixels[i + 2] = UInt8(cb * a * 255)
+            pixels[i + 3] = UInt8(a * 255)
+        }
+        return pixels.withUnsafeMutableBytes { buffer in
+            CGContext(data: buffer.baseAddress, width: width, height: height, bitsPerComponent: 8,
+                      bytesPerRow: width * 4, space: space, bitmapInfo: info)?.makeImage()
+        }
+    }
+
     static func label(for date: Date) -> String {
         let minutes = Int((date.timeIntervalSinceNow / 60).rounded())
-        let clock = RainCopy.clock(date)
         if abs(minutes) < 3 { return "Now" }
-        return minutes > 0 ? "\(clock), in \(minutes) min" : "\(clock), \(-minutes) min ago"
+        return minutes > 0 ? "In \(minutes) min" : "\(-minutes) min ago"
     }
 
     private struct Metadata: Decodable {

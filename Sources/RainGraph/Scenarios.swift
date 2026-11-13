@@ -22,8 +22,11 @@ public enum Scenario: String, CaseIterable, Sendable {
         return calendar.date(from: DateComponents(year: 2026, month: 11, day: 13, hour: 13, minute: 30))!
     }()
 
-    public var forecast: RainForecast {
-        RainForecast(start: Self.start, heights: heights + Array(repeating: 0, count: max(0, 25 - heights.count)))
+    public var forecast: RainForecast { forecast(at: Self.start) }
+
+    /// The same forecast moved to start at `start`, to sit under another clock.
+    public func forecast(at start: Date) -> RainForecast {
+        RainForecast(start: start, heights: heights + Array(repeating: 0, count: max(0, 25 - heights.count)))
     }
 
     private var heights: [Double] {

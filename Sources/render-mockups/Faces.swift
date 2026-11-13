@@ -19,16 +19,17 @@ struct CornerMock: View {
     let palette: RainPalette
 
     var body: some View {
-        let mid = Angle.degrees(237)
+        let mid = Angle.degrees(231)
         let levels = RainGlyphs.levels(forecast)
         ZStack {
             CurvedText(
                 runs: levels.map { .init(string: String(Array("▁▂▃▄▅▆▇█")[$0]), color: $0 == 0 ? palette.baseline : palette.rain) },
                 font: RainFont.rounded(13, .semibold),
                 centre: Ultra3.centre,
-                radius: 114,
+                radius: 112,
                 midAngle: mid,
-                tracking: 0.5
+                tracking: 0.5,
+                maxSweep: .degrees(34)
             )
             CornerLabel(forecast: forecast, palette: palette, midAngle: mid)
         }
@@ -42,7 +43,7 @@ struct CornerLineMock: View {
     let palette: RainPalette
 
     var body: some View {
-        let mid = Angle.degrees(237)
+        let mid = Angle.degrees(231)
         let outer: CGFloat = 124
         ZStack {
             Group {
@@ -69,8 +70,9 @@ struct CornerLabel: View {
             runs: [.init(string: RainCopy(forecast).short, color: palette.primary)],
             font: RainFont.rounded(12, .semibold),
             centre: Ultra3.centre,
-            radius: 95,
-            midAngle: midAngle
+            radius: 96,
+            midAngle: midAngle,
+            maxSweep: .degrees(40)
         )
     }
 }
@@ -116,10 +118,15 @@ struct InlineMock: View {
     let palette: RainPalette
 
     var body: some View {
-        Text("\(RainCopy(forecast).short) \(RainGlyphs.string(forecast))")
-            .font(RainFont.rounded(14, .semibold))
-            .foregroundStyle(palette.primary)
-            .fixedSize()
+        // The inline slot across the top of Siri Modular; the watch drops the bars if they don't fit.
+        ViewThatFits {
+            Text(forecast.hasRain ? "\(RainCopy(forecast).short) \(RainGlyphs.string(forecast))" : RainCopy(forecast).short)
+            Text(RainCopy(forecast).short)
+        }
+        .font(RainFont.rounded(14, .semibold))
+        .foregroundStyle(palette.primary)
+        .lineLimit(1)
+        .frame(width: 180, alignment: .leading)
     }
 }
 

@@ -27,12 +27,14 @@ public struct RainCopy: Sendable {
 
     public var isRainingNow: Bool { now?.isRain ?? false }
 
-    /// Rectangular and Smart Stack headline.
+    /// Rectangular and Smart Stack headline. Minutes under an hour, the clock time beyond, so it
+    /// always fits on one line.
     public var headline: String {
-        guard forecast.hasRain else { return "No rain forecast" }
-        guard let minutes = minutesLeft else { return "\(now?.intensity.phrase ?? "Rain") for 2+ hours" }
-        let duration = Self.duration(minutes)
-        return isRainingNow ? "Rain stops in \(duration)" : "Dry for \(duration)"
+        guard forecast.hasRain else { return "Dry for 2+ hours" }
+        guard let minutes = minutesLeft, let change else { return "\(now?.intensity.phrase ?? "Rain") for 2+ hours" }
+        let state = isRainingNow ? "Rain" : "Dry"
+        if minutes >= 60 { return "\(state) until \(Self.clock(change))" }
+        return isRainingNow ? "Rain stops in \(minutes) min" : "Dry for \(minutes) min"
     }
 
     /// The line under the headline: what follows, with clock times.
@@ -46,6 +48,8 @@ public struct RainCopy: Sendable {
         if next.isRain {
             return "\(next.intensity.phrase) \(Self.clock(next.start))\(ends)"
         }
+        // "Rain until 15:10" already says when it turns dry; say how hard it rains instead.
+        if ends.isEmpty, (minutesLeft ?? 0) >= 60 { return peakPhrase }
         return ends.isEmpty ? "Dry from \(Self.clock(next.start))" : "Dry \(Self.clock(next.start))\(ends)"
     }
 
@@ -62,12 +66,12 @@ public struct RainCopy: Sendable {
         return ("IN", "\(minutesLeft)", "MIN")
     }
 
-    /// Inline and corner: one short line.
-    public var short: String {
-        guard forecast.hasRain else { return "No rain" }
-        let state = isRainingNow ? "Rain" : "Dry"
-        guard let minutes = minutesLeft else { return "\(state) for 2+ hours" }
-        return "\(state) for \(Self.duration(minutes))"
+    /// Inline and corner: the headline itself, so every family says the same thing.
+    public var short: String { headline }
+
+    /// What VoiceOver reads for any family: the headline, then what follows.
+    public var spoken: String {
+        [headline, detail].compactMap { $0 }.joined(separator: ". ")
     }
 
     static func duration(_ minutes: Int) -> String {

@@ -49,8 +49,8 @@ public struct RainPalette: Sendable {
         return RainPalette(
             rain: red,
             primary: red,
-            secondary: red.opacity(0.7),
-            baseline: red.opacity(0.45),
+            secondary: red.opacity(0.8),
+            baseline: red.opacity(0.6),
             grid: red.opacity(0.2),
             plate: red.opacity(0.14),
             stack: red.opacity(0.14)

@@ -1,0 +1,40 @@
+<!-- Written by AI on 2026.11.13 by model claude opus 5.5, at Josh's request. -->
+
+# Rain
+
+Josh's Apple Watch app: Buienradar's rain for the next two hours where he is, on his Apple Watch Ultra 3, as complications, a Smart Stack widget and an app with a radar map. What it must do and why is in `REQUIREMENTS.md`; how it is built and run is in `README.md`; the evidence behind the design is in `research/`.
+
+The goal is a glance he can trust: whether it is dry now and for how long, drawn as Buienradar's own rain line, never older than it says. He judges the work by looking at it, so the pictures are the product.
+
+## Look at every image before anyone else does
+
+Josh, 13 November 2026: "look at those images? some look weird? lots is clipped? you need to set this up properly in a repo ... with a rule to always look at images and critique it". Mock-ups and screenshots from this project have gone to him clipped, overlapping and inconsistent because the agent showed them without looking.
+
+So before you show, describe or commit any image (a render in `renders/` or a simulator or watch screenshot), open it yourself at full size and critique it as Josh would, against what a real watch shows. Fix what you find and look again; show it only when you would put your name to it. Check at least:
+
+- Nothing is clipped by the frame, the screen corner or another view, and no text is truncated or wraps where it should not.
+- Nothing overlaps: words, the rain line, dots, map labels and system controls each have their own space.
+- Labels read as intended: "Now" and the first hour mark must not read as one phrase; every word is plain English, with no codes.
+- Times agree: the forecast, the axis, the words and the clock on the face describe the same moment.
+- Sizes are true: complications at their real size on Josh's face (`research/josh-face-2026-11-05.jpeg`), text readable at arm's length.
+- It works in every state that will occur: dry, drizzle, on and off, heavy, stale, and Night Mode or a tinted face.
+
+When the image changed a lot, also get a critique from a fresh agent that sees only the image and Josh's words, not your reasoning.
+
+## Testing in the simulator
+
+Drive the simulator with tools that read its accessibility tree, not by clicking Device Hub with computer use: the tree gives every word on screen, our complications included, and exact positions, so a test can check what Rain says instead of guessing from pixels.
+
+What works here, checked on 13 November 2026 with Xcode 27.2 and the watchOS 27.2 simulator:
+
+- serve-sim (Expo, Apache-2.0) streams a simulator to a browser and takes commands. Run it without installing anything: `nix shell nixpkgs#nodejs_22 -c npx -y serve-sim@latest --detach -q <udid>`. Then `curl http://127.0.0.1:3100/helper/<udid>/ax` returns the accessibility tree (the face showed "Rain stops in 3 min, Dry 15:50–16:25" and "IN, 3, MIN"), and `serve-sim tap <x> <y> -d <udid>` taps at coordinates from 0 to 1 (divide the tree's points by the 211 × 257 screen). Drags must go through its WebSocket in one connection; separate `gesture` calls arrive too slowly. Stop it with `serve-sim --kill`.
+- Not yet tried here: AXe (`brew install cameroncooke/axe/axe`, taps by accessibility label), sim-use (LY Corp) and baguette (web device farm). baguette's docs say it presses the watch crown but cannot turn it.
+- No third-party tool turns the Digital Crown. Apple's XCUITest can: `XCUIDevice.shared.rotateDigitalCrown(delta:)` in a watchOS UI test. Use that for crown behaviour, or the real watch.
+- Device Hub with computer use is the last resort; it needs the window in front for some gestures and gives only pixels.
+
+This field changes month to month, and most of these tools are under a year old. When this section is more than a month old, or a tool here fails, search for the current state of the art first (Parallel web search works well), try anything better, and rewrite this section with the date you checked.
+
+## Working here
+
+- Build the app from `App/` with the commands in `README.md`; the simulator is "Rain Ultra 3". Mock-ups come from `swift run render-mockups renders research/josh-face-2026-11-05.jpeg`. Mock-ups only show widget designs; for what the app really looks like, use simulator or watch screenshots.
+- Josh's watch pairs with this Mac through his iPhone. If `devicectl` says the watch rejected the Bluetooth connection (error 1035), the pairing is stale: connect the iPhone to the Mac by cable so Xcode pairs the watch again, then turn on Developer Mode on the watch.

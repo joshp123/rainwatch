@@ -44,11 +44,13 @@ On 13 November at 13:30 I sampled Buienradar's nowcast at 94 places in the Nethe
 
 | Now | Circular middle | Headline | Second line |
 |---|---|---|---|
-| No rain in the two hours | Dry, FOR 2+ HRS (no line) | No rain forecast | (none) |
+| No rain in the two hours | Dry, FOR 2+ HRS (no line) | Dry for 2+ hours | (none) |
 | Dry, rain later | IN 30 MIN | Dry for 30 min | Light rain 14:00–14:25 |
 | Raining, stops, comes back | IN 5 MIN | Rain stops in 5 min | Dry 13:35–14:15 |
-| Raining, stops | IN 100 MIN | Rain stops in 1 h 40 min | Dry from 15:10 |
+| Raining, stops after an hour or more | IN 100 MIN | Rain until 15:10 | Heaviest around 13:55 |
 | Raining throughout | FOR 2+ HRS | Rain for 2+ hours | Heaviest around 14:15 |
+
+Every family uses the same headline; inline and corner slots show it alone. Beyond an hour the headline names the clock time ("Rain until 15:10") so it fits one line. VoiceOver reads the headline and the line under it.
 
 The circular carries no RAIN or DRY label: the line already says which. Apple's own Weather Rain complication shows a rain-cloud glyph over "IN 3M" or "NOW" (MacRumors thread, May 2024, screenshots in `research/prior-art-apple-rain/`). A clock time in the middle was tried and rejected: next to the watch's own clock it read as another clock.
 

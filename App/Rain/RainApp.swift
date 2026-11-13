@@ -13,7 +13,7 @@ struct RainApp: App {
     }
 }
 
-/// Two pages, turned with the Digital Crown: the forecast, then the radar map. The app also holds
+/// The forecast, with the radar map one tap away. The app also holds
 /// location permission; every time it fetches, it saves the place and reloads the complications.
 struct ContentView: View {
     enum Load {
@@ -36,14 +36,21 @@ struct ContentView: View {
                 Text(message)
                     .navigationTitle("Rain")
             case let .ready(forecast, fetched, place):
-                TabView {
-                    ForecastDetailView(forecast: forecast, fetched: fetched)
-                        .padding(.horizontal, 2)
-                        .navigationTitle(placeName ?? "Rain")
-                    RadarPage(place: place)
-                        .navigationTitle("Radar")
-                }
-                .tabViewStyle(.verticalPage)
+                ForecastDetailView(forecast: forecast, fetched: fetched)
+                    .padding(.horizontal, 2)
+                    .navigationTitle(placeName ?? "Rain")
+                    .toolbar {
+                        // The radar gets its own screen so the Digital Crown can move it through time.
+                        ToolbarItem(placement: .topBarLeading) {
+                            NavigationLink {
+                                RadarPage(place: place)
+                            } label: {
+                                Image(systemName: "map.fill")
+                                    .foregroundStyle(.white)
+                                    .accessibilityLabel("Radar")
+                            }
+                        }
+                    }
             }
         }
         .tint(RainPalette.buienradarBlue)
