@@ -186,24 +186,50 @@ public struct CircularRainGauge: View {
         .aspectRatio(1, contentMode: .fit)
     }
 
+    /// The words sit in boxes measured against the ring at 45 points, so they can never touch it:
+    /// the hole inside the track has a radius of about 11.5 points, and the gap at the bottom is
+    /// free of the arc below its ends. Long words shrink to fit their box rather than spill out.
     private func centre(side: CGFloat, copy: RainCopy) -> some View {
         let (lead, value, unit) = copy.circular
-        return VStack(spacing: -side * 0.05) {
-            if let lead {
-                Text(lead)
-                    .font(RainFont.rounded(side * 0.17, .bold))
-                    .foregroundStyle(palette.secondary)
-            }
-            Text(value)
-                .font(RainFont.rounded(side * (unit == nil ? 0.38 : value.count > 2 ? 0.22 : 0.28), .semibold))
-                .foregroundStyle(palette.primary)
-            if let unit {
-                Text(unit)
-                    .font(RainFont.rounded(side * 0.17, .bold))
-                    .foregroundStyle(palette.secondary)
+        let u = side / 45
+        return ZStack {
+            if forecast.hasRain {
+                if let lead {
+                    small(lead, u: u)
+                        .frame(width: 13 * u, height: 7 * u)
+                        .position(x: side / 2, y: side / 2 - 7 * u)
+                }
+                Text(value)
+                    .font(RainFont.rounded(13 * u, .semibold))
+                    .foregroundStyle(palette.primary)
+                    .minimumScaleFactor(0.6)
+                    .frame(width: 18 * u, height: 11 * u)
+                    .position(x: side / 2, y: side / 2 + 1.5 * u)
+                if let unit {
+                    small(unit, u: u)
+                        .frame(width: 16 * u, height: 7 * u)
+                        .position(x: side / 2, y: side / 2 + 11 * u)
+                }
+            } else {
+                VStack(spacing: 0) {
+                    Text(value)
+                        .font(RainFont.rounded(17 * u, .semibold))
+                        .foregroundStyle(palette.primary)
+                    if let unit {
+                        small(unit, u: u)
+                    }
+                }
             }
         }
-        .offset(y: unit == nil ? 0 : side * 0.04)
+        .frame(width: side, height: side)
+    }
+
+    private func small(_ text: String, u: CGFloat) -> some View {
+        Text(text)
+            .font(RainFont.rounded(7 * u, .bold))
+            .foregroundStyle(palette.secondary)
+            .minimumScaleFactor(0.7)
+            .lineLimit(1)
     }
 }
 
