@@ -24,11 +24,11 @@ On 13 November at 13:30 I sampled Buienradar's nowcast at 94 places in the Nethe
 
 ## Requirements
 
-1. The circular complication answers question 1 from the watch face without a tap. The arc is Buienradar's graph bent round, on Apple's gauge anatomy (a 240° arc open at the bottom): the blue line says rain, its height says how hard, and a dot marks the next change. The middle shows the minutes until that dot ("30 MIN"), as Apple's own Rain complication counts down ("IN 3M"). With no rain there is no line, only "Dry".
+1. The circular complication answers question 1 from the watch face without a tap. The arc is Buienradar's graph bent round, on Apple's gauge anatomy (a 240° arc open at the bottom): the blue line says rain, its height says how hard, and a dot marks the next change. The middle reads top to bottom as one phrase about that dot, "IN 30 MIN", as Apple's own Rain complication writes "IN 3M"; when nothing changes in the two hours it reads "FOR 2+ HRS". With no rain there is no line, only "Dry".
 2. The arc and the line are Buienradar's own data. Time runs along them, from now to two hours, and height shows intensity on Buienradar's Light, Moderate and Heavy lines.
 3. Any rain at all shows as visibly different from dry. A forecast with no rain says so.
 4. A dot marks the moment the headline counts down to, so the words and the line agree.
-5. The words name what is happening now and how long it lasts. They give no advice, no millimetres and no probabilities, use British English, and imply nothing beyond the two hours shown.
+5. The words name what is happening now and how long it lasts. They follow the writing guide: plain phrases with their prepositions ("for 30 min", "in 30 min"), no codes or shorthand ("2H+", "30M"), no advice, no millimetres, no probabilities, British English, and nothing implied beyond the two hours shown.
 6. Dry gaps under 10 minutes between two wet stretches count as wet in the words, because nobody can use them. The line still shows them.
 7. The rectangular slot and the Smart Stack show the headline, the next change with clock times, and the full line.
 8. The Smart Stack widget surfaces itself when rain is forecast within two hours, so it is on the wrist at the moment of leaving without a face slot.
@@ -40,10 +40,10 @@ On 13 November at 13:30 I sampled Buienradar's nowcast at 94 places in the Nethe
 | Now | Circular middle | Headline | Second line |
 |---|---|---|---|
 | No rain in the two hours | Dry (no line) | No rain forecast | (none) |
-| Dry, rain later | 30 MIN | Dry for 30 min | Light rain 14:00–14:25 |
-| Raining, stops, comes back | 5 MIN | Rain stops in 5 min | Dry 13:35–14:15 |
-| Raining, stops | 100 MIN | Rain stops in 1 h 40 min | Dry from 15:10 |
-| Raining throughout | 2H+ | Rain for 2 hours | Heaviest around 14:15 |
+| Dry, rain later | IN 30 MIN | Dry for 30 min | Light rain 14:00–14:25 |
+| Raining, stops, comes back | IN 5 MIN | Rain stops in 5 min | Dry 13:35–14:15 |
+| Raining, stops | IN 100 MIN | Rain stops in 1 h 40 min | Dry from 15:10 |
+| Raining throughout | FOR 2+ HRS | Rain for 2+ hours | Heaviest around 14:15 |
 
 The circular carries no RAIN or DRY label: the line already says which. Apple's own Weather Rain complication shows a rain-cloud glyph over "IN 3M" or "NOW" (MacRumors thread, May 2024, screenshots in `research/prior-art-apple-rain/`). A clock time in the middle was tried and rejected: next to the watch's own clock it read as another clock.
 

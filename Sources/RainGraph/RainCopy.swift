@@ -30,7 +30,7 @@ public struct RainCopy: Sendable {
     /// Rectangular and Smart Stack headline.
     public var headline: String {
         guard forecast.hasRain else { return "No rain forecast" }
-        guard let minutes = minutesLeft else { return "\(now?.intensity.phrase ?? "Rain") for 2 hours" }
+        guard let minutes = minutesLeft else { return "\(now?.intensity.phrase ?? "Rain") for 2+ hours" }
         let duration = Self.duration(minutes)
         return isRainingNow ? "Rain stops in \(duration)" : "Dry for \(duration)"
     }
@@ -54,20 +54,20 @@ public struct RainCopy: Sendable {
         return "Heaviest around \(Self.clock(peak.date))"
     }
 
-    /// Circular middle: minutes until the change the dot marks, the way Apple's own Rain
-    /// complication counts down ("IN 3M"). The line says whether that change is rain or dry.
-    public var circular: (value: String, unit: String?) {
-        guard forecast.hasRain else { return ("Dry", nil) }
-        guard let minutesLeft else { return ("2H+", nil) }
-        return ("\(minutesLeft)", "MIN")
+    /// Circular middle, read top to bottom as one phrase: "IN 30 MIN" to the change at the dot, or
+    /// "FOR 2+ HRS" when the weather stays the same for the whole window. The line says what changes.
+    public var circular: (lead: String?, value: String, unit: String?) {
+        guard forecast.hasRain else { return (nil, "Dry", nil) }
+        guard let minutesLeft else { return ("FOR", "2+", "HRS") }
+        return ("IN", "\(minutesLeft)", "MIN")
     }
 
     /// Inline and corner: one short line.
     public var short: String {
         guard forecast.hasRain else { return "No rain" }
         let state = isRainingNow ? "Rain" : "Dry"
-        guard let minutes = minutesLeft else { return "\(state) 2h+" }
-        return "\(state) \(Self.duration(minutes))"
+        guard let minutes = minutesLeft else { return "\(state) for 2+ hours" }
+        return "\(state) for \(Self.duration(minutes))"
     }
 
     static func duration(_ minutes: Int) -> String {

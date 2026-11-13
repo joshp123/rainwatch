@@ -187,18 +187,23 @@ public struct CircularRainGauge: View {
     }
 
     private func centre(side: CGFloat, copy: RainCopy) -> some View {
-        let (value, unit) = copy.circular
+        let (lead, value, unit) = copy.circular
         return VStack(spacing: -side * 0.05) {
+            if let lead {
+                Text(lead)
+                    .font(RainFont.rounded(side * 0.17, .bold))
+                    .foregroundStyle(palette.secondary)
+            }
             Text(value)
-                .font(RainFont.rounded(side * (value.count > 2 ? 0.24 : 0.3), .semibold))
+                .font(RainFont.rounded(side * (unit == nil ? 0.38 : value.count > 2 ? 0.22 : 0.28), .semibold))
                 .foregroundStyle(palette.primary)
             if let unit {
                 Text(unit)
-                    .font(RainFont.rounded(side * 0.14, .bold))
+                    .font(RainFont.rounded(side * 0.17, .bold))
                     .foregroundStyle(palette.secondary)
             }
         }
-        .offset(y: unit == nil ? 0 : side * 0.09)
+        .offset(y: unit == nil ? 0 : side * 0.04)
     }
 }
 
