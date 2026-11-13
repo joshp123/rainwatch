@@ -1,0 +1,64 @@
+# Xcode project spec. Generate Rain.xcodeproj with: nix run nixpkgs#xcodegen -- generate
+name: Rain
+options:
+  bundleIdPrefix: nl.jjp
+  deploymentTarget:
+    watchOS: "11.0"
+  createIntermediateGroups: true
+packages:
+  RainGraph:
+    path: ..
+settings:
+  base:
+    DEVELOPMENT_TEAM: 7M8BR7R488
+    CODE_SIGN_STYLE: Automatic
+    SWIFT_VERSION: "6.0"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+targets:
+  Rain:
+    type: application
+    platform: watchOS
+    sources: [Rain]
+    dependencies:
+      - package: RainGraph
+      - target: RainWidget
+    info:
+      path: Rain/Info.plist
+      properties:
+        CFBundleDisplayName: Rain
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        WKApplication: true
+        WKWatchOnly: true
+        NSLocationWhenInUseUsageDescription: Rain shows Buienradar's forecast for where you are.
+    entitlements:
+      path: Rain/Rain.entitlements
+      properties:
+        com.apple.security.application-groups: [group.nl.jjp.rain]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: nl.jjp.rain
+  RainWidget:
+    type: app-extension
+    platform: watchOS
+    sources: [RainWidget]
+    dependencies:
+      - package: RainGraph
+    info:
+      path: RainWidget/Info.plist
+      properties:
+        CFBundleDisplayName: Rain
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        NSWidgetUsesLocation: true
+        NSLocationWhenInUseUsageDescription: Rain shows Buienradar's forecast for where you are.
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    entitlements:
+      path: RainWidget/RainWidget.entitlements
+      properties:
+        com.apple.security.application-groups: [group.nl.jjp.rain]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: nl.jjp.rain.widget

@@ -5,11 +5,10 @@ let package = Package(
     name: "RainWatchMockups",
     platforms: [.watchOS(.v11), .macOS(.v15)],
     products: [
-        .library(name: "RainComplication", targets: ["RainComplication"]),
+        .library(name: "RainGraph", targets: ["RainGraph"]),
     ],
     targets: [
         .target(name: "RainGraph"),
-        .target(name: "RainComplication", dependencies: ["RainGraph"]),
         .executableTarget(name: "render-mockups", dependencies: ["RainGraph"]),
         .executableTarget(name: "copy-check", dependencies: ["RainGraph"]),
     ]

@@ -25,11 +25,13 @@ enum RainCurve {
 
     /// Points along the curve as (time 0…1, height 0…1).
     static func points(_ forecast: RainForecast, scale: Scale = .squareRoot, subdivisions: Int = 10) -> [(t: Double, v: Double)] {
+        // Each sample covers the five minutes after it, so it is drawn at the middle of them: the
+        // line then rises around the moment rain starts, where the dot is, not before it.
         let values = forecast.samples.map { display($0.height, scale) }
-        let times = forecast.samples.map { forecast.position(of: $0.date) }
+        let times = forecast.samples.map { forecast.position(of: $0.date.addingTimeInterval(RainForecast.step / 2)) }
         guard values.count > 1 else { return values.isEmpty ? [] : [(0, values[0])] }
 
-        var result: [(t: Double, v: Double)] = [(times[0], values[0])]
+        var result: [(t: Double, v: Double)] = [(0, values[0]), (times[0], values[0])]
         for index in 1..<values.count {
             let (t0, t1, v0, v1) = (times[index - 1], times[index], values[index - 1], values[index])
             let dt = t1 - t0

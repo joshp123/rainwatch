@@ -1,3 +1,5 @@
 .build/
 .swiftpm/
 research/prior-art/
+App/build/
+xcuserdata/

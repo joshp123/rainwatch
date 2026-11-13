@@ -36,7 +36,7 @@ public struct RectangularRainView: View {
             RainChart(forecast: forecast, palette: palette)
                 .padding(.top, 3)
             TimeAxis(forecast: forecast, palette: palette)
-                .padding(.top, 1)
+                .padding(.top, 4)
         }
         .lineLimit(1)
     }
@@ -78,7 +78,7 @@ struct RainChart: View {
                     for hour in forecast.hourMarks {
                         let x = size.width * forecast.position(of: hour)
                         path.move(to: CGPoint(x: x, y: size.height))
-                        path.addLine(to: CGPoint(x: x, y: size.height + 3))
+                        path.addLine(to: CGPoint(x: x, y: size.height + 4))
                     }
                 }
                 .stroke(palette.baseline, lineWidth: 1.5)

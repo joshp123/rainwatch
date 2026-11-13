@@ -59,15 +59,20 @@ public struct RainForecast: Sendable {
     public static let scaleLines: [Double] = [25, 50, 75]
 
     public var samples: [RainSample]
+    /// The moment the forecast is shown. Durations count from here, not from the first sample,
+    /// because Buienradar's feed starts at the next five-minute step.
+    public var now: Date
 
-    public init(samples: [RainSample]) {
+    public init(samples: [RainSample], now: Date? = nil) {
         self.samples = samples
+        self.now = now ?? samples.first?.date ?? .now
     }
 
     public init(start: Date, heights: [Double]) {
         samples = heights.enumerated().map { index, height in
             RainSample(date: start.addingTimeInterval(Double(index) * Self.step), height: height)
         }
+        now = start
     }
 
     public var start: Date { samples.first?.date ?? .now }
@@ -119,6 +124,25 @@ public struct RainForecast: Sendable {
     public var hasRain: Bool { samples.contains { $0.isRain && $0.date < end } }
 
     public func minutes(until date: Date) -> Int {
-        Int((date.timeIntervalSince(start) / 60).rounded())
+        max(1, Int((date.timeIntervalSince(now) / 60).rounded()))
+    }
+}
+
+extension RainForecast {
+    /// One forecast per minute from `now`, each showing the two hours from that minute, while the
+    /// samples cover them. One fetch of Buienradar's three-hour feed gives about 45 minutes, so a
+    /// widget counts down exactly between the system's reloads.
+    public static func timeline(from samples: [RainSample], now: Date, minutes: Int = 60) -> [RainForecast] {
+        (0..<minutes).compactMap { minute in
+            at(now.addingTimeInterval(Double(minute) * 60), from: samples)
+        }
+    }
+
+    /// The two hours from `moment`, or nil when the samples no longer cover them.
+    public static func at(_ moment: Date, from samples: [RainSample]) -> RainForecast? {
+        let perWindow = Int(window / step) + 1
+        let first = samples.lastIndex { $0.date <= moment } ?? 0
+        guard first + perWindow <= samples.count else { return nil }
+        return RainForecast(samples: Array(samples[first..<(first + perWindow)]), now: moment)
     }
 }
