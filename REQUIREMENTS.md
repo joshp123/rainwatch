@@ -24,7 +24,7 @@ On 13 November at 13:30 I sampled Buienradar's nowcast at 94 places in the Nethe
 
 ## Requirements
 
-1. The circular complication answers question 1 from the watch face without a tap. The arc is Buienradar's graph bent round, on Apple's gauge anatomy (a 240° arc open at the bottom): the blue line says rain, its height says how hard, and a dot marks the next change. The middle reads top to bottom as one phrase about that dot, "IN 30 MIN", as Apple's own Rain complication writes "IN 3M"; when nothing changes in the two hours it reads "FOR 2+ HRS". With no rain there is no line, only "Dry" over "FOR 2+ HRS". The circle is the size of Apple's gauges beside it on Josh's face: the arc reaches 91% of the slot's radius and the number is about 16 points, like the Activity gauge's. The lead word sits inside the track and the unit in the gap at the bottom, where Apple's gauges put their labels. No word touches the line, and no word is shrunk to fit.
+1. The circular complication answers question 1 from the watch face without a tap. The arc is Buienradar's graph bent round, on Apple's gauge anatomy (a 240° arc open at the bottom): the blue line says rain, its height says how hard, and a dot marks the next change. The middle reads top to bottom as one phrase about that dot, "IN 30 MIN", as Apple's own Rain complication writes "IN 3M"; when nothing changes in the two hours it reads "FOR 2+ HRS". With no rain there is no line, only "Dry" over "2+ HRS" ("FOR 2+ HRS" is wider than the disc at a readable size). The circle sits on the grey disc Apple's complications beside it use, and its words are the size of theirs: the number white, the words in Buienradar blue, as World Clock colours "SF" orange. The lead word sits inside the track and the unit in the gap at the bottom, where Apple's gauges put their labels. No word touches the line, and no word is shrunk to fit.
 2. The arc and the line are Buienradar's own data. Time runs along them, from now to two hours, and height shows intensity on Buienradar's Light, Moderate and Heavy lines.
 3. Any rain at all shows as visibly different from dry. A forecast with no rain says so.
 4. A dot marks the moment the headline counts down to, so the words and the line agree.
@@ -39,13 +39,13 @@ On 13 November at 13:30 I sampled Buienradar's nowcast at 94 places in the Nethe
     - Opening the app fetches, which costs no widget budget, and reloads every complication.
 11. Location: the widget tries its own fix and reuses one under five minutes old, so the widgets on a face share one. If it cannot get a fix it uses the last one the app or a widget saved. Each reload is logged to the app group with where its location came from, to measure on the real watch how often watchOS refreshes and whether the widget gets its own fix. Continuous background location is out until a day's battery test justifies it.
 12. Tapping a complication opens the app: the forecast in full, with a button to the radar. The app follows Apple's layout and type: the system's margins and text styles, and Swift Charts for the graph.
-13. The radar is about time and precision. It plays Buienradar's frames from half an hour ago to two hours ahead, as Buienradar's own watch app does, over a strip with the rain line for where you are and a marker at the frame shown, so a shower reaching you on the map shows as the line rising under the marker. The crown pauses it and steps five minutes a click; a tap plays again. It opens about 30 km across, as close as the radar's 650 m pixels allow, and zooms out to 120 km to show what is coming.
+13. The radar is about time and precision. It plays Buienradar's frames from half an hour ago to two hours ahead, as Buienradar's own watch app does, named relative to now ("in 25 min"), over a slim strip with the rain line for where you are and a marker at the frame shown, which never covers the map round you, so a shower reaching you on the map shows as the line rising under the marker. The crown pauses it and steps five minutes a click; a tap plays again. It opens about 30 km across, as close as the radar's 650 m pixels allow, and zooms out to 120 km to show what is coming.
 
 ## Words
 
 | Now | Circular middle | Headline | Second line |
 |---|---|---|---|
-| No rain in the two hours | Dry, FOR 2+ HRS (no line) | Dry for 2+ hours | (none) |
+| No rain in the two hours | Dry, 2+ HRS (no line) | Dry for 2+ hours | (none) |
 | Dry, rain later | IN 30 MIN | Dry for 30 min | Light rain 14:00–14:25 |
 | Raining, stops, comes back | IN 5 MIN | Rain stops in 5 min | Dry 13:35–14:15 |
 | Raining, stops after an hour or more | IN 100 MIN | Rain until 15:10 | Heaviest around 13:55 |

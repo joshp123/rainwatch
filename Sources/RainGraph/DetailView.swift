@@ -75,7 +75,10 @@ public struct ForecastChart: View {
             AxisMarks(preset: .inset, position: .trailing, values: [25, 75]) { value in
                 AxisGridLine(stroke: StrokeStyle(lineWidth: 1, dash: [2, 3]))
                 AxisValueLabel {
+                    // A backing keeps the label readable where rain fills behind it.
                     Text(value.as(Double.self) == 25 ? "Light" : "Heavy")
+                        .padding(.horizontal, 3)
+                        .background(.black.opacity(0.6), in: Capsule())
                 }
             }
         }

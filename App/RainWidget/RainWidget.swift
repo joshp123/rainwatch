@@ -120,8 +120,12 @@ struct RainComplicationView: View {
     @ViewBuilder private func view(for forecast: RainForecast) -> some View {
         switch family {
         case .accessoryCircular:
-            CircularRainGauge(forecast: forecast, palette: palette)
-                .containerBackground(for: .widget) { Color.clear }
+            // The grey disc Apple's own complications sit on, so Rain's edge is as clear as theirs.
+            ZStack {
+                AccessoryWidgetBackground()
+                CircularRainGauge(forecast: forecast, palette: palette)
+            }
+            .containerBackground(for: .widget) { Color.clear }
         case .accessoryRectangular:
             RectangularRainView(forecast: forecast, palette: palette)
                 .containerBackground(for: .widget) { forecast.hasRain ? palette.stack : palette.stackDry }
@@ -147,14 +151,19 @@ struct RainComplicationView: View {
         let (headline, detail, short) = problemText
         switch family {
         case .accessoryCircular:
-            // Apple's own gauges show "--" when they have no value.
-            VStack(spacing: 0) {
-                Text("--")
-                    .font(.system(size: 19, weight: .semibold, design: .rounded))
-                if let short {
-                    Text(short)
-                        .font(.system(size: 9, weight: .bold, design: .rounded))
-                        .foregroundStyle(.secondary)
+            // Apple's own complications show "--" when they have no value; the line under it says
+            // when the last forecast was, in the same two lines of words as the forecast.
+            ZStack {
+                AccessoryWidgetBackground()
+                VStack(spacing: 0) {
+                    Text("--")
+                        .font(.system(size: 15, weight: .semibold, design: .rounded))
+                    if let short {
+                        Text(short)
+                            .font(.system(size: 11, weight: .semibold, design: .rounded))
+                            .foregroundStyle(palette.rain)
+                            .widgetAccentable()
+                    }
                 }
             }
             .containerBackground(for: .widget) { Color.clear }

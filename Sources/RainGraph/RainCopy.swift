@@ -60,8 +60,9 @@ public struct RainCopy: Sendable {
 
     /// Circular middle, read top to bottom as one phrase: "IN 30 MIN" to the change at the dot, or
     /// "FOR 2+ HRS" when the weather stays the same for the whole window. The line says what changes.
+    /// Dry says how long under it, "2+ HRS": "FOR 2+ HRS" is wider than the disc at a readable size.
     public var circular: (lead: String?, value: String, unit: String?) {
-        guard forecast.hasRain else { return (nil, "Dry", "FOR 2+ HRS") }
+        guard forecast.hasRain else { return (nil, "Dry", "2+ HRS") }
         guard let minutesLeft else { return ("FOR", "2+", "HRS") }
         return ("IN", "\(minutesLeft)", "MIN")
     }

@@ -82,7 +82,7 @@ struct CircularMock: View {
     let palette: RainPalette
 
     var body: some View {
-        CircularRainGauge(forecast: forecast, palette: palette)
+        CircularRainGauge(forecast: forecast, palette: palette, plate: true)
             .frame(width: Ultra3.circular, height: Ultra3.circular)
     }
 }

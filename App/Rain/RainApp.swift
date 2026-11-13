@@ -19,7 +19,12 @@ struct ContentView: View {
     enum Load {
         case loading(String)
         case ready(RainForecast, fetched: Date, place: CLLocationCoordinate2D)
-        case failed(String)
+        case failed(Failure)
+    }
+
+    /// What went wrong, in Apple's empty-state layout, with the way out.
+    enum Failure: String {
+        case noLocation, offline, notCovered, noForecast
     }
 
     @State private var load = Load.loading("Finding where you are")
@@ -32,9 +37,8 @@ struct ContentView: View {
             switch load {
             case let .loading(stage):
                 ProgressView(stage)
-            case let .failed(message):
-                Text(message)
-                    .navigationTitle("Rain")
+            case let .failed(failure):
+                failed(failure)
             case let .ready(forecast, fetched, place):
                 ScrollView {
                     ForecastDetailView(forecast: forecast, fetched: fetched)
@@ -69,7 +73,48 @@ struct ContentView: View {
         }
     }
 
+    @ViewBuilder private func failed(_ failure: Failure) -> some View {
+        switch failure {
+        case .noLocation:
+            ContentUnavailableView("Location Needed", systemImage: "location.slash",
+                                   description: Text("Allow Rain in Settings, Privacy & Security, Location Services."))
+        case .offline:
+            ContentUnavailableView {
+                Label("No Connection", systemImage: "wifi.slash")
+            } description: {
+                Text("Buienradar can't be reached.")
+            } actions: {
+                Button("Try Again") { Task { await refresh() } }
+            }
+        case .notCovered:
+            ContentUnavailableView("No Forecast Here", systemImage: "mappin.slash",
+                                   description: Text("Buienradar covers the Netherlands and nearby countries."))
+        case .noForecast:
+            ContentUnavailableView {
+                Label("No Forecast", systemImage: "cloud.rain")
+            } description: {
+                Text("Buienradar sent an empty forecast.")
+            } actions: {
+                Button("Try Again") { Task { await refresh() } }
+            }
+        }
+    }
+
     private func refresh() async {
+        #if DEBUG
+        // Screenshots of every state: `-scenario showerComing` shows a saved forecast instead of
+        // fetching one, and `-failure offline` shows a failure.
+        if let name = UserDefaults.standard.string(forKey: "failure"), let failure = Failure(rawValue: name) {
+            load = .failed(failure)
+            return
+        }
+        if let name = UserDefaults.standard.string(forKey: "scenario"),
+           let scenario = Scenario.allCases.first(where: { "\($0)" == name }) {
+            load = .ready(scenario.forecast(at: .now), fetched: .now, place: CLLocationCoordinate2D(latitude: 51.92, longitude: 4.48))
+            placeName = scenario.place
+            return
+        }
+        #endif
         session = CLServiceSession(authorization: .whenInUse)
         do {
             // The first time, Core Location waits for an answer to its permission question.
@@ -78,7 +123,7 @@ struct ContentView: View {
             if case .loading = load { load = .loading("Asking Buienradar") }
             let snapshot = try await Snapshot.fetch(latitude: place.latitude, longitude: place.longitude)
             guard let forecast = RainForecast.at(.now, from: snapshot.samples) else {
-                load = .failed("Buienradar sent no forecast.")
+                load = .failed(.noForecast)
                 return
             }
             load = .ready(forecast, fetched: snapshot.fetched, place: place)
@@ -87,11 +132,11 @@ struct ContentView: View {
             placeName = try? await MKReverseGeocodingRequest(location: CLLocation(latitude: place.latitude, longitude: place.longitude))?
                 .mapItems.first?.addressRepresentations?.cityName
         } catch Place.Failure.noLocation {
-            load = .failed("Rain needs your location. Allow it in Settings, Privacy & Security, Location Services, Rain.")
+            load = .failed(.noLocation)
         } catch Buienradar.Failure.notCovered {
-            load = .failed("Buienradar has no forecast for where you are.")
+            load = .failed(.notCovered)
         } catch {
-            load = .failed("Buienradar could not be reached. \(error.localizedDescription)")
+            load = .failed(.offline)
         }
     }
 }

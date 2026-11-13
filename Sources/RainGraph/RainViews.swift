@@ -146,9 +146,11 @@ struct TimeAxis: View {
 /// The track is the baseline; rain rises from it towards the rim, so a heavy peak stands well above
 /// a light one. The dot marks the next change. With no rain there is no line, only "Dry".
 ///
-/// Sizes are fractions of the slot, matched to Apple's Activity gauge beside it on Josh's face
-/// (50 point slot): its arc's outer edge is at 0.91 of the radius, its value about 16 points.
-/// Text is never boxed smaller than its line height, which would make the system shrink it.
+/// It sits on the same grey disc as the complications beside it on Josh's face, and its words
+/// match theirs: Sunrise and World Clock set two lines of the same size, about 8 points tall, and
+/// colour the label (World Clock's "SF" is orange). Here the number is white and the words around
+/// it are in Buienradar's blue. Text is never boxed smaller than its line height, which would make
+/// the system shrink it.
 public struct CircularRainGauge: View {
     public enum Middle: Sendable {
         /// Minutes until the change at the dot.
@@ -160,17 +162,20 @@ public struct CircularRainGauge: View {
     let forecast: RainForecast
     let palette: RainPalette
     let middle: Middle
+    /// Draw the disc. The widget leaves it to `AccessoryWidgetBackground`.
+    let plate: Bool
 
     static let start = Angle.degrees(150)
     static let sweep = Angle.degrees(240)
-    /// Radii as fractions of the slot's radius.
-    static let rim = 0.91
-    static let track = 0.64
+    /// Radii as fractions of the slot's radius; the disc behind fills about 0.92 of it.
+    static let rim = 0.86
+    static let track = 0.65
 
-    public init(forecast: RainForecast, palette: RainPalette, middle: Middle = .minutes) {
+    public init(forecast: RainForecast, palette: RainPalette, middle: Middle = .minutes, plate: Bool = false) {
         self.forecast = forecast
         self.palette = palette
         self.middle = middle
+        self.plate = plate
     }
 
     public var body: some View {
@@ -182,6 +187,9 @@ public struct CircularRainGauge: View {
             let track = middle == .minutes ? Self.track : 0.42
             let copy = RainCopy(forecast)
             ZStack {
+                if plate {
+                    Circle().fill(palette.plate).frame(width: side * 0.92, height: side * 0.92)
+                }
                 if forecast.hasRain {
                     ArcLine(startAngle: Self.start, sweep: Self.sweep, radius: track)
                         .stroke(palette.baseline, style: StrokeStyle(lineWidth: stroke, lineCap: .round))
@@ -207,46 +215,35 @@ public struct CircularRainGauge: View {
         .accessibilityLabel(RainCopy(forecast).spoken)
     }
 
-    /// Read top to bottom as one phrase: the lead word inside the arc, the value in the middle,
+    /// Read top to bottom as one phrase: the lead word inside the arc, the number in the middle,
     /// the unit in the gap at the bottom where Apple's gauges put their labels.
     private func centre(side: CGFloat, copy: RainCopy) -> some View {
         let (lead, value, unit) = copy.circular
         let mid = side / 2
         return ZStack {
-            if forecast.hasRain {
-                if let lead {
-                    small(lead, side: side)
-                        .position(x: mid, y: mid - side * 0.19)
-                }
-                // Three digits at the two-digit size would touch the arc.
-                Text(value)
-                    .font(RainFont.rounded(side * (value.count > 2 ? 0.27 : 0.33), .semibold))
-                    .foregroundStyle(palette.primary)
-                    .fixedSize()
-                    .position(x: mid, y: mid + side * 0.03)
-                if let unit {
-                    small(unit, side: side)
-                        .position(x: mid, y: mid + side * 0.34)
-                }
-            } else {
-                Text(value)
-                    .font(RainFont.rounded(side * 0.34, .semibold))
-                    .foregroundStyle(palette.primary)
-                    .fixedSize()
-                    .position(x: mid, y: mid - side * 0.06)
-                if let unit {
-                    small(unit, side: side, size: 0.16)
-                        .position(x: mid, y: mid + side * 0.2)
-                }
+            if let lead {
+                word(lead, side: side, size: 0.2)
+                    .position(x: mid, y: mid - side * 0.14)
+            }
+            // Three characters at the two-character size would touch the arc.
+            Text(value)
+                .font(RainFont.rounded(side * (value.count > 2 ? 0.23 : 0.28), .semibold))
+                .foregroundStyle(palette.primary)
+                .fixedSize()
+                .position(x: mid, y: mid + side * (lead == nil ? -0.02 : 0.07))
+            if let unit {
+                word(unit, side: side, size: 0.21)
+                    .position(x: mid, y: mid + side * 0.315)
             }
         }
         .frame(width: side, height: side)
     }
 
-    private func small(_ text: String, side: CGFloat, size: CGFloat = 0.18) -> some View {
+    private func word(_ text: String, side: CGFloat, size: CGFloat = 0.22) -> some View {
         Text(text)
             .font(RainFont.rounded(side * size, .semibold))
-            .foregroundStyle(palette.secondary)
+            .foregroundStyle(palette.rain)
+            .accentable()
             .fixedSize()
     }
 }

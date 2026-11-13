@@ -6,6 +6,10 @@ Josh's Apple Watch app: Buienradar's rain for the next two hours where he is, on
 
 The goal is a glance he can trust: whether it is dry now and for how long, drawn as Buienradar's own rain line, never older than it says. He judges the work by looking at it, so the pictures are the product.
 
+## Design
+
+`DESIGN.md` has the rules every view follows and where they come from. Read it before changing a view.
+
 ## Look at every image before anyone else does
 
 Josh, 13 November 2026: "look at those images? some look weird? lots is clipped? you need to set this up properly in a repo ... with a rule to always look at images and critique it". Mock-ups and screenshots from this project have gone to him clipped, overlapping and inconsistent because the agent showed them without looking.
