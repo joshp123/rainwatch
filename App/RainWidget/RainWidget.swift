@@ -52,6 +52,13 @@ struct RainProvider: TimelineProvider {
     }
 
     static func timeline(now: Date) async -> Timeline<RainEntry> {
+        #if DEBUG
+        // Set by the app's `-scenario` launch option, to check every state on the real face.
+        if let name = UserDefaults(suiteName: Place.appGroup)?.string(forKey: "debugScenario"),
+           let scenario = Scenario.allCases.first(where: { "\($0)" == name }) {
+            return Timeline(entries: [RainEntry(date: now, forecast: scenario.forecast(at: now))], policy: .never)
+        }
+        #endif
         let place: Place.Found
         do {
             place = try await Place.current()
@@ -160,7 +167,7 @@ struct RainComplicationView: View {
                         .font(.system(size: 15, weight: .semibold, design: .rounded))
                     if let short {
                         Text(short)
-                            .font(.system(size: 11, weight: .semibold, design: .rounded))
+                            .font(.system(size: 13, weight: .semibold, design: .rounded))
                             .foregroundStyle(palette.rain)
                             .widgetAccentable()
                     }

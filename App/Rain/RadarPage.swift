@@ -69,6 +69,8 @@ struct RadarPage: View {
                 }
             }
         }
+        // The bar's blur smeared the radar under the back button into streaks.
+        .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
         .focusable()
         .focused($crownFocused)
         .onAppear { crownFocused = true }
@@ -86,7 +88,7 @@ struct RadarPage: View {
     }
 
     /// The timeline sits on the bottom edge; its padding clears the screen's rounded corners.
-    static let timelineHeight: CGFloat = 58
+    static let timelineHeight: CGFloat = 70
 
     /// The moment on the map and where it sits in the rain line for your spot. No plate: a dark
     /// fade under it keeps it legible and leaves the map round you uncovered.
@@ -112,23 +114,24 @@ struct RadarPage: View {
             } else if let first = frames.first?.date, let last = frames.last?.date {
                 RadarStrip(forecast: forecast, start: first, end: last, now: nowFrameDate ?? first,
                            selected: frames[safe: index]?.date ?? first)
-                    .frame(height: 16)
+                    .frame(height: 30)
             } else {
-                ProgressView().frame(maxWidth: .infinity, maxHeight: 16)
+                ProgressView().frame(maxWidth: .infinity, maxHeight: 30)
             }
         }
         .padding(.horizontal, 18)
-        .padding(.bottom, 14)
+        .padding(.bottom, 10)
         .frame(maxWidth: .infinity, alignment: .leading)
         .frame(height: Self.timelineHeight, alignment: .bottom)
         .background(alignment: .bottom) {
-            // Map labels under the time would read as part of it, so the fade is nearly opaque there.
-            LinearGradient(stops: [.init(color: .black.opacity(0), location: 0),
-                                   .init(color: .black.opacity(0.85), location: 0.45),
-                                   .init(color: .black.opacity(0.92), location: 1)],
-                           startPoint: .top, endPoint: .bottom)
-                .frame(height: Self.timelineHeight + 26)
-                .allowsHitTesting(false)
+            // Solid under the words and the strip: map labels showing through read as part of them.
+            // A short fade above keeps the edge soft.
+            VStack(spacing: 0) {
+                LinearGradient(colors: [.black.opacity(0), .black], startPoint: .top, endPoint: .bottom)
+                    .frame(height: 16)
+                Color.black.frame(height: Self.timelineHeight)
+            }
+            .allowsHitTesting(false)
         }
     }
 
@@ -211,47 +214,52 @@ struct RadarStrip: View {
     let now: Date
     let selected: Date
 
+    static let labelHeight: CGFloat = 13
+
     var body: some View {
         GeometryReader { proxy in
             let width = proxy.size.width
-            let height = proxy.size.height
+            let plot = proxy.size.height - Self.labelHeight
             let x = { (date: Date) in width * date.timeIntervalSince(start) / end.timeIntervalSince(start) }
             ZStack(alignment: .topLeading) {
                 Rectangle()
                     .fill(.white.opacity(0.35))
                     .frame(width: width, height: 1)
-                    .offset(y: height - 1)
+                    .offset(y: plot - 1)
                 RainArea(forecast: forecast)
                     .fill(RainPalette.buienradarBlue)
-                    .frame(width: max(0, min(x(forecast.end), width) - x(forecast.start)), height: height - 1)
+                    .frame(width: max(0, min(x(forecast.end), width) - x(forecast.start)), height: plot - 1)
                     .offset(x: x(forecast.start))
-                    .clipped()
-                ForEach(hours, id: \.self) { hour in
-                    Rectangle().fill(.white.opacity(0.35)).frame(width: 1, height: 4)
-                        .position(x: x(hour), y: height - 2)
+                ForEach(ticks, id: \.self) { tick in
+                    Rectangle().fill(.white.opacity(tick == now ? 0.8 : 0.35)).frame(width: 1, height: 4)
+                        .position(x: x(tick), y: plot + 1)
+                    Text(tick == now ? "Now" : RainCopy.clock(tick))
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundStyle(.secondary)
+                        .fixedSize()
+                        .position(x: min(max(x(tick), 12), width - 14), y: plot + 8)
                 }
-                Rectangle().fill(.white.opacity(0.8)).frame(width: 1.5, height: 6)
-                    .position(x: x(now), y: height - 3)
                 Capsule()
                     .fill(.white)
-                    .frame(width: 3, height: height + 4)
+                    .frame(width: 3, height: plot + 2)
                     .overlay(Capsule().stroke(.black.opacity(0.5), lineWidth: 1))
-                    .position(x: x(selected), y: height / 2)
+                    .position(x: x(selected), y: plot / 2)
             }
         }
         .accessibilityHidden(true)
     }
 
-    private var hours: [Date] {
+    /// "Now" and whole hours, leaving out hours so close to "Now" that the two read as one label.
+    private var ticks: [Date] {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(identifier: "Europe/Amsterdam")!
         var hours: [Date] = []
         var hour = calendar.nextDate(after: start, matching: DateComponents(minute: 0), matchingPolicy: .nextTime)
         while let current = hour, current < end {
-            hours.append(current)
+            if abs(current.timeIntervalSince(now)) >= 40 * 60 { hours.append(current) }
             hour = calendar.date(byAdding: .hour, value: 1, to: current)
         }
-        return hours
+        return [now] + hours
     }
 }
 

@@ -111,8 +111,8 @@ struct CircularDetail: View {
                     ForEach(Scenario.allCases, id: \.self) { scenario in
                         VStack(spacing: 8) {
                             CircularRainGauge(forecast: scenario.forecast, palette: [RainPalette.fullColour, .nightMode][index], plate: true)
-                                .frame(width: 50, height: 50)
-                                .scaleEffect(2.16)
+                                .frame(width: 45, height: 45)
+                                .scaleEffect(2.4)
                                 .frame(width: 108, height: 108)
                             Text(scenario.rawValue)
                                 .font(RainFont.rounded(10, .medium))
@@ -213,9 +213,6 @@ struct AppSheet: View {
 }
 
 try MainActor.assumeIsolated {
-    if let real = NSImage(contentsOf: output.appendingPathComponent("watch/face.png")) {
-        try render(RealFaceRow(screenshot: real), to: "circular-on-real-face.png", scale: 4)
-    }
     if let screenshot {
         try render(MiddleComparison(screenshot: screenshot), to: "circular-middles.png")
     }

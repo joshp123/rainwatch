@@ -6,8 +6,9 @@ enum Ultra3 {
     static let screen = CGSize(width: 211, height: 257)
     static let cornerRadius: CGFloat = 46
     static var centre: CGPoint { CGPoint(x: screen.width / 2, y: screen.height / 2) }
-    /// Circular slot on 49 mm watches (Apple's Human Interface Guidelines).
-    static let circular: CGFloat = 50
+    /// Circular slot on Josh's Modular Ultra face, measured on his watch on 14 November: 45 points,
+    /// the size of the grey disc. Apple's guidelines say 50 for 49 mm watches; the face uses less.
+    static let circular: CGFloat = 45
     static let rectangular = CGSize(width: 193, height: 82)
     static let smartStack = CGSize(width: 198, height: 81.5)
 }

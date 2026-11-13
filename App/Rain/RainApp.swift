@@ -6,6 +6,15 @@ import WidgetKit
 
 @main
 struct RainApp: App {
+    #if DEBUG
+    init() {
+        // `-scenario showerComing` also puts that saved forecast on the watch face, to check the
+        // complications on the real face. It runs at launch, so it works with the screen off.
+        UserDefaults(suiteName: Place.appGroup)?.set(UserDefaults.standard.string(forKey: "scenario"), forKey: "debugScenario")
+        WidgetCenter.shared.reloadAllTimelines()
+    }
+    #endif
+
     var body: some Scene {
         WindowGroup {
             ContentView()

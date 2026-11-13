@@ -167,9 +167,9 @@ public struct CircularRainGauge: View {
 
     static let start = Angle.degrees(150)
     static let sweep = Angle.degrees(240)
-    /// Radii as fractions of the slot's radius; the disc behind fills about 0.92 of it.
-    static let rim = 0.86
-    static let track = 0.65
+    /// Radii as fractions of the slot's radius; the disc behind fills the slot.
+    static let rim = 0.88
+    static let track = 0.68
 
     public init(forecast: RainForecast, palette: RainPalette, middle: Middle = .minutes, plate: Bool = false) {
         self.forecast = forecast
@@ -188,7 +188,7 @@ public struct CircularRainGauge: View {
             let copy = RainCopy(forecast)
             ZStack {
                 if plate {
-                    Circle().fill(palette.plate).frame(width: side * 0.92, height: side * 0.92)
+                    Circle().fill(palette.plate)
                 }
                 if forecast.hasRain {
                     ArcLine(startAngle: Self.start, sweep: Self.sweep, radius: track)
@@ -200,7 +200,7 @@ public struct CircularRainGauge: View {
                         .accentable()
                     if let change = copy.change {
                         let angle = Self.start.radians + forecast.position(of: change) * Self.sweep.radians
-                        ChangeDot(palette: palette, diameter: side * 0.1)
+                        ChangeDot(palette: palette, diameter: side * 0.085)
                             .position(x: half + half * track * cos(angle), y: half + half * track * sin(angle))
                     }
                 }
@@ -216,30 +216,49 @@ public struct CircularRainGauge: View {
     }
 
     /// Read top to bottom as one phrase: the lead word inside the arc, the number in the middle,
-    /// the unit in the gap at the bottom where Apple's gauges put their labels.
+    /// the unit in the gap at the bottom where Apple's gauges put their labels. Sizes are fractions
+    /// of the slot, measured on Josh's watch so that the number is as tall as "07:59" beside it
+    /// and the unit as tall as "SF" (the Mac draws this font smaller than the watch does, so only
+    /// the real face is a fair ruler). Without an arc, the two lines sit as one
+    /// block in the middle, as theirs do.
     private func centre(side: CGFloat, copy: RainCopy) -> some View {
         let (lead, value, unit) = copy.circular
         let mid = side / 2
         return ZStack {
-            if let lead {
-                word(lead, side: side, size: 0.2)
-                    .position(x: mid, y: mid - side * 0.14)
-            }
-            // Three characters at the two-character size would touch the arc.
-            Text(value)
-                .font(RainFont.rounded(side * (value.count > 2 ? 0.23 : 0.28), .semibold))
-                .foregroundStyle(palette.primary)
+            if forecast.hasRain {
+                // Three lines at the neighbours' sizes don't fit inside the arc on a 45 point
+                // disc, so the lead word is smaller; the number and the unit match theirs.
+                if let lead {
+                    word(lead, side: side, size: 0.2)
+                        .position(x: mid, y: mid - side * 0.15)
+                }
+                // Three characters at the two-character size would touch the arc.
+                Text(value)
+                    .font(RainFont.rounded(side * (value.count > 2 ? 0.22 : 0.27), .semibold))
+                    .foregroundStyle(palette.primary)
+                    .fixedSize()
+                    .position(x: mid, y: mid + side * (lead == nil ? 0 : 0.05))
+                if let unit {
+                    word(unit, side: side)
+                        .position(x: mid, y: mid + side * 0.3)
+                }
+            } else {
+                VStack(spacing: 0) {
+                    Text(value)
+                        .font(RainFont.rounded(side * 0.27, .semibold))
+                        .foregroundStyle(palette.primary)
+                    if let unit {
+                        word(unit, side: side)
+                    }
+                }
                 .fixedSize()
-                .position(x: mid, y: mid + side * (lead == nil ? -0.02 : 0.07))
-            if let unit {
-                word(unit, side: side, size: 0.21)
-                    .position(x: mid, y: mid + side * 0.315)
+                .position(x: mid, y: mid)
             }
         }
         .frame(width: side, height: side)
     }
 
-    private func word(_ text: String, side: CGFloat, size: CGFloat = 0.22) -> some View {
+    private func word(_ text: String, side: CGFloat, size: CGFloat = 0.243) -> some View {
         Text(text)
             .font(RainFont.rounded(side * size, .semibold))
             .foregroundStyle(palette.rain)
