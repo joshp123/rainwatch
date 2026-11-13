@@ -54,7 +54,8 @@ public struct Snapshot: Codable, Sendable {
 public enum ReloadLog {
     public static func record(_ line: String, now: Date = .now) {
         guard let folder = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: Place.appGroup) else { return }
-        let file = folder.appendingPathComponent("reloads.log")
+        // In Library, the only part of the container a Mac may copy from a real watch.
+        let file = folder.appendingPathComponent("Library/reloads.log")
         let entry = Data("\(now.ISO8601Format()) \(line)\n".utf8)
         if let handle = try? FileHandle(forWritingTo: file) {
             handle.seekToEndOfFile()
