@@ -31,6 +31,8 @@ What works here, checked on 13 November 2026 with Xcode 27.2 and the watchOS 27.
 - Not yet tried here: AXe (`brew install cameroncooke/axe/axe`, taps by accessibility label), sim-use (LY Corp) and baguette (web device farm). baguette's docs say it presses the watch crown but cannot turn it.
 - No third-party tool turns the Digital Crown. Apple's XCUITest can: `XCUIDevice.shared.rotateDigitalCrown(delta:)` in a watchOS UI test. Use that for crown behaviour, or the real watch.
 - Device Hub with computer use is the last resort; it needs the window in front for some gestures and gives only pixels.
+- On Josh's real watch, `xcrun devicectl device capture screenshot --device <watch> --destination x.png` works and takes about a second; `process launch` opens any app, including other developers' (Buienradar is `nl.rtl.buienradar.watchkitapp`). `capture screen-record` is not supported on the watch, so take screenshots in a loop to see motion.
+- Not yet tried: Xcode 27's release notes say its coding agents can rotate and press the Digital Crown (Xcode's MCP server, `xcrun mcpbridge`); it needs Josh to approve agent access in Xcode.
 
 This field changes month to month, and most of these tools are under a year old. When this section is more than a month old, or a tool here fails, search for the current state of the art first (Parallel web search works well), try anything better, and rewrite this section with the date you checked.
 
