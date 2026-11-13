@@ -1,5 +1,6 @@
 import CoreLocation
 import Foundation
+import Synchronization
 
 /// Where to forecast. The app asks for location permission and finds a fix; the widget tries for
 /// its own fix. Both remember the last fix in the shared app group, so the widget still has a place
@@ -53,24 +54,32 @@ public enum Place {
         defaults?.set(Date.now, forKey: "fixedAt")
     }
 
+    /// Returns at the timeout even when Core Location never answers: a task group would wait for
+    /// the location task to end, and on a watch waiting for permission it does not end.
     private static func fix(timeout: Duration) async -> CLLocationCoordinate2D? {
-        await withTaskGroup(of: CLLocationCoordinate2D?.self) { group in
-            group.addTask {
+        let answered = Mutex(false)
+        return await withCheckedContinuation { continuation in
+            let answer: @Sendable (CLLocationCoordinate2D?) -> Void = { coordinate in
+                let first = answered.withLock { done in
+                    defer { done = true }
+                    return !done
+                }
+                if first { continuation.resume(returning: coordinate) }
+            }
+            let updates = Task {
                 do {
                     for try await update in CLLocationUpdate.liveUpdates() {
-                        if let location = update.location { return location.coordinate }
-                        if update.authorizationDenied || update.authorizationDeniedGlobally { return nil }
+                        if let location = update.location { return answer(location.coordinate) }
+                        if update.authorizationDenied || update.authorizationDeniedGlobally { return answer(nil) }
                     }
                 } catch {}
-                return nil
+                answer(nil)
             }
-            group.addTask {
+            Task {
                 try? await Task.sleep(for: timeout)
-                return nil
+                updates.cancel()
+                answer(nil)
             }
-            let first = await group.next() ?? nil
-            group.cancelAll()
-            return first
         }
     }
 }

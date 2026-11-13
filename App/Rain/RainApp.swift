@@ -17,12 +17,12 @@ struct RainApp: App {
 /// location permission; every time it fetches, it saves the place and reloads the complications.
 struct ContentView: View {
     enum Load {
-        case loading
+        case loading(String)
         case ready(RainForecast, fetched: Date, place: CLLocationCoordinate2D)
         case failed(String)
     }
 
-    @State private var load = Load.loading
+    @State private var load = Load.loading("Finding where you are")
     @State private var placeName: String?
     @State private var session: CLServiceSession?
     @Environment(\.scenePhase) private var scenePhase
@@ -30,8 +30,8 @@ struct ContentView: View {
     var body: some View {
         NavigationStack {
             switch load {
-            case .loading:
-                ProgressView()
+            case let .loading(stage):
+                ProgressView(stage)
             case let .failed(message):
                 Text(message)
                     .navigationTitle("Rain")
@@ -70,7 +70,10 @@ struct ContentView: View {
     private func refresh() async {
         session = CLServiceSession(authorization: .whenInUse)
         do {
-            let place = try await Place.current().coordinate
+            // The first time, Core Location waits for an answer to its permission question.
+            let asking = CLLocationManager().authorizationStatus == .notDetermined
+            let place = try await Place.current(timeout: .seconds(asking ? 120 : 8)).coordinate
+            if case .loading = load { load = .loading("Asking Buienradar") }
             let snapshot = try await Snapshot.fetch(latitude: place.latitude, longitude: place.longitude)
             guard let forecast = RainForecast.at(.now, from: snapshot.samples) else {
                 load = .failed("Buienradar sent no forecast.")

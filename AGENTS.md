@@ -37,4 +37,9 @@ This field changes month to month, and most of these tools are under a year old.
 ## Working here
 
 - Build the app from `App/` with the commands in `README.md`; the simulator is "Rain Ultra 3". Mock-ups come from `swift run render-mockups renders research/josh-face-2026-11-05.jpeg`. Mock-ups only show widget designs; for what the app really looks like, use simulator or watch screenshots.
-- Josh's watch pairs with this Mac through his iPhone. If `devicectl` says the watch rejected the Bluetooth connection (error 1035), the pairing is stale: connect the iPhone to the Mac by cable so Xcode pairs the watch again, then turn on Developer Mode on the watch.
+- Pairing Josh's watch with this Mac (worked on 13 November 2026, Xcode 27.2, watchOS 27.0). From watchOS 27 the watch must start pairing itself; Xcode no longer pairs it through the iPhone (the pairing log says "supports user-driven network pairing flows. Skipping companion proxy bootstrap pairing"). If `devicectl` says the watch rejected the Bluetooth connection (error 1035), the old pairing is stale:
+  1. `xcrun devicectl manage unpair --device <watch udid>`.
+  2. In Device Hub, open File > Pair Nearby Device… with Device Hub in front (from the background the sheet does not open) and leave the "Waiting to pair" sheet open.
+  3. Josh opens Settings > Privacy & Security > Developer Mode on the watch, taps Pair with this Mac, and types the six-digit code the sheet shows (not his passcode). If the Mac is not listed, the watch is not on Wi-Fi: turn off its Bluetooth for a moment.
+  4. Build once for the watch with `-allowProvisioningUpdates -allowProvisioningDeviceRegistration` so its UDID is added to the signing profiles.
+  The Mac reaches the watch over Wi-Fi, so installs fail with "Connection invalid" or error 1001 when the watch's screen turns off; keep it awake while installing.
