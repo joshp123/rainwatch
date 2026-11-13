@@ -172,7 +172,48 @@ struct MiddleComparison: View {
     }
 }
 
+/// The app's first page at Ultra 3 size, with the watch's own title bar: place on the left in the
+/// app's tint, time on the right.
+struct AppScreen: View {
+    let scenario: Scenario
+
+    var body: some View {
+        ZStack(alignment: .topLeading) {
+            Color.black
+            HStack {
+                Text(scenario.place)
+                    .foregroundStyle(RainPalette.buienradarBlue)
+                Spacer()
+                Text("13:30")
+                    .foregroundStyle(.white)
+            }
+            .font(RainFont.rounded(16, .semibold))
+            .padding(.horizontal, 14)
+            .padding(.top, 10)
+            ForecastDetailView(forecast: scenario.forecast, fetched: Scenario.start)
+                .padding(.horizontal, 10)
+                .padding(.top, 38)
+                .padding(.bottom, 12)
+        }
+        .frame(width: Ultra3.screen.width, height: Ultra3.screen.height)
+        .clipShape(RoundedRectangle(cornerRadius: Ultra3.cornerRadius, style: .continuous))
+    }
+}
+
+struct AppSheet: View {
+    static let scenarios: [Scenario] = [.showerComing, .drizzleStops, .rainingEasing, .rainAllWindow, .dry]
+
+    var body: some View {
+        HStack(spacing: 22) {
+            ForEach(Self.scenarios, id: \.self) { AppScreen(scenario: $0) }
+        }
+        .padding(24)
+        .background(Color(white: 0.12))
+    }
+}
+
 try MainActor.assumeIsolated {
+    try render(AppSheet(), to: "app-now.png", scale: 2)
     if let screenshot {
         try render(MiddleComparison(screenshot: screenshot), to: "circular-middles.png")
     }

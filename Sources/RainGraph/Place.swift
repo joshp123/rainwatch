@@ -11,14 +11,33 @@ public enum Place {
         case noLocation
     }
 
-    /// A fresh fix if one comes within `timeout`, otherwise the last saved one.
-    public static func current(timeout: Duration = .seconds(10)) async throws -> CLLocationCoordinate2D {
+    public struct Found: Sendable {
+        public let coordinate: CLLocationCoordinate2D
+        /// True for a fix taken now, false for the last saved one.
+        public let isLive: Bool
+        public let at: Date
+    }
+
+    /// A fix under five minutes old is reused: each widget on the face reloads at about the same
+    /// time, and one GPS fix serves them all.
+    static let reuseFor: TimeInterval = 5 * 60
+
+    /// The saved fix if it is recent, else a fresh fix if one comes within `timeout`, else the last
+    /// saved one.
+    public static func current(timeout: Duration = .seconds(8)) async throws -> Found {
+        if let saved, let at = savedAt, Date.now.timeIntervalSince(at) < reuseFor {
+            return Found(coordinate: saved, isLive: false, at: at)
+        }
         if let fix = await fix(timeout: timeout) {
             save(fix)
-            return fix
+            return Found(coordinate: fix, isLive: true, at: .now)
         }
-        if let saved { return saved }
+        if let saved, let at = savedAt { return Found(coordinate: saved, isLive: false, at: at) }
         throw Failure.noLocation
+    }
+
+    public static var savedAt: Date? {
+        UserDefaults(suiteName: appGroup)?.object(forKey: "fixedAt") as? Date
     }
 
     public static var saved: CLLocationCoordinate2D? {
@@ -31,6 +50,7 @@ public enum Place {
         let defaults = UserDefaults(suiteName: appGroup)
         defaults?.set(coordinate.latitude, forKey: "latitude")
         defaults?.set(coordinate.longitude, forKey: "longitude")
+        defaults?.set(Date.now, forKey: "fixedAt")
     }
 
     private static func fix(timeout: Duration) async -> CLLocationCoordinate2D? {

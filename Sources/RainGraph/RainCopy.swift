@@ -74,7 +74,7 @@ public struct RainCopy: Sendable {
         minutes < 60 ? "\(minutes) min" : "\(minutes / 60) h \(minutes % 60) min"
     }
 
-    static func clock(_ date: Date) -> String {
+    public static func clock(_ date: Date) -> String {
         clockFormatter.string(from: date)
     }
 

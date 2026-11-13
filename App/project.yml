@@ -3,7 +3,7 @@ name: Rain
 options:
   bundleIdPrefix: nl.jjp
   deploymentTarget:
-    watchOS: "11.0"
+    watchOS: "26.0"
   createIntermediateGroups: true
 packages:
   RainGraph:
@@ -51,7 +51,7 @@ targets:
         CFBundleDisplayName: Rain
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
-        NSWidgetUsesLocation: true
+        NSWidgetWantsLocation: true
         NSLocationWhenInUseUsageDescription: Rain shows Buienradar's forecast for where you are.
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension

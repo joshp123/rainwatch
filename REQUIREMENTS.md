@@ -33,7 +33,12 @@ On 13 November at 13:30 I sampled Buienradar's nowcast at 94 places in the Nethe
 7. The rectangular slot and the Smart Stack show the headline, the next change with clock times, and the full line.
 8. The Smart Stack widget surfaces itself when rain is forecast within two hours, so it is on the wrist at the moment of leaving without a face slot.
 9. Colour only repeats what height shows, so tinted faces and Ultra Night Mode lose nothing.
-10. One fetch of Buienradar's three-hour graph feeds an entry every five minutes, each showing now to two hours, so the widget stays current between the system's reloads. It works anywhere Buienradar covers: RainNL3Hour in the Netherlands and RainEU3Hour across Europe.
+10. The data can always be trusted. watchOS reloads a complication on the active face about every 15 to 20 minutes and the Smart Stack less often (WWDC26 watchOS Group Lab; `research/freshness.md`), so nothing on the watch is real time. Rain makes age the promise instead:
+    - Each reload fetches once and writes an entry for every minute, so the countdown stays exact between reloads, and asks to be reloaded after 15 minutes.
+    - When a forecast is 30 minutes old, a stale entry replaces the countdown: "No forecast since 15:12, Open Rain to update" and "--" in the circle. Entries show at their own dates, so this happens on time even when watchOS skips or delays a reload, and a failed fetch keeps the old fetch time.
+    - Opening the app fetches, which costs no widget budget, and reloads every complication.
+11. Location: the widget tries its own fix and reuses one under five minutes old, so the widgets on a face share one. If it cannot get a fix it uses the last one the app or a widget saved. Each reload is logged to the app group with where its location came from, to measure on the real watch how often watchOS refreshes and whether the widget gets its own fix. Continuous background location is out until a day's battery test justifies it.
+12. Tapping a complication opens the app: the forecast in full, then, turning the crown, Buienradar's radar over Apple Maps from an hour ago to two hours ahead.
 
 ## Words
 

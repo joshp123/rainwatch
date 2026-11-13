@@ -2,11 +2,11 @@ import SwiftUI
 
 /// The Buienradar line: a smooth curve through each five-minute height, with flat tangents at
 /// every sample so it never dips below zero or rises above a real peak.
-enum RainCurve {
+public enum RainCurve {
     /// Any rain gets at least this fraction of full height, so drizzle never looks dry.
     static let traceFloor = 0.16
 
-    enum Scale {
+    public enum Scale: Sendable {
         /// Lifts drizzle and light rain, which is most Dutch rain, off the baseline of a flat graph
         /// only 20 to 40 points tall, keeping Buienradar's order and scale lines.
         case squareRoot
@@ -14,7 +14,7 @@ enum RainCurve {
         case linear
     }
 
-    static func display(_ height: Double, _ scale: Scale = .squareRoot) -> Double {
+    public static func display(_ height: Double, _ scale: Scale = .squareRoot) -> Double {
         guard height > 0 else { return 0 }
         let fraction = min(height, 100) / 100
         switch scale {
@@ -54,15 +54,17 @@ enum RainCurve {
 /// Filled rain area over a straight time axis.
 public struct RainArea: Shape {
     let forecast: RainForecast
+    var scale: RainCurve.Scale = .squareRoot
 
-    public init(forecast: RainForecast) {
+    public init(forecast: RainForecast, scale: RainCurve.Scale = .squareRoot) {
         self.forecast = forecast
+        self.scale = scale
     }
 
     public func path(in rect: CGRect) -> Path {
         Path { path in
             path.move(to: CGPoint(x: rect.minX, y: rect.maxY))
-            for point in RainCurve.points(forecast) {
+            for point in RainCurve.points(forecast, scale: scale) {
                 path.addLine(to: CGPoint(x: rect.minX + point.t * rect.width, y: rect.maxY - point.v * rect.height))
             }
             path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))

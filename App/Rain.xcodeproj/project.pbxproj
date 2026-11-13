@@ -10,6 +10,7 @@
 		27573C743B2DCC739921613C /* RainApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76FBC3379322E9F2BB1F03BF /* RainApp.swift */; };
 		6AB72E45888650E454164A94 /* RainGraph in Frameworks */ = {isa = PBXBuildFile; productRef = 7BBE3C71B351E044B65650D4 /* RainGraph */; };
 		7F2F8AFC6DD5CFA9CC2FC9F7 /* RainGraph in Frameworks */ = {isa = PBXBuildFile; productRef = B9CE89E80650D5D474B56FB9 /* RainGraph */; };
+		C515955A92FFF24D64E9D61C /* RadarPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24A5456AC0840FD7A47E7340 /* RadarPage.swift */; };
 		C9165D0FF9414C17A0EFFF46 /* RainWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E5830986D952F71247765B /* RainWidget.swift */; };
 		CCF1C72DB096A5FB96074BE3 /* RainWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 9D596FEADDDC9BDA6C9CE992 /* RainWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
@@ -42,6 +43,7 @@
 		0452624B15554894CC4D1CBE /* rain-watch-mockups */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "rain-watch-mockups"; path = ..; sourceTree = SOURCE_ROOT; };
 		11E5830986D952F71247765B /* RainWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RainWidget.swift; sourceTree = "<group>"; };
 		1F9A00C4F9B89E5A7D762A86 /* RainWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = RainWidget.entitlements; sourceTree = "<group>"; };
+		24A5456AC0840FD7A47E7340 /* RadarPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadarPage.swift; sourceTree = "<group>"; };
 		5EA8CD1D830406319B28510E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		62D213F8CBF45908BD07AE5C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		76FBC3379322E9F2BB1F03BF /* RainApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RainApp.swift; sourceTree = "<group>"; };
@@ -82,6 +84,7 @@
 			isa = PBXGroup;
 			children = (
 				62D213F8CBF45908BD07AE5C /* Info.plist */,
+				24A5456AC0840FD7A47E7340 /* RadarPage.swift */,
 				FD980AE5FE9CA11F1F1DF450 /* Rain.entitlements */,
 				76FBC3379322E9F2BB1F03BF /* RainApp.swift */,
 			);
@@ -207,6 +210,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C515955A92FFF24D64E9D61C /* RadarPage.swift in Sources */,
 				27573C743B2DCC739921613C /* RainApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -312,7 +316,7 @@
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 6.0;
-				WATCHOS_DEPLOYMENT_TARGET = 11.0;
+				WATCHOS_DEPLOYMENT_TARGET = 26.0;
 			};
 			name = Release;
 		};
@@ -396,7 +400,7 @@
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 6.0;
-				WATCHOS_DEPLOYMENT_TARGET = 11.0;
+				WATCHOS_DEPLOYMENT_TARGET = 26.0;
 			};
 			name = Debug;
 		};

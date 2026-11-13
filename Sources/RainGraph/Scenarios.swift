@@ -11,6 +11,11 @@ public enum Scenario: String, CaseIterable, Sendable {
     case rainComing = "Rain in 10 min, Oslo"
     case rainAllWindow = "Rain all two hours, Madrid"
 
+    /// The town in the scenario's name.
+    public var place: String {
+        rawValue.components(separatedBy: ", ").last.map { $0 == "Dry" ? "Rotterdam" : $0 } ?? "Rotterdam"
+    }
+
     public static let start: Date = {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(identifier: "Europe/Amsterdam")!

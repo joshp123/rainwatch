@@ -1,4 +1,5 @@
 import CoreLocation
+import MapKit
 import RainGraph
 import SwiftUI
 import WidgetKit
@@ -12,56 +13,67 @@ struct RainApp: App {
     }
 }
 
-/// The app exists to hold location permission and to show the forecast when opened. Every time it
-/// fetches, it saves the place and asks WidgetKit to reload the complications.
+/// Two pages, turned with the Digital Crown: the forecast, then the radar map. The app also holds
+/// location permission; every time it fetches, it saves the place and reloads the complications.
 struct ContentView: View {
     enum Load {
         case loading
-        case ready(RainForecast, fetched: Date)
+        case ready(RainForecast, fetched: Date, place: CLLocationCoordinate2D)
         case failed(String)
     }
 
     @State private var load = Load.loading
+    @State private var placeName: String?
     @State private var session: CLServiceSession?
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 12) {
-                switch load {
-                case .loading:
-                    ProgressView()
-                        .frame(maxWidth: .infinity)
-                case let .ready(forecast, fetched):
-                    CircularRainGauge(forecast: forecast, palette: .fullColour)
-                        .frame(width: 64, height: 64)
-                        .frame(maxWidth: .infinity)
-                    RectangularRainView(forecast: forecast, palette: .fullColour)
-                        .frame(height: 82)
-                    Text("Buienradar, \(fetched.formatted(date: .omitted, time: .shortened))")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                case let .failed(message):
-                    Text(message)
-                        .font(.body)
+        NavigationStack {
+            switch load {
+            case .loading:
+                ProgressView()
+            case let .failed(message):
+                Text(message)
+                    .navigationTitle("Rain")
+            case let .ready(forecast, fetched, place):
+                TabView {
+                    ForecastDetailView(forecast: forecast, fetched: fetched)
+                        .padding(.horizontal, 2)
+                        .navigationTitle(placeName ?? "Rain")
+                    RadarPage(place: place)
+                        .navigationTitle("Radar")
                 }
+                .tabViewStyle(.verticalPage)
             }
-            .padding(.horizontal, 4)
         }
-        .task { await refresh() }
-        .refreshable { await refresh() }
+        .tint(RainPalette.buienradarBlue)
+        .onChange(of: scenePhase, initial: true) { _, phase in
+            switch phase {
+            case .active:
+                Task { await refresh() }
+            case .background:
+                // Apple's advice: one last reload as the app leaves, while it is still free.
+                WidgetCenter.shared.reloadAllTimelines()
+            default:
+                break
+            }
+        }
     }
 
     private func refresh() async {
         session = CLServiceSession(authorization: .whenInUse)
         do {
-            let place = try await Place.current()
-            let samples = try await Buienradar.samples(latitude: place.latitude, longitude: place.longitude)
-            guard let forecast = RainForecast.at(.now, from: samples) else {
+            let place = try await Place.current().coordinate
+            let snapshot = try await Snapshot.fetch(latitude: place.latitude, longitude: place.longitude)
+            guard let forecast = RainForecast.at(.now, from: snapshot.samples) else {
                 load = .failed("Buienradar sent no forecast.")
                 return
             }
-            load = .ready(forecast, fetched: .now)
+            load = .ready(forecast, fetched: snapshot.fetched, place: place)
+            // Free of the widget budget while the app is in front.
             WidgetCenter.shared.reloadAllTimelines()
+            placeName = try? await MKReverseGeocodingRequest(location: CLLocation(latitude: place.latitude, longitude: place.longitude))?
+                .mapItems.first?.addressRepresentations?.cityName
         } catch Place.Failure.noLocation {
             load = .failed("Rain needs your location. Allow it in Settings, Privacy & Security, Location Services, Rain.")
         } catch Buienradar.Failure.notCovered {

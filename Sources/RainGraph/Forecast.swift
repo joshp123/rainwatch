@@ -2,7 +2,7 @@ import Foundation
 
 /// One five-minute step of Buienradar's nowcast.
 /// `height` is Buienradar's own graph height (`percentageValue`, 0–100), the value its website plots.
-public struct RainSample: Hashable, Sendable {
+public struct RainSample: Hashable, Sendable, Codable {
     public var date: Date
     public var height: Double
 

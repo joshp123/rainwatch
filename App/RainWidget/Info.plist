@@ -27,7 +27,7 @@
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Rain shows Buienradar's forecast for where you are.</string>
-	<key>NSWidgetUsesLocation</key>
+	<key>NSWidgetWantsLocation</key>
 	<true/>
 </dict>
 </plist>

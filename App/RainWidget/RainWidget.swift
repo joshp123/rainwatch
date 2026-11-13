@@ -11,10 +11,17 @@ struct RainWidgets: WidgetBundle {
 }
 
 struct RainEntry: TimelineEntry {
+    enum Problem {
+        /// The last forecast is too old to count down from.
+        case stale(since: Date)
+        case noLocation
+        case noForecast
+    }
+
     let date: Date
     /// Nil when there is no forecast to show; `problem` then says why.
     let forecast: RainForecast?
-    var problem: String?
+    var problem: Problem?
 
     /// The Smart Stack raises the widget when rain is forecast within the two hours.
     var relevance: TimelineEntryRelevance? {
@@ -22,9 +29,13 @@ struct RainEntry: TimelineEntry {
     }
 }
 
-/// One Buienradar fetch gives an entry every minute for about 45 minutes, each showing that minute to
-/// two hours ahead. The timeline asks to be reloaded when the entries run out.
+/// Each reload fetches Buienradar once and writes an entry for every minute until the forecast is
+/// 30 minutes old, then a stale entry that withdraws the countdown. It asks to be reloaded after
+/// 15 minutes; watchOS reloads complications on the active face about every 15 to 20. If a reload
+/// is late or fails, the stale entry still appears on time, because entries show at their own dates.
 struct RainProvider: TimelineProvider {
+    static let reloadAfter: TimeInterval = 15 * 60
+
     func placeholder(in context: Context) -> RainEntry {
         RainEntry(date: .now, forecast: Scenario.showerComing.forecast)
     }
@@ -41,21 +52,33 @@ struct RainProvider: TimelineProvider {
     }
 
     static func timeline(now: Date) async -> Timeline<RainEntry> {
+        let place: Place.Found
         do {
-            let place = try await Place.current()
-            let samples = try await Buienradar.samples(latitude: place.latitude, longitude: place.longitude)
-            let entries = RainForecast.timeline(from: samples, now: now).map { RainEntry(date: $0.now, forecast: $0) }
-            if let last = entries.last {
-                return Timeline(entries: entries, policy: .after(last.date))
-            }
-        } catch Place.Failure.noLocation {
-            return failure("Open Rain to share your location", now: now)
-        } catch {}
-        return failure("No forecast", now: now)
+            place = try await Place.current()
+        } catch {
+            ReloadLog.record("no location")
+            return timeline(cached: Snapshot.saved, otherwise: .noLocation, now: now)
+        }
+        let source = place.isLive ? "live" : "saved \(RainCopy.clock(place.at))"
+        do {
+            let snapshot = try await Snapshot.fetch(latitude: place.coordinate.latitude, longitude: place.coordinate.longitude, now: now)
+            ReloadLog.record("fetched, location \(source)")
+            return timeline(snapshot, now: now)
+        } catch {
+            ReloadLog.record("fetch failed, location \(source): \(error.localizedDescription)")
+            return timeline(cached: Snapshot.saved, otherwise: .noForecast, now: now)
+        }
     }
 
-    private static func failure(_ problem: String, now: Date) -> Timeline<RainEntry> {
-        Timeline(entries: [RainEntry(date: now, forecast: nil, problem: problem)], policy: .after(now.addingTimeInterval(15 * 60)))
+    static func timeline(_ snapshot: Snapshot, now: Date) -> Timeline<RainEntry> {
+        var entries = snapshot.forecasts(from: now).map { RainEntry(date: $0.now, forecast: $0) }
+        entries.append(RainEntry(date: max(snapshot.staleAt, now), forecast: nil, problem: .stale(since: snapshot.fetched)))
+        return Timeline(entries: entries, policy: .after(now.addingTimeInterval(reloadAfter)))
+    }
+
+    private static func timeline(cached: Snapshot?, otherwise problem: RainEntry.Problem, now: Date) -> Timeline<RainEntry> {
+        if let cached { return timeline(cached, now: now) }
+        return Timeline(entries: [RainEntry(date: now, forecast: nil, problem: problem)], policy: .after(now.addingTimeInterval(reloadAfter)))
     }
 }
 
@@ -118,22 +141,46 @@ struct RainComplicationView: View {
         }
     }
 
+    /// What the widget shows without a forecast it can trust, in the same layout as the forecast.
     @ViewBuilder private var problem: some View {
-        let message = entry.problem ?? "No forecast"
+        let (headline, detail, short) = problemText
         switch family {
         case .accessoryCircular:
             // Apple's own gauges show "--" when they have no value.
-            Text("--")
-                .font(.system(size: 17, weight: .semibold, design: .rounded))
-                .widgetLabel(message)
-                .containerBackground(for: .widget) { Color.clear }
+            VStack(spacing: 0) {
+                Text("--")
+                    .font(.system(size: 19, weight: .semibold, design: .rounded))
+                if let short {
+                    Text(short)
+                        .font(.system(size: 9, weight: .bold, design: .rounded))
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .containerBackground(for: .widget) { Color.clear }
         case .accessoryRectangular:
-            Label(message, systemImage: "drop")
-                .font(.system(size: 15, weight: .semibold, design: .rounded))
-                .containerBackground(for: .widget) { palette.stackDry }
+            VStack(alignment: .leading, spacing: 2) {
+                Label(headline, systemImage: "drop")
+                    .font(.system(size: 15, weight: .semibold, design: .rounded))
+                Text(detail)
+                    .font(.system(size: 12.5, weight: .medium, design: .rounded))
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .containerBackground(for: .widget) { palette.stackDry }
         default:
-            Text(message)
+            Text(headline)
                 .containerBackground(for: .widget) { Color.clear }
+        }
+    }
+
+    private var problemText: (headline: String, detail: String, short: String?) {
+        switch entry.problem {
+        case let .stale(since):
+            ("No forecast since \(RainCopy.clock(since))", "Open Rain to update", RainCopy.clock(since))
+        case .noLocation:
+            ("Location needed", "Open Rain to share it", nil)
+        case .noForecast, nil:
+            ("No forecast", "Buienradar can't be reached", nil)
         }
     }
 }
@@ -165,7 +212,7 @@ struct RainLineCornerView: View {
                     .widgetCurvesContent()
                     .widgetLabel { Text(RainCopy(forecast).short) }
             } else {
-                Text(entry.problem ?? "No forecast")
+                Text("No forecast")
             }
         }
         .containerBackground(for: .widget) { Color.clear }

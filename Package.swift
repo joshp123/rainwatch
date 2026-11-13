@@ -3,7 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "RainWatchMockups",
-    platforms: [.watchOS(.v11), .macOS(.v15)],
+    platforms: [.watchOS(.v26), .macOS(.v15)],
     products: [
         .library(name: "RainGraph", targets: ["RainGraph"]),
     ],

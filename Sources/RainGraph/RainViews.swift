@@ -56,6 +56,7 @@ struct HeadlineLabelStyle: LabelStyle {
 struct RainChart: View {
     let forecast: RainForecast
     let palette: RainPalette
+    var scale: RainCurve.Scale = .squareRoot
 
     var body: some View {
         GeometryReader { proxy in
@@ -63,13 +64,13 @@ struct RainChart: View {
             ZStack(alignment: .topLeading) {
                 ForEach(RainForecast.scaleLines, id: \.self) { line in
                     Path { path in
-                        let y = size.height * (1 - RainCurve.display(line))
+                        let y = size.height * (1 - RainCurve.display(line, scale))
                         path.move(to: CGPoint(x: 0, y: y))
                         path.addLine(to: CGPoint(x: size.width, y: y))
                     }
                     .stroke(palette.grid, style: StrokeStyle(lineWidth: 1, dash: [1, 3]))
                 }
-                RainArea(forecast: forecast)
+                RainArea(forecast: forecast, scale: scale)
                     .fill(palette.rain)
                     .accentable()
                 Path { path in
