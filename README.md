@@ -7,7 +7,7 @@ A watch-only Apple Watch app with complications and a Smart Stack widget: Buienr
 ## Parts
 
 - `Sources/RainGraph`: everything the app and the widget share. `Buienradar.swift` fetches Buienradar's graph feed (RainNL3Hour, falling back to RainEU3Hour outside the Netherlands). `Place.swift` finds where you are. `Forecast.swift` turns the feed into a forecast for each minute. `RainCopy.swift` holds the words, and `RainViews.swift` the views.
-- `App/Rain`: the watch app. It asks for location permission, shows the forecast and, a crown turn down, Buienradar's radar over Apple Maps. Each time it opens it fetches, saves the forecast and place for the widget, and reloads the complications.
+- `App/Rain`: the watch app. It asks for location permission, shows the forecast, and opens Buienradar's radar over Apple Maps from a toolbar button. Each time it opens it fetches, saves the forecast and place for the widget, and reloads the complications.
 - `App/RainWidget`: the widget extension. Each reload fetches once, writes an entry for every minute until the forecast is 30 minutes old, then a stale entry; it asks to be reloaded after 15 minutes. If it cannot get its own fix, it uses the place last saved. Every reload is logged to `reloads.log` in the app group.
 - `App/project.yml`: the Xcode project spec. Regenerate `App/Rain.xcodeproj` after changing it.
 

@@ -2,113 +2,314 @@ import MapKit
 import RainGraph
 import SwiftUI
 
-/// Buienradar's radar frames over an Apple Map: the past hour and its forecast to two hours ahead,
-/// every five minutes. The Digital Crown moves through time; the map stays put around you.
+/// Buienradar's radar over an Apple Map, played as a loop from half an hour ago to two hours
+/// ahead, like Buienradar's own watch app. The strip at the bottom is the rain line for where you
+/// are, with a marker at the frame on the map, so a shower reaching the yellow dot shows as the
+/// line rising under the marker. Turning the Digital Crown pauses and steps five minutes a click;
+/// tapping plays again. The map starts close, at the radar's own precision, and zooms out to see
+/// what is coming.
 struct RadarPage: View {
     let place: CLLocationCoordinate2D
+    let forecast: RainForecast
+
+    enum Zoom: Double {
+        /// About 30 km across: the radar's pixels are 650 m, so closer only shows bigger pixels.
+        case near = 30_000
+        /// About 120 km across: showers move 30 to 60 km an hour, so this shows two hours' worth.
+        case region = 120_000
+    }
 
     @State private var frames: [Radar.Frame] = []
-    @State private var images: [Date: Image] = [:]
-    @State private var index = 0.0
+    @State private var images: [Date: Radar.Image] = [:]
+    @State private var index = 0
+    @State private var crown = 0.0
+    @State private var playing = true
+    @State private var zoom = Zoom.near
+    @State private var camera: MapCameraPosition
     @State private var cameraChanges = 0
-    @State private var problem: String?
+    @State private var problem = false
     @FocusState private var crownFocused: Bool
-    @State private var dragStart = 0.0
+    @Environment(\.isLuminanceReduced) private var dimmed
+    @Environment(\.scenePhase) private var scenePhase
+
+    init(place: CLLocationCoordinate2D, forecast: RainForecast) {
+        self.place = place
+        self.forecast = forecast
+        _camera = State(initialValue: Self.camera(place, .near))
+    }
 
     var body: some View {
         MapReader { proxy in
-            // 120 km across: showers move 30 to 60 km/h, so this shows what can arrive within two hours.
-            Map(initialPosition: .region(MKCoordinateRegion(center: place, latitudinalMeters: 120_000, longitudinalMeters: 120_000)),
-                interactionModes: []) {
+            Map(position: $camera, interactionModes: []) {
                 Annotation("", coordinate: place) {
                     Circle()
                         .fill(.yellow)
-                        .frame(width: 9, height: 9)
-                        .overlay(Circle().stroke(.black.opacity(0.6), lineWidth: 2))
+                        .frame(width: 10, height: 10)
+                        .overlay(Circle().stroke(.black.opacity(0.7), lineWidth: 2))
                 }
             }
             .mapStyle(.standard(emphasis: .muted, pointsOfInterest: .excludingAll))
             .onMapCameraChange(frequency: .continuous) { cameraChanges += 1 }
             .overlay { rain(proxy) }
         }
-        .navigationTitle(title)
-        .gesture(DragGesture(minimumDistance: 8).onChanged { drag in
-            // A drag across the screen scrubs about an hour, like the crown.
-            let step = -Double(drag.translation.width / 14)
-            index = min(max(dragStart + step, 0), Double(max(frames.count - 1, 0))).rounded()
-        }.onEnded { _ in dragStart = index })
+        .ignoresSafeArea()
+        .overlay(alignment: .bottom) { panel }
+        .contentShape(Rectangle())
+        .onTapGesture { playing.toggle() }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    zoom = zoom == .near ? .region : .near
+                    withAnimation(.easeInOut(duration: 0.4)) { camera = Self.camera(place, zoom) }
+                } label: {
+                    Label(zoom == .near ? "Zoom out" : "Zoom in",
+                          systemImage: zoom == .near ? "minus.magnifyingglass" : "plus.magnifyingglass")
+                }
+            }
+        }
         .focusable()
         .focused($crownFocused)
         .onAppear { crownFocused = true }
-        .digitalCrownRotation($index, from: 0, through: Double(max(frames.count - 1, 0)), by: 1,
+        .digitalCrownRotation($crown, from: 0, through: Double(max(frames.count - 1, 0)), by: 1,
                               sensitivity: .low, isContinuous: false, isHapticFeedbackEnabled: true)
+        .onChange(of: crown) { _, value in
+            // Playback moves the crown too; only a turn by hand lands on another frame.
+            let turned = Int(value.rounded())
+            guard turned != index else { return }
+            playing = false
+            index = turned
+        }
         .task { await load() }
-        .task(id: Int(index)) { await loadImage(at: Int(index)) }
+        .task(id: playing && !dimmed && scenePhase == .active && !frames.isEmpty) { await play() }
     }
 
-    /// The frame placed by its corners, which keeps it aligned however the map is panned:
-    /// Buienradar's frames and Apple's map both use Web Mercator.
+    /// The selected moment, the play button and the rain line with its marker, on a material plate
+    /// so they read over any map.
+    private var panel: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Button { playing.toggle() } label: {
+                    Image(systemName: playing ? "pause.fill" : "play.fill")
+                        .font(.footnote)
+                        .frame(width: 22, height: 22)
+                }
+                .buttonStyle(.plain)
+                .handGestureShortcut(.primaryAction)
+                .accessibilityLabel(playing ? "Pause" : "Play")
+                Text(timeLabel)
+                    .font(.headline.monospacedDigit())
+                Spacer(minLength: 0)
+                Text(relativeLabel)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+            if problem {
+                Text("Buienradar's radar could not be reached.")
+                    .font(.footnote)
+            } else if let first = frames.first?.date, let last = frames.last?.date {
+                RadarStrip(forecast: forecast, start: first, end: last, now: nowFrameDate ?? first,
+                           selected: frames[safe: index]?.date ?? first)
+                    .frame(height: 34)
+            } else {
+                ProgressView()
+                    .frame(maxWidth: .infinity, minHeight: 34)
+            }
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .padding(.horizontal, 6)
+    }
+
+    /// The frame placed by its corners, which keeps it aligned however the map moves: Buienradar's
+    /// frames and Apple's map both use Web Mercator.
     @ViewBuilder private func rain(_ proxy: MapProxy) -> some View {
         let _ = cameraChanges
-        if let frame = frames[safe: Int(index)], let image = images[frame.date],
-           let northWest = proxy.convert(Radar.northWest, to: .local),
-           let southEast = proxy.convert(Radar.southEast, to: .local) {
-            image
+        if let frame = frames[safe: index], let image = images[frame.date],
+           let northWest = proxy.convert(image.northWest, to: .local),
+           let southEast = proxy.convert(image.southEast, to: .local) {
+            Image(decorative: image.cgImage, scale: 1)
                 .resizable()
                 .interpolation(.high)
                 .antialiased(true)
-                .opacity(0.9)
                 .frame(width: southEast.x - northWest.x, height: southEast.y - northWest.y)
                 .position(x: (northWest.x + southEast.x) / 2, y: (northWest.y + southEast.y) / 2)
                 .allowsHitTesting(false)
         }
     }
 
-    private var title: String {
-        if problem != nil { return "No radar" }
-        guard let frame = frames[safe: Int(index)] else { return "Radar" }
-        return Radar.label(for: frame.date)
+    private var nowFrameDate: Date? {
+        frames.last { $0.date <= .now }?.date
+    }
+
+    private var timeLabel: String {
+        guard let date = frames[safe: index]?.date else { return "Radar" }
+        return date == nowFrameDate ? "Now" : RainCopy.clock(date)
+    }
+
+    private var relativeLabel: String {
+        guard let date = frames[safe: index]?.date, date != nowFrameDate else { return "" }
+        let minutes = Int((date.timeIntervalSinceNow / 60).rounded())
+        return minutes > 0 ? "in \(minutes) min" : "\(-minutes) min ago"
+    }
+
+    private static func camera(_ place: CLLocationCoordinate2D, _ zoom: Zoom) -> MapCameraPosition {
+        .region(MKCoordinateRegion(center: place, latitudinalMeters: zoom.rawValue, longitudinalMeters: zoom.rawValue))
     }
 
     private func load() async {
         do {
             frames = try await Radar.frames()
-            index = Double(frames.lastIndex { $0.date <= .now } ?? 0)
-            dragStart = index
         } catch {
-            problem = "No radar"
+            problem = true
+            return
+        }
+        // Open on the present, then play forward into the forecast.
+        index = frames.lastIndex { $0.date <= .now } ?? 0
+        crown = Double(index)
+        await withTaskGroup(of: (Date, Radar.Image?).self) { group in
+            for frame in frames {
+                group.addTask { (frame.date, await Radar.image(frame, around: place)) }
+            }
+            for await (date, image) in group {
+                images[date] = image
+            }
         }
     }
 
-    private func loadImage(at index: Int) async {
-        guard let frame = frames[safe: index], images[frame.date] == nil,
-              let (data, _) = try? await URLSession.shared.data(from: frame.url),
-              let cgImage = UIImage(data: data)?.cgImage,
-              let recoloured = Radar.forDarkMap(cgImage) else { return }
-        images[frame.date] = Image(decorative: recoloured, scale: 1)
+    /// Half a second a frame, a pause on the last one, then round again from half an hour ago.
+    private func play() async {
+        guard playing else { return }
+        while !Task.isCancelled {
+            let last = index == frames.count - 1
+            try? await Task.sleep(for: last ? .seconds(1.5) : .milliseconds(450))
+            guard !Task.isCancelled else { return }
+            let next = last ? 0 : index + 1
+            // Wait for a frame that is still downloading rather than show a gap.
+            guard let frame = frames[safe: next], images[frame.date] != nil else { continue }
+            index = next
+            crown = Double(next)
+        }
     }
 }
 
-/// Buienradar's Dutch radar: frames every five minutes with its forecast, and the corners its own
-/// website uses to place them ("nlRadarWebMercator": 54.8 N 0 E to 49.5 N 10 E).
+/// The rain line for where you are, across the radar loop, with a marker at the frame on the map.
+/// Before now there is no forecast, so the line starts at "Now".
+struct RadarStrip: View {
+    let forecast: RainForecast
+    let start: Date
+    let end: Date
+    let now: Date
+    let selected: Date
+
+    var body: some View {
+        GeometryReader { proxy in
+            let width = proxy.size.width
+            let plot = proxy.size.height - 13
+            let x = { (date: Date) in width * date.timeIntervalSince(start) / end.timeIntervalSince(start) }
+            ZStack(alignment: .topLeading) {
+                Rectangle()
+                    .fill(.secondary)
+                    .frame(width: width, height: 1)
+                    .offset(y: plot)
+                RainArea(forecast: forecast)
+                    .fill(RainPalette.buienradarBlue)
+                    .frame(width: x(forecast.end) - x(forecast.start), height: plot)
+                    .offset(x: x(forecast.start))
+                ForEach(ticks, id: \.self) { tick in
+                    Text(tick == now ? "Now" : RainCopy.clock(tick))
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(.secondary)
+                        .fixedSize()
+                        .position(x: x(tick), y: plot + 8)
+                }
+                Capsule()
+                    .fill(.white)
+                    .frame(width: 3, height: plot + 4)
+                    .overlay(Capsule().stroke(.black.opacity(0.5), lineWidth: 1))
+                    .position(x: x(selected), y: plot / 2)
+            }
+            .clipped()
+        }
+        .accessibilityHidden(true)
+    }
+
+    /// "Now" and the whole hours, leaving out any too close to "Now" or the edges to read apart.
+    private var ticks: [Date] {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "Europe/Amsterdam")!
+        var hours: [Date] = []
+        var hour = calendar.nextDate(after: start, matching: DateComponents(minute: 0), matchingPolicy: .nextTime)
+        while let current = hour, current < end {
+            // Closer than 45 minutes, "Now" and the hour read as one label: "Now 19:00".
+            if abs(current.timeIntervalSince(now)) >= 45 * 60, current.timeIntervalSince(start) >= 15 * 60,
+               end.timeIntervalSince(current) >= 15 * 60 {
+                hours.append(current)
+            }
+            hour = calendar.date(byAdding: .hour, value: 1, to: current)
+        }
+        return [now] + hours
+    }
+}
+
+/// Buienradar's Dutch radar: frames every five minutes with its forecast. Its website places them
+/// with these corners ("nlRadarWebMercator": 54.8 N 0 E to 49.5 N 10 E).
 enum Radar {
     struct Frame: Sendable {
         let date: Date
         let url: URL
     }
 
-    static let northWest = CLLocationCoordinate2D(latitude: 54.8, longitude: 0)
-    static let southEast = CLLocationCoordinate2D(latitude: 49.5, longitude: 10)
+    /// A frame cut to the area round you, recoloured for the dark map, with its own corners.
+    struct Image: @unchecked Sendable {
+        let cgImage: CGImage
+        let northWest: CLLocationCoordinate2D
+        let southEast: CLLocationCoordinate2D
+    }
+
+    static let north = 54.8, south = 49.5, west = 0.0, east = 10.0
 
     static func frames() async throws -> [Frame] {
-        // The key is the one Buienradar's own website sends.
-        let url = URL(string: "https://image-lite.buienradar.nl/3.0/metadata/radarMapRain5mNL?history=12&forecast=24&ak=3c4a3037-85e6-4d1e-ad6c-f3f6e4b75f2f")!
+        // The key is the one Buienradar's own website sends. Six frames back is half an hour;
+        // 24 ahead is two hours, the same window as the rain line.
+        let url = URL(string: "https://image-lite.buienradar.nl/3.0/metadata/radarMapRain5mNL?history=6&forecast=24&ak=3c4a3037-85e6-4d1e-ad6c-f3f6e4b75f2f")!
         let (data, _) = try await URLSession.shared.data(from: url)
         let metadata = try JSONDecoder().decode(Metadata.self, from: data)
         return metadata.times.compactMap { time in
             guard let date = utc.date(from: time.timestamp), let url = URL(string: time.url) else { return nil }
             return Frame(date: date, url: url)
         }
+    }
+
+    /// The frame's pixels within about 85 km of you: enough for the wider view, and a fortieth of
+    /// the whole frame to recolour.
+    static func image(_ frame: Frame, around place: CLLocationCoordinate2D) async -> Image? {
+        guard let (data, _) = try? await URLSession.shared.data(from: frame.url),
+              let whole = UIImage(data: data)?.cgImage else { return nil }
+        let width = Double(whole.width), height = Double(whole.height)
+        let x = { (longitude: Double) in (longitude - west) / (east - west) * width }
+        let y = { (latitude: Double) in (mercator(north) - mercator(latitude)) / (mercator(north) - mercator(south)) * height }
+        let reach = 0.8
+        let left = max(0, x(place.longitude - reach * 1.6).rounded(.down))
+        let right = min(width, x(place.longitude + reach * 1.6).rounded(.up))
+        let top = max(0, y(place.latitude + reach).rounded(.down))
+        let bottom = min(height, y(place.latitude - reach).rounded(.up))
+        guard right > left, bottom > top,
+              let cut = whole.cropping(to: CGRect(x: left, y: top, width: right - left, height: bottom - top)),
+              let recoloured = forDarkMap(cut) else { return nil }
+        let longitude = { (px: Double) in west + px / width * (east - west) }
+        let latitude = { (py: Double) in latitudeFromMercator(mercator(north) - py / height * (mercator(north) - mercator(south))) }
+        return Image(cgImage: recoloured,
+                     northWest: CLLocationCoordinate2D(latitude: latitude(top), longitude: longitude(left)),
+                     southEast: CLLocationCoordinate2D(latitude: latitude(bottom), longitude: longitude(right)))
+    }
+
+    private static func mercator(_ latitude: Double) -> Double {
+        log(tan(.pi / 4 + latitude * .pi / 360))
+    }
+
+    private static func latitudeFromMercator(_ y: Double) -> Double {
+        (2 * atan(exp(y)) - .pi / 2) * 180 / .pi
     }
 
     /// Buienradar draws light rain pale and heavy rain dark, for its light map. On the watch's dark
@@ -133,7 +334,7 @@ enum Radar {
             let intensity = downpour ? 1 : min(1, max(0, 1 - (0.3 * r + 0.59 * g + 0.11 * b)) * 1.6)
             // Buienradar's blue (#5A9BD3) for light rain, towards white for heavy, red for downpours.
             let (cr, cg, cb) = downpour ? (1.0, 0.3, 0.3) : (0.35 + 0.65 * intensity, 0.61 + 0.39 * intensity, 0.83 + 0.17 * intensity)
-            let a = 0.45 + 0.55 * intensity
+            let a = 0.5 + 0.5 * intensity
             pixels[i] = UInt8(cr * a * 255)
             pixels[i + 1] = UInt8(cg * a * 255)
             pixels[i + 2] = UInt8(cb * a * 255)
@@ -143,12 +344,6 @@ enum Radar {
             CGContext(data: buffer.baseAddress, width: width, height: height, bitsPerComponent: 8,
                       bytesPerRow: width * 4, space: space, bitmapInfo: info)?.makeImage()
         }
-    }
-
-    static func label(for date: Date) -> String {
-        let minutes = Int((date.timeIntervalSinceNow / 60).rounded())
-        if abs(minutes) < 3 { return "Now" }
-        return minutes > 0 ? "In \(minutes) min" : "\(-minutes) min ago"
     }
 
     private struct Metadata: Decodable {

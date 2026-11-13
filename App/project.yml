@@ -39,6 +39,19 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: nl.jjp.rain
+    scheme:
+      testTargets: [RainUITests]
+  RainUITests:
+    type: bundle.ui-testing
+    platform: watchOS
+    sources: [RainUITests]
+    dependencies:
+      - target: Rain
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: nl.jjp.rain.uitests
+        TEST_TARGET_NAME: Rain
+        GENERATE_INFOPLIST_FILE: YES
   RainWidget:
     type: app-extension
     platform: watchOS

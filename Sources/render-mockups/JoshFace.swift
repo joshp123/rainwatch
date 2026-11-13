@@ -25,7 +25,7 @@ struct JoshFace: View {
                 .frame(width: 48, height: 48)
                 .position(Self.topMiddleSlot)
             CircularRainGauge(forecast: forecast, palette: .fullColour, middle: middle)
-                .frame(width: 45, height: 45)
+                .frame(width: Ultra3.circular, height: Ultra3.circular)
                 .position(Self.topMiddleSlot)
             Rectangle().fill(.black)
                 .frame(width: 204, height: 80)

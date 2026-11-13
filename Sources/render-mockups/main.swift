@@ -111,8 +111,8 @@ struct CircularDetail: View {
                     ForEach(Scenario.allCases, id: \.self) { scenario in
                         VStack(spacing: 8) {
                             CircularRainGauge(forecast: scenario.forecast, palette: [RainPalette.fullColour, .nightMode][index])
-                                .frame(width: 45, height: 45)
-                                .scaleEffect(2.4)
+                                .frame(width: 50, height: 50)
+                                .scaleEffect(2.16)
                                 .frame(width: 108, height: 108)
                             Text(scenario.rawValue)
                                 .font(RainFont.rounded(10, .medium))

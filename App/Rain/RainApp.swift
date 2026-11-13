@@ -36,24 +36,26 @@ struct ContentView: View {
                 Text(message)
                     .navigationTitle("Rain")
             case let .ready(forecast, fetched, place):
-                ForecastDetailView(forecast: forecast, fetched: fetched)
-                    .padding(.horizontal, 2)
-                    .navigationTitle(placeName ?? "Rain")
-                    .toolbar {
-                        // The radar gets its own screen so the Digital Crown can move it through time.
-                        ToolbarItem(placement: .topBarLeading) {
-                            NavigationLink {
-                                RadarPage(place: place)
-                            } label: {
-                                Image(systemName: "map.fill")
-                                    .foregroundStyle(.white)
-                                    .accessibilityLabel("Radar")
-                            }
+                ScrollView {
+                    ForecastDetailView(forecast: forecast, fetched: fetched)
+                        .scenePadding(.horizontal)
+                }
+                .navigationTitle(placeName ?? "Rain")
+                // Apple's Weather colours its pages by the weather; blue here means rain is due.
+                .containerBackground((forecast.hasRain ? RainPalette.buienradarBlue.opacity(0.45) : Color.black).gradient,
+                                     for: .navigation)
+                .toolbar {
+                    // The radar gets its own screen so the Digital Crown can move it through time.
+                    ToolbarItem(placement: .topBarLeading) {
+                        NavigationLink {
+                            RadarPage(place: place, forecast: forecast)
+                        } label: {
+                            Label("Radar", systemImage: "map")
                         }
                     }
+                }
             }
         }
-        .tint(RainPalette.buienradarBlue)
         .onChange(of: scenePhase, initial: true) { _, phase in
             switch phase {
             case .active:

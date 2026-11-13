@@ -1,64 +1,98 @@
+import Charts
 import SwiftUI
 
-/// The app's first page: what the complications say, with room to read it. Buienradar's own graph
-/// at full height on its linear scale, so it looks like the website, with its Light, Moderate and
-/// Heavy lines named. The place is the page title; when the forecast was fetched sits at the foot.
+/// The app's first page: what the complications say, with room to read it, and Buienradar's own
+/// graph for the two hours drawn the way Apple draws charts on the watch. App text uses the
+/// system's text styles, so it matches Apple's apps and follows the wearer's text size.
 public struct ForecastDetailView: View {
     let forecast: RainForecast
     let fetched: Date
-    let palette: RainPalette
 
-    public init(forecast: RainForecast, fetched: Date, palette: RainPalette = .fullColour) {
+    public init(forecast: RainForecast, fetched: Date) {
         self.forecast = forecast
         self.fetched = fetched
-        self.palette = palette
     }
 
     public var body: some View {
         let copy = RainCopy(forecast)
-        VStack(alignment: .leading, spacing: 0) {
+        VStack(alignment: .leading, spacing: 2) {
             Text(copy.headline)
-                .font(RainFont.rounded(19, .semibold))
-                .foregroundStyle(palette.primary)
+                .font(.title3.weight(.semibold))
                 .lineLimit(2)
-                .minimumScaleFactor(0.8)
             if let detail = copy.detail {
                 Text(detail)
-                    .font(RainFont.rounded(15, .medium))
-                    .foregroundStyle(palette.rain)
-                    .padding(.top, 1)
+                    .font(.body)
+                    .foregroundStyle(RainPalette.buienradarBlue)
             }
-            HStack(alignment: .top, spacing: 4) {
-                VStack(spacing: 4) {
-                    RainChart(forecast: forecast, palette: palette, scale: .linear)
-                    TimeAxis(forecast: forecast, palette: palette)
-                }
-                ScaleLabels(palette: palette)
-                    .padding(.bottom, 16)
-            }
-            .padding(.top, 10)
+            ForecastChart(forecast: forecast)
+                .frame(height: 100)
+                .padding(.top, 8)
             Text("Updated \(RainCopy.clock(fetched))")
-                .font(RainFont.rounded(12, .medium))
-                .foregroundStyle(palette.secondary)
+                .font(.footnote)
+                .foregroundStyle(.secondary)
                 .padding(.top, 6)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
-/// Buienradar's own graph names only its outer lines, "Licht" and "Zwaar".
-struct ScaleLabels: View {
-    let palette: RainPalette
+/// Buienradar's graph in Swift Charts: height on its own 0–100 scale, with its Light and Heavy
+/// lines labelled inside the plot so the chart keeps the full width; "Now" and whole hours below.
+/// The labels sit at the far end, two hours out, where rain matters least if they cover it.
+public struct ForecastChart: View {
+    let forecast: RainForecast
 
-    var body: some View {
-        GeometryReader { proxy in
-            ForEach([(25.0, "Light"), (75.0, "Heavy")], id: \.0) { line, name in
-                Text(name)
-                    .font(RainFont.rounded(9.5, .medium))
-                    .foregroundStyle(palette.secondary)
-                    .fixedSize()
-                    .position(x: proxy.size.width / 2, y: proxy.size.height * (1 - line / 100))
+    public init(forecast: RainForecast) {
+        self.forecast = forecast
+    }
+
+    public var body: some View {
+        let points = RainCurve.points(forecast, scale: .linear)
+        Chart {
+            ForEach(points.indices, id: \.self) { index in
+                let point = points[index]
+                AreaMark(x: .value("Time", date(point.t)), y: .value("Rain", point.v * 100))
+                    .foregroundStyle(RainPalette.buienradarBlue.gradient)
+            }
+            if let change = RainCopy(forecast).change {
+                PointMark(x: .value("Change", change), y: .value("Rain", 0))
+                    .symbol { ChangeDot(palette: .fullColour, diameter: 9) }
             }
         }
-        .frame(width: 30)
+        .chartXScale(domain: forecast.start...forecast.end)
+        .chartYScale(domain: 0...100)
+        .chartXAxis {
+            AxisMarks(values: [forecast.start] + labelledHours) { value in
+                AxisTick(length: 4, stroke: StrokeStyle(lineWidth: 1))
+                AxisValueLabel {
+                    if let date = value.as(Date.self) {
+                        Text(date == forecast.start ? "Now" : RainCopy.clock(date))
+                    }
+                }
+            }
+        }
+        .chartYAxis {
+            AxisMarks(preset: .inset, position: .trailing, values: [25, 75]) { value in
+                AxisGridLine(stroke: StrokeStyle(lineWidth: 1, dash: [2, 3]))
+                AxisValueLabel {
+                    Text(value.as(Double.self) == 25 ? "Light" : "Heavy")
+                }
+            }
+        }
+        .chartPlotStyle { plot in
+            plot.overlay(alignment: .bottom) {
+                Rectangle().fill(.secondary).frame(height: 1)
+            }
+        }
+        .accessibilityLabel(RainCopy(forecast).spoken)
+    }
+
+    private func date(_ t: Double) -> Date {
+        forecast.start.addingTimeInterval(t * RainForecast.window)
+    }
+
+    /// Hours far enough from "Now" not to read as one label with it.
+    private var labelledHours: [Date] {
+        forecast.hourMarks.filter { $0.timeIntervalSince(forecast.start) >= 25 * 60 }
     }
 }

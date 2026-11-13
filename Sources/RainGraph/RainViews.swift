@@ -26,10 +26,11 @@ public struct RectangularRainView: View {
                     .accentable()
             }
             .labelStyle(HeadlineLabelStyle())
-            .font(RainFont.rounded(14.5, .semibold))
+            // Matched to Apple's Stocks rows beside it on Josh's face, about 16 points.
+            .font(RainFont.rounded(16, .semibold))
             if let detail = copy.detail {
                 Text(detail)
-                    .font(RainFont.rounded(12, .medium))
+                    .font(RainFont.rounded(13.5, .medium))
                     .foregroundStyle(palette.rain)
                     .accentable()
             }
@@ -98,13 +99,14 @@ struct RainChart: View {
 /// Apple's gauge indicator: a white dot with a dark ring, so it reads on any colour.
 struct ChangeDot: View {
     let palette: RainPalette
+    var diameter: CGFloat = 8
 
     var body: some View {
         Circle()
             .fill(palette.primary)
-            .frame(width: 5, height: 5)
-            .padding(1.5)
+            .padding(diameter * 0.19)
             .background(Circle().fill(.black))
+            .frame(width: diameter, height: diameter)
     }
 }
 
@@ -127,7 +129,7 @@ struct TimeAxis: View {
                 }
             }
         }
-        .font(RainFont.rounded(10.5, .medium))
+        .font(RainFont.rounded(11, .medium))
         .foregroundStyle(palette.secondary)
         .frame(height: 12)
     }
@@ -135,9 +137,12 @@ struct TimeAxis: View {
 
 /// Circular family. The arc is Buienradar's graph bent round: a 240° arc open at the bottom, like
 /// Apple's gauges, running clockwise from now at the lower left to two hours at the lower right.
-/// The track is the baseline; rain rises from it towards the rim, on Buienradar's linear scale, so
-/// a heavy peak stands well above a light one. The dot marks the next change.
-/// With no rain there is no line, only "Dry".
+/// The track is the baseline; rain rises from it towards the rim, so a heavy peak stands well above
+/// a light one. The dot marks the next change. With no rain there is no line, only "Dry".
+///
+/// Sizes are fractions of the slot, matched to Apple's Activity gauge beside it on Josh's face
+/// (50 point slot): its arc's outer edge is at 0.91 of the radius, its value about 16 points.
+/// Text is never boxed smaller than its line height, which would make the system shrink it.
 public struct CircularRainGauge: View {
     public enum Middle: Sendable {
         /// Minutes until the change at the dot.
@@ -152,6 +157,9 @@ public struct CircularRainGauge: View {
 
     static let start = Angle.degrees(150)
     static let sweep = Angle.degrees(240)
+    /// Radii as fractions of the slot's radius.
+    static let rim = 0.91
+    static let track = 0.64
 
     public init(forecast: RainForecast, palette: RainPalette, middle: Middle = .minutes) {
         self.forecast = forecast
@@ -163,22 +171,22 @@ public struct CircularRainGauge: View {
         GeometryReader { proxy in
             let side = min(proxy.size.width, proxy.size.height)
             let half = side / 2
-            let stroke = side * 0.045
+            let stroke = side * 0.04
             let halfStroke = stroke / side
-            let track = middle == .minutes ? 0.58 : 0.42
-            let floor = track + halfStroke
+            let track = middle == .minutes ? Self.track : 0.42
             let copy = RainCopy(forecast)
             ZStack {
                 if forecast.hasRain {
                     ArcLine(startAngle: Self.start, sweep: Self.sweep, radius: track)
                         .stroke(palette.baseline, style: StrokeStyle(lineWidth: stroke, lineCap: .round))
                     RadialRainArea(forecast: forecast, startAngle: Self.start, sweep: Self.sweep,
-                                   baseline: track - halfStroke, full: 0.99, floorAtBaseline: floor)
+                                   baseline: track - halfStroke, full: Self.rim, floorAtBaseline: track + halfStroke,
+                                   scale: .squareRoot)
                         .fill(palette.rain)
                         .accentable()
                     if let change = copy.change {
                         let angle = Self.start.radians + forecast.position(of: change) * Self.sweep.radians
-                        ChangeDot(palette: palette)
+                        ChangeDot(palette: palette, diameter: side * 0.1)
                             .position(x: half + half * track * cos(angle), y: half + half * track * sin(angle))
                     }
                 }
@@ -193,50 +201,47 @@ public struct CircularRainGauge: View {
         .accessibilityLabel(RainCopy(forecast).spoken)
     }
 
-    /// The words sit in boxes measured against the ring at 45 points, so they can never touch it:
-    /// the hole inside the track has a radius of about 11.5 points, and the gap at the bottom is
-    /// free of the arc below its ends. Long words shrink to fit their box rather than spill out.
+    /// Read top to bottom as one phrase: the lead word inside the arc, the value in the middle,
+    /// the unit in the gap at the bottom where Apple's gauges put their labels.
     private func centre(side: CGFloat, copy: RainCopy) -> some View {
         let (lead, value, unit) = copy.circular
-        let u = side / 45
+        let mid = side / 2
         return ZStack {
             if forecast.hasRain {
                 if let lead {
-                    small(lead, u: u)
-                        .frame(width: 13 * u, height: 7 * u)
-                        .position(x: side / 2, y: side / 2 - 7 * u)
+                    small(lead, side: side)
+                        .position(x: mid, y: mid - side * 0.19)
                 }
+                // Three digits at the two-digit size would touch the arc.
                 Text(value)
-                    .font(RainFont.rounded(13 * u, .semibold))
+                    .font(RainFont.rounded(side * (value.count > 2 ? 0.27 : 0.33), .semibold))
                     .foregroundStyle(palette.primary)
-                    .minimumScaleFactor(0.6)
-                    .frame(width: 18 * u, height: 11 * u)
-                    .position(x: side / 2, y: side / 2 + 1.5 * u)
+                    .fixedSize()
+                    .position(x: mid, y: mid + side * 0.03)
                 if let unit {
-                    small(unit, u: u)
-                        .frame(width: 16 * u, height: 7 * u)
-                        .position(x: side / 2, y: side / 2 + 11 * u)
+                    small(unit, side: side)
+                        .position(x: mid, y: mid + side * 0.34)
                 }
             } else {
-                VStack(spacing: 0) {
-                    Text(value)
-                        .font(RainFont.rounded(17 * u, .semibold))
-                        .foregroundStyle(palette.primary)
-                    if let unit {
-                        small(unit, u: u)
-                    }
+                Text(value)
+                    .font(RainFont.rounded(side * 0.34, .semibold))
+                    .foregroundStyle(palette.primary)
+                    .fixedSize()
+                    .position(x: mid, y: mid - side * 0.06)
+                if let unit {
+                    small(unit, side: side, size: 0.16)
+                        .position(x: mid, y: mid + side * 0.2)
                 }
             }
         }
         .frame(width: side, height: side)
     }
 
-    private func small(_ text: String, u: CGFloat) -> some View {
+    private func small(_ text: String, side: CGFloat, size: CGFloat = 0.18) -> some View {
         Text(text)
-            .font(RainFont.rounded(7 * u, .bold))
+            .font(RainFont.rounded(side * size, .semibold))
             .foregroundStyle(palette.secondary)
-            .minimumScaleFactor(0.7)
-            .lineLimit(1)
+            .fixedSize()
     }
 }
 

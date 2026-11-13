@@ -73,8 +73,7 @@ public struct RainArea: Shape {
     }
 }
 
-/// The same area bent round an arc: time runs clockwise along the arc, height grows outwards, on
-/// Buienradar's linear scale.
+/// The same area bent round an arc: time runs clockwise along the arc, height grows outwards.
 /// Angles are clockwise from three o'clock, as on screen.
 public struct RadialRainArea: Shape {
     let forecast: RainForecast
@@ -85,14 +84,17 @@ public struct RadialRainArea: Shape {
     var baseline: Double
     var full: Double
     var rainFloor: Double?
+    var scale: RainCurve.Scale
 
-    public init(forecast: RainForecast, startAngle: Angle, sweep: Angle, baseline: Double, full: Double, floorAtBaseline rainFloor: Double? = nil) {
+    public init(forecast: RainForecast, startAngle: Angle, sweep: Angle, baseline: Double, full: Double,
+                floorAtBaseline rainFloor: Double? = nil, scale: RainCurve.Scale = .squareRoot) {
         self.forecast = forecast
         self.startAngle = startAngle
         self.sweep = sweep
         self.baseline = baseline
         self.full = full
         self.rainFloor = rainFloor
+        self.scale = scale
     }
 
     public func path(in rect: CGRect) -> Path {
@@ -105,7 +107,7 @@ public struct RadialRainArea: Shape {
             return CGPoint(x: centre.x + radius * cos(angle), y: centre.y + radius * sin(angle))
         }
         return Path { path in
-            let curve = RainCurve.points(forecast, scale: .linear)
+            let curve = RainCurve.points(forecast, scale: scale)
             path.move(to: point(0, 0))
             for p in curve { path.addLine(to: point(p.t, p.v)) }
             for p in curve.reversed() { path.addLine(to: point(p.t, 0)) }
