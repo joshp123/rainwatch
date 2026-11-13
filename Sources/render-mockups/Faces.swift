@@ -6,7 +6,8 @@ enum Ultra3 {
     static let screen = CGSize(width: 211, height: 257)
     static let cornerRadius: CGFloat = 46
     static var centre: CGPoint { CGPoint(x: screen.width / 2, y: screen.height / 2) }
-    static let circular: CGFloat = 50
+    /// Circular slot on Modular Ultra, measured from Josh's screenshot.
+    static let circular: CGFloat = 45
     static let rectangular = CGSize(width: 193, height: 82)
     static let smartStack = CGSize(width: 198, height: 81.5)
 }
@@ -65,7 +66,7 @@ struct CornerLabel: View {
 
     var body: some View {
         CurvedText(
-            runs: [.init(string: forecast.outlook.short, color: palette.primary)],
+            runs: [.init(string: RainCopy(forecast).short, color: palette.primary)],
             font: RainFont.rounded(12, .semibold),
             centre: Ultra3.centre,
             radius: 95,
@@ -79,9 +80,7 @@ struct CircularMock: View {
     let palette: RainPalette
 
     var body: some View {
-        CircularRainView(forecast: forecast, palette: palette)
-            .padding(1)
-            .background(Circle().fill(palette.plate))
+        CircularRainGauge(forecast: forecast, palette: palette)
             .frame(width: Ultra3.circular, height: Ultra3.circular)
     }
 }
@@ -104,10 +103,10 @@ struct SmartStackMock: View {
     var body: some View {
         RectangularRainView(forecast: forecast, palette: palette)
             .padding(.horizontal, 10)
-            .padding(.top, 8)
-            .padding(.bottom, 7)
+            .padding(.top, 6)
+            .padding(.bottom, 4)
             .frame(width: Ultra3.smartStack.width, height: Ultra3.smartStack.height)
-            .background(RoundedRectangle(cornerRadius: 20, style: .continuous).fill(palette.stack))
+            .background(RoundedRectangle(cornerRadius: 20, style: .continuous).fill(forecast.hasRain ? palette.stack : palette.stackDry))
     }
 }
 
@@ -117,77 +116,10 @@ struct InlineMock: View {
     let palette: RainPalette
 
     var body: some View {
-        Text("\(RainGlyphs.string(forecast)) \(forecast.outlook.short)")
+        Text("\(RainCopy(forecast).short) \(RainGlyphs.string(forecast))")
             .font(RainFont.rounded(14, .semibold))
             .foregroundStyle(palette.primary)
             .fixedSize()
     }
 }
 
-struct ScreenShape: View {
-    var body: some View {
-        RoundedRectangle(cornerRadius: Ultra3.cornerRadius, style: .continuous)
-            .fill(.black)
-            .frame(width: Ultra3.screen.width, height: Ultra3.screen.height)
-            .padding(14)
-            .background(
-                RoundedRectangle(cornerRadius: Ultra3.cornerRadius + 12, style: .continuous)
-                    .fill(Color(white: 0.17))
-            )
-    }
-}
-
-/// A plain face with corner slots, like Wayfinder or Waypoint on the Ultra.
-struct CornerFace<Corner: View>: View {
-    let forecast: RainForecast
-    let palette: RainPalette
-    @ViewBuilder let corner: Corner
-
-    var body: some View {
-        ZStack {
-            ScreenShape()
-            ZStack {
-                corner
-                Text("13:05")
-                    .font(RainFont.rounded(60, .semibold))
-                    .foregroundStyle(palette.primary)
-                    .monospacedDigit()
-                    .position(x: Ultra3.centre.x, y: Ultra3.centre.y + 4)
-                CircularMock(forecast: forecast, palette: palette)
-                    .position(x: Ultra3.centre.x, y: Ultra3.screen.height - 44)
-            }
-            .frame(width: Ultra3.screen.width, height: Ultra3.screen.height)
-            .clipShape(RoundedRectangle(cornerRadius: Ultra3.cornerRadius, style: .continuous))
-        }
-    }
-}
-
-/// A modular face like Modular Ultra or Siri Modular: top line, clock, large rectangular slot.
-struct ModularFace: View {
-    let forecast: RainForecast
-    let palette: RainPalette
-
-    var body: some View {
-        ZStack {
-            ScreenShape()
-            VStack(alignment: .leading, spacing: 8) {
-                InlineMock(forecast: forecast, palette: palette)
-                    .padding(.top, 16)
-                    .padding(.leading, 8)
-                HStack {
-                    Text("13:05")
-                        .font(RainFont.rounded(46, .semibold))
-                        .foregroundStyle(palette.primary)
-                        .monospacedDigit()
-                    Spacer()
-                    CircularMock(forecast: forecast, palette: palette)
-                }
-                RectangularMock(forecast: forecast, palette: palette)
-                Spacer(minLength: 0)
-            }
-            .padding(.horizontal, 9)
-            .frame(width: Ultra3.screen.width, height: Ultra3.screen.height)
-            .clipShape(RoundedRectangle(cornerRadius: Ultra3.cornerRadius, style: .continuous))
-        }
-    }
-}

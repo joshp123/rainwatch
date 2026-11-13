@@ -2,33 +2,20 @@
 
 # Rain on the watch: mock-ups
 
-Buienradar's rain line for the next two hours, in every Apple Watch widget family, sized for Apple Watch Ultra 3.
+Buienradar's rain line for the next two hours on Apple Watch Ultra 3, in every widget family. What it must do, and why, is in [REQUIREMENTS.md](REQUIREMENTS.md).
 
-- `renders/ultra-faces.png`: the widgets on Ultra faces, including Night Mode.
-- `renders/families.png` and `renders/families-night-mode.png`: every family for five forecasts, one of them live Rotterdam data.
-
-## Design
-
-- The line is Buienradar's: its own graph height (`percentageValue` from `graphdata.buienradar.nl`), its own Light, Moderate and Heavy lines, its fill colour.
-- Height is intensity. Time runs left to right, or clockwise round an arc, from now to two hours.
-- Any rain sits visibly above dry, so drizzle never looks like nothing.
-- Words state only the next change: "Rain in 25 min", "Dry in 30 min", "Dry", "Raining".
-- Colour only repeats what height shows, so tinted faces and Night Mode lose nothing.
-
-| Family | What it shows |
-|---|---|
-| Corner (Wayfinder, Waypoint) | The sparkline along the edge, the words inside it |
-| Circular | The line bent round a gauge arc, the next change in the centre |
-| Rectangular (Modular Ultra) and Smart Stack | Headline, the full line, Now and clock-hour labels |
-| Inline | Block-glyph sparkline and the short words |
-
-WidgetKit curves only text, SF Symbols and images in the corner. The proven corner draws the sparkline as block glyphs, as buienwatch does. The corner line variant cuts the real curve into image slices inside one `Text`; whether watchOS turns each slice to follow the edge needs a device test.
+- `renders/on-your-face.png`: the circular and rectangular widgets in Josh's own Modular Ultra face, at true size, for five real forecasts.
+- `renders/families.png` and `renders/families-night-mode.png`: every family for seven real forecasts from 13 November 2026.
+- `renders/circular-detail.png`: the circular gauge enlarged, in full colour and Night Mode.
 
 ## Run
 
 ```sh
-swift run render-mockups renders
+swift run render-mockups renders research/josh-face-2026-11-05.jpeg
+swift run copy-check
 xcodebuild -scheme RainComplication -destination 'generic/platform=watchOS' build
 ```
 
-The renderer draws the shared SwiftUI views on the Mac. It draws curved text itself, because only the watch does that for real. `Sources/RainComplication` is the WidgetKit code with `#Preview`s for every family; it needs the watchOS simulator runtime to preview in Xcode.
+The renderer draws the shared SwiftUI views on the Mac, in the watch's SF Compact Rounded. It draws corner text itself, because only the watch curves text for real. `Sources/RainComplication` is the WidgetKit code with `#Preview`s for every family; it compiles against the watchOS 27.2 SDK. `copy-check` prints the words for every forecast.
+
+`research/` holds the evidence: the Buienradar user study, the wording survey, visual prior art, and the live Buienradar data the forecasts come from.

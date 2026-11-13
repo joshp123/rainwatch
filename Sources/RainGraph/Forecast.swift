@@ -11,7 +11,44 @@ public struct RainSample: Hashable, Sendable {
         self.height = height
     }
 
+    /// Any measurable rain counts: Josh wants to know if he gets wet at all.
     public var isRain: Bool { height > 0 }
+}
+
+/// How hard it rains, on Buienradar's own graph lines (Light 25, Moderate 50, Heavy 75).
+public enum Intensity: Int, Comparable, Sendable {
+    case drizzle, light, moderate, heavy
+
+    public init(height: Double) {
+        switch height {
+        case 75...: self = .heavy
+        case 50...: self = .moderate
+        case 25...: self = .light
+        default: self = .drizzle
+        }
+    }
+
+    public static func < (a: Intensity, b: Intensity) -> Bool { a.rawValue < b.rawValue }
+
+    /// Sentence start, as in "Light rain 14:10–14:45".
+    public var phrase: String {
+        switch self {
+        case .drizzle: "Drizzle"
+        case .light: "Light rain"
+        case .moderate: "Rain"
+        case .heavy: "Heavy rain"
+        }
+    }
+}
+
+/// A stretch of the forecast that is all dry or all wet.
+public struct RainSpell: Equatable, Sendable {
+    public var isRain: Bool
+    public var start: Date
+    public var end: Date
+    public var peak: Double
+
+    public var intensity: Intensity { Intensity(height: peak) }
 }
 
 /// The next two hours of rain at one place. The first sample is now.
@@ -41,55 +78,47 @@ public struct RainForecast: Sendable {
         date.timeIntervalSince(start) / Self.window
     }
 
-    public var outlook: RainOutlook {
-        guard let first = samples.first else { return .dry }
-        if first.isRain {
-            guard let stop = samples.first(where: { !$0.isRain }) else { return .raining }
-            return .dryIn(minutes: minutes(until: stop.date))
+    /// Dry gaps shorter than this between two wet stretches can't be used to go out, so the
+    /// words treat them as wet. The line still shows them.
+    public static let shortestUsefulGap: TimeInterval = 10 * 60
+
+    /// The window cut into dry and wet stretches. Each sample covers the five minutes after it.
+    public var spells: [RainSpell] {
+        var spells = rawSpells
+        var index = 1
+        while index < spells.count - 1 {
+            let gap = spells[index]
+            if !gap.isRain, gap.end.timeIntervalSince(gap.start) < Self.shortestUsefulGap {
+                let merged = RainSpell(isRain: true, start: spells[index - 1].start, end: spells[index + 1].end,
+                                       peak: max(spells[index - 1].peak, spells[index + 1].peak))
+                spells.replaceSubrange(index - 1...index + 1, with: [merged])
+                index = max(1, index - 1)
+            } else {
+                index += 1
+            }
         }
-        guard let rain = samples.first(where: \.isRain) else { return .dry }
-        return .rainIn(minutes: minutes(until: rain.date))
+        return spells
     }
 
-    private func minutes(until date: Date) -> Int {
+    private var rawSpells: [RainSpell] {
+        let inWindow = samples.filter { $0.date < end }
+        var spells: [RainSpell] = []
+        for sample in inWindow {
+            let sampleEnd = min(sample.date.addingTimeInterval(Self.step), end)
+            if var last = spells.last, last.isRain == sample.isRain {
+                last.end = sampleEnd
+                last.peak = max(last.peak, sample.height)
+                spells[spells.count - 1] = last
+            } else {
+                spells.append(RainSpell(isRain: sample.isRain, start: sample.date, end: sampleEnd, peak: sample.height))
+            }
+        }
+        return spells
+    }
+
+    public var hasRain: Bool { samples.contains { $0.isRain && $0.date < end } }
+
+    public func minutes(until date: Date) -> Int {
         Int((date.timeIntervalSince(start) / 60).rounded())
-    }
-}
-
-/// The next change, which is what every family states in words.
-public enum RainOutlook: Equatable, Sendable {
-    case dry
-    case raining
-    case rainIn(minutes: Int)
-    case dryIn(minutes: Int)
-
-    /// Rectangular and Smart Stack headline.
-    public var headline: String {
-        switch self {
-        case .dry: "Dry"
-        case .raining: "Raining"
-        case .rainIn(let minutes): "Rain in \(minutes) min"
-        case .dryIn(let minutes): "Dry in \(minutes) min"
-        }
-    }
-
-    /// Corner, inline and bezel labels.
-    public var short: String {
-        switch self {
-        case .dry: "Dry"
-        case .raining: "Raining"
-        case .rainIn(let minutes): "Rain \(minutes)m"
-        case .dryIn(let minutes): "Dry \(minutes)m"
-        }
-    }
-
-    /// Circular centre: an optional caption over the value.
-    public var centre: (caption: String?, value: String) {
-        switch self {
-        case .dry: (nil, "Dry")
-        case .raining: (nil, "Rain")
-        case .rainIn(let minutes): ("RAIN", "\(minutes)m")
-        case .dryIn(let minutes): ("DRY", "\(minutes)m")
-        }
     }
 }

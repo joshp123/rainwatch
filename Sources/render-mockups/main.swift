@@ -2,13 +2,15 @@ import AppKit
 import RainGraph
 import SwiftUI
 
-let output = URL(fileURLWithPath: CommandLine.arguments.dropFirst().first ?? "renders", isDirectory: true)
+let arguments = Array(CommandLine.arguments.dropFirst())
+let output = URL(fileURLWithPath: arguments.first ?? "renders", isDirectory: true)
+let screenshot = arguments.count > 1 ? NSImage(contentsOfFile: arguments[1]) : nil
 try FileManager.default.createDirectory(at: output, withIntermediateDirectories: true)
 
 @MainActor
-func render(_ view: some View, to name: String) throws {
+func render(_ view: some View, to name: String, scale: CGFloat = 3) throws {
     let renderer = ImageRenderer(content: view.environment(\.colorScheme, .dark))
-    renderer.scale = 3
+    renderer.scale = scale
     guard let image = renderer.cgImage else { throw CocoaError(.fileWriteUnknown) }
     let data = NSBitmapImageRep(cgImage: image).representation(using: .png, properties: [:])
     try data?.write(to: output.appendingPathComponent(name))
@@ -29,7 +31,7 @@ struct Caption: View {
     }
 }
 
-/// Every family for every scenario, at Ultra 3 size.
+/// Every family for every forecast, at Ultra 3 size.
 struct FamilySheet: View {
     let palette: RainPalette
 
@@ -37,23 +39,21 @@ struct FamilySheet: View {
         Grid(alignment: .leading, horizontalSpacing: 26, verticalSpacing: 20) {
             GridRow {
                 Color.clear.frame(width: 1, height: 1)
-                Caption(title: "Corner: glyphs", detail: "Wayfinder, Waypoint")
-                Caption(title: "Corner: line", detail: "Needs device test")
-                Caption(title: "Circular", detail: "Most faces")
+                Caption(title: "Circular", detail: "Modular Ultra")
                 Caption(title: "Rectangular", detail: "Modular Ultra")
-                Caption(title: "Smart Stack", detail: "Scroll the crown")
+                Caption(title: "Smart Stack", detail: "Turn the crown")
+                Caption(title: "Corner", detail: "Wayfinder, Waypoint")
                 Caption(title: "Inline", detail: "Top line")
             }
             ForEach(Scenario.allCases, id: \.self) { scenario in
                 let forecast = scenario.forecast
                 GridRow(alignment: .center) {
                     Caption(title: scenario.rawValue)
-                        .frame(width: 112, alignment: .leading)
-                    CornerTile { CornerMock(forecast: forecast, palette: palette) }
-                    CornerTile { CornerLineMock(forecast: forecast, palette: palette) }
+                        .frame(width: 120, alignment: .leading)
                     CircularMock(forecast: forecast, palette: palette)
                     RectangularMock(forecast: forecast, palette: palette)
                     SmartStackMock(forecast: forecast, palette: palette)
+                    CornerTile { CornerMock(forecast: forecast, palette: palette) }
                     InlineMock(forecast: forecast, palette: palette)
                 }
             }
@@ -79,37 +79,64 @@ struct CornerTile<Content: View>: View {
     }
 }
 
+/// The two circular variants on Josh's own face, for the forecasts that look most different.
 struct FaceSheet: View {
+    let screenshot: NSImage
+    static let scenarios: [Scenario] = [.dry, .showerComing, .drizzleStops, .rainingEasing, .rainAllWindow]
+
     var body: some View {
-        HStack(alignment: .top, spacing: 28) {
-            let shower = Scenario.showerComing.forecast
-            let downpour = Scenario.downpour.forecast
-            face("Corner glyphs, shower coming", CornerFace(forecast: shower, palette: .fullColour) {
-                CornerMock(forecast: shower, palette: .fullColour)
-            })
-            face("Corner line, shower coming", CornerFace(forecast: shower, palette: .fullColour) {
-                CornerLineMock(forecast: shower, palette: .fullColour)
-            })
-            face("Night Mode, downpour", CornerFace(forecast: downpour, palette: .nightMode) {
-                CornerLineMock(forecast: downpour, palette: .nightMode)
-            })
-            face("Modular, raining then dry", ModularFace(forecast: Scenario.stoppingSoon.forecast, palette: .fullColour))
-            face("Modular, tinted face", ModularFace(forecast: shower, palette: .tinted(.orange)))
+        Grid(alignment: .leading, horizontalSpacing: 18, verticalSpacing: 14) {
+            GridRow {
+                Color.clear.frame(width: 1, height: 1)
+                ForEach(Self.scenarios, id: \.self) { Caption(title: $0.rawValue) }
+            }
+            GridRow {
+                Color.clear.frame(width: 1, height: 1)
+                ForEach(Self.scenarios, id: \.self) { scenario in
+                    JoshFace(screenshot: screenshot, forecast: scenario.forecast)
+                }
+            }
         }
-        .padding(28)
+        .padding(24)
         .background(.black)
     }
+}
 
-    func face(_ title: String, _ face: some View) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Caption(title: title)
-            face
+/// The circular gauge alone, large, to judge the drawing.
+struct CircularDetail: View {
+    var body: some View {
+        Grid(horizontalSpacing: 22, verticalSpacing: 18) {
+            ForEach([RainPalette.fullColour, .nightMode].indices, id: \.self) { index in
+                GridRow {
+                    ForEach(Scenario.allCases, id: \.self) { scenario in
+                        VStack(spacing: 8) {
+                            CircularRainGauge(forecast: scenario.forecast, palette: [RainPalette.fullColour, .nightMode][index])
+                                .frame(width: 45, height: 45)
+                                .scaleEffect(2.4)
+                                .frame(width: 108, height: 108)
+                            Text(scenario.rawValue)
+                                .font(RainFont.rounded(10, .medium))
+                                .foregroundStyle(.white.opacity(0.55))
+                                .frame(width: 108)
+                                .multilineTextAlignment(.center)
+                        }
+                    }
+                }
+            }
         }
+        .padding(24)
+        .background(.black)
     }
 }
 
 try MainActor.assumeIsolated {
-    try render(FaceSheet(), to: "ultra-faces.png")
+    if let screenshot {
+        try render(FaceSheet(screenshot: screenshot), to: "on-your-face.png", scale: 2)
+        for scenario in [Scenario.showerComing, .drizzleStops] {
+            try render(JoshFace(screenshot: screenshot, forecast: scenario.forecast), to: "face-\(scenario).png", scale: 2)
+        }
+    }
+    try render(CircularDetail(), to: "circular-detail.png")
     try render(FamilySheet(palette: .fullColour), to: "families.png")
     try render(FamilySheet(palette: .nightMode), to: "families-night-mode.png")
 }

@@ -64,7 +64,7 @@ struct RainLineCornerView: View {
             .widgetAccentable()
             .widgetCurvesContent()
             .widgetLabel {
-                Text(forecast.outlook.short)
+                Text(RainCopy(forecast).short)
             }
     }
 
@@ -107,22 +107,22 @@ struct RainComplicationView: View {
                 .widgetAccentable()
                 .widgetCurvesContent()
                 .widgetLabel {
-                    Text(forecast.outlook.short)
+                    Text(RainCopy(forecast).short)
                 }
         case .accessoryCircular:
-            CircularRainView(forecast: forecast, palette: palette)
+            CircularRainGauge(forecast: forecast, palette: palette)
                 .widgetLabel {
                     // Drawn along the bezel only in Infograph's top slot; ignored elsewhere.
-                    Text("\(forecast.outlook.short)  \(RainGlyphs.string(forecast, slots: 12))")
+                    Text("\(RainCopy(forecast).short)  \(RainGlyphs.string(forecast, slots: 12))")
                 }
-                .containerBackground(for: .widget) { AccessoryWidgetBackground() }
+                .containerBackground(for: .widget) { Color.clear }
         case .accessoryRectangular:
             RectangularRainView(forecast: forecast, palette: palette)
-                .containerBackground(for: .widget) { palette.stack }
+                .containerBackground(for: .widget) { forecast.hasRain ? palette.stack : palette.stackDry }
         case .accessoryInline:
             ViewThatFits {
-                Text("\(RainGlyphs.string(forecast)) \(forecast.outlook.short)")
-                Text(forecast.outlook.short)
+                Text("\(RainCopy(forecast).short) \(RainGlyphs.string(forecast))")
+                Text(RainCopy(forecast).short)
             }
         default:
             EmptyView()

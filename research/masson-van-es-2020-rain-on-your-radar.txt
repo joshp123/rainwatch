@@ -1,0 +1,1757 @@
+Rain on your radar : Engaging with**
+
+**weather data visualizations as part of**
+
+**everyday routines**
+
+_Eef Masson and Karin van Es_
+
+**Abstract**
+
+This chapter discusses visualizations of weather data, used to communi-
+
+cate short-term precipitation predictions to lay audiences. Focusing on
+
+the example of _Buienradar_ , a popular Dutch weather forecast website
+
+and app, it investigates how people engage with such representations on
+
+a daily basis, how they interpret them, and how their readings of them
+
+affect their actions and decisions, shaping their day-to-day routines.
+
+The research is based on semi-structured interviews with users with
+
+different demographic profiles. Aside from establishing usage patterns
+
+or preferences and readerly strategies, the chapter also considers people’s
+
+own evaluations of their conduct in relation to the _Buienradar_ service,
+
+and more broadly, their reflections on the significance of weather data
+
+visualizations to their lives.
+
+**Keywords:** Weather data; Data visualization; Data usage; Readerly strate-
+
+gies; Daily life; Routines
+
+**Introduction**
+
+In late August of 2017, the spokesperson for a Dutch association of campsite
+
+owners criticized _Buienradar_ , an often-used weather forecast website and
+
+app, for the financial setbacks its members had incurred over the course
+
+of the summer. In an interview with a local newspaper, he posited a causal
+
+relation between patrons’ use of the service and cancellations received
+
+in the week prior to their stay (Baard & Hellegers, 2017). The news report
+
+Engebretsen, M. and H. Kennedy (eds.), _Data Visualization in Society_ . Amsterdam: Amsterdam
+
+University Press, 2020
+
+doi 10.5117/9789463722902\_ch05
+
+78
+
+eef MaSSon anD Karin Van eS
+
+suggests that he primarily blamed the weather service itself, as a source of
+
+misleading information. But his statements also betray frustration with
+
+the customers, for blindly trusting the overly cautious predictions made.
+
+While this position may sound extreme, it does build on widespread
+
+assumptions about how people today access, and act upon, information
+
+about the weather, as obtained via a range of (often digital) media. In 2001,
+
+the media scholar Marita Sturken already observed that the weather ‘is no
+
+longer something one goes outside to register, that one experiences on the
+
+ground and in the flesh. It has become, rather, a technological experience,
+
+seen from satellites and endlessly monitored on television and the Internet’
+
+(2001, p. 161). But the above anecdote also invokes associations with the sort
+
+of (humorous) comments, proliferating online, that suggest that people
+
+these days would rather believe what their weather apps tell them than to
+
+trust their own senses.
+
+_Buienradar_ , the main target of the campsite owner’s frustrations, is
+
+something of a household name in the Netherlands. Launched in 2006, it was
+
+the first service in the country to make use of data from KNMI, the national
+
+weather office, in order to visualize, in rather distinctive ways, both recent
+
+and current rainfall, as based on precipitation detections, and projections
+
+for future rainfall. Its present default view has two key elements (see Figures
+
+5\.1 and 5.2 below). On the one hand, the actual _buienradar_ , literally ‘shower
+
+radar’: a map of the Netherlands showing rain clouds in different colours,
+
+denoting the amount of rain (in mm/h) observed or predicted, traversing
+
+the territory in small increments. And on the other, a so-called _regengrafiek_
+
+or ‘rain chart’: a line graph showing the amount of rain per temporal unit
+
+for a given place. In addition, the platform also provides information and
+
+predictions on a range of other weather phenomena, in different forms and
+
+for different time frames.
+
+Informal exchanges with users suggest that _Buienradar_ ’s data visualiza-
+
+tions, or readings thereof, affect how they live their lives on a daily basis. But
+
+the sorts of actions and decisions mentioned are generally more mundane
+
+than those alluded to in the anecdote above. In addition, such conversa-
+
+tions reveal that we do not actually _know_ very much about how readings
+
+of weather visualizations precisely take shape. Nor, for that matter, about
+
+how such representations, with all the epistemic power they wield and the
+
+interpretive pitfalls they present (cf. Kessler & Schäfer, 2018; Smith, 2018), get
+
+navigated on a daily basis, as part of the routines of people’s everyday lives.
+
+In recent years, data scholars have deplored the dearth of empirical study
+
+into how people encounter, use, and reflect on data on a daily basis (e.g.
+
+Couldry & Powell, 2014, p. 2; Michael & Lupton, 2016, p. 110; Pink, Sumartojo,
+
+rain on your raDar
+
+79
+
+_Figures 5.1 and 5.2._ Default views for the _Buienradar_ website and (android) app for Monday april 30,
+
+2018 at around 11:35 a.m. cet. Screenshots by eef Masson, used under quotation exception.
+
+80
+
+eef MaSSon anD Karin Van eS
+
+Lupton, & Heyes La Bond, 2017, p. 2). Specifically, they have identified the
+
+experiences of non-experts and the relations between data use and everyday
+
+activities as ‘critical absences’ in research so far (Kennedy, 2018, p. 19). With
+
+this chapter, we want to make a preliminary contribution to the shared
+
+attempt—among others through this volume—to start a scholarly debate
+
+on the topic.
+
+In doing so, we position ourselves on the intersection of two types of
+
+research. On the one hand, we want to build on previous studies of the
+
+ways in which _data usage is_ _integrated into daily life_ . With the spread of
+
+consumer digital media, there is a renewed interest in how media employ-
+
+ment relates to ‘everyday temporalities, materialities and routine’ (Pink &
+
+Leder Mackley, 2013, p. 680). Here, we focus specifically on interactions with
+
+data _visualizations_ . On the other hand, we also want to learn more about how
+
+people concretely _read and understand_ _such visualizations_ (Ruckenstein,
+
+2014), once again in relation to the situations of which their use is part. In
+
+this respect, our research builds on a lengthy tradition of reception research.
+
+This tradition, we argue, retains its relevance in the digital age—especially
+
+insofar as it considers how the understanding of texts as sites of semiosis is
+
+affected by their various ‘contexts’, for instance technological or social (see
+
+Livingstone & Das, 2013, pp. 105-106; Mathieu, 2015, pp. 16, 19).
+
+In the opening sections of the chapter, we briefly introduce the _Buienradar_
+
+service and explain how we conducted our exploratory empirical research
+
+into people’s use and understanding of the visualizations it provides. Next,
+
+we discuss our results. We focus, first, on what we learned about how people
+
+commonly _use_ _Buienradar_ , and which views or settings they prefer, and why.
+
+Then, we relate how they actually _read_ them. Here, we consider questions
+
+both about the relations they establish between data, their representation,
+
+and acts of interpretation, and about the readerly strategies they apply.
+
+Finally, we look at how users _act_ _upon_ their readings and integrate them
+
+into their everyday routines, concluding with a section on the _broader_
+
+_significance_ of the _Buienradar_ visualizations to their lives.
+
+**_Buienradar_** **: Some background**
+
+_Buienradar_ was developed by three Dutch siblings, but inspired by a practice
+
+observed on American television (e.g. Galasz, 2014): the broadcasting of short-
+
+term precipitation projections based on public, radar-generated weather
+
+data. Initially, it exclusively provided precipitation information, based on
+
+data obtained from KNMI; later, it broadened its scope to other atmospheric
+
+rain on your raDar
+
+81
+
+conditions such as temperature, relying also on additional sources. In 2011,
+
+the company was bought by the commercial broadcaster RTL, which now
+
+operates the website and apps. Use of the service has always been free, with
+
+revenue coming from advertisements.
+
+In promotional texts, _Buienradar_ defines itself primarily in the following
+
+terms: as a platform for (precise) information about precipitation, in visual
+
+form, at very short notice. Its creators claim that in launching the service,
+
+they appealed to a desire among audiences for forecasts that were both easier
+
+and quicker to read, and more unambiguous than those offered through
+
+other channels. Users of weather media, they argue, felt hampered by the
+
+‘intervention’ of experts. On the one hand, because they craved precision
+
+and certainty rather than nuance and cautiousness; on the other, because
+
+they were rarely interested in how predictions came about. The initiators
+
+expected that in providing ‘direct’ access to weather data, the service would
+
+enable the user to take a meteorologist’s place, seeing ‘at a glance’ what was
+
+to happen at specific points in time (e.g. Ermstrang, 2011).
+
+Despite increased competition, but also critique from weather experts
+
+(critique variously concerning the implausibility of very precise precipitation
+
+predictions, or the flaws of the particular technology for data collection that
+
+the service capitalizes on; see e.g. Galasz, 2014; Elegeert, 2015; van Leur, n.d.),
+
+_Buienradar_ remains highly popular in the Netherlands. In February of 2018,
+
+the website and app together reached 3.8 million local users (Verenigde
+
+Internet Exploitanten, n.d.)—almost 25 percent of the population over the
+
+age of six. But their cultural significance arguably reaches much further,
+
+as our interviews suggest that the name ‘Buienradar’ is sometimes used
+
+eponymously for similar services.
+
+**Methodological considerations**
+
+In light of our wish to gain preliminary insight into how people understand
+
+weather data visualizations in relation to the specifics of their everyday lives,
+
+we chose to conduct a series of interviews as a basis for our observations.
+
+This way, we were best able consider the mutually productive relation
+
+between the two, taking into account that daily routines do not merely
+
+‘accommodate’ for interactions with data, but also shape those interactions,
+
+and vice versa (e.g. Pink et al., 2017). This method also has the advantage
+
+that it allows us insight not only into people’s understandings of weather
+
+data visualizations and their experiences of living with them, but also into
+
+how they personally assess them. Such reflection by users is of interest here,
+
+82
+
+eef MaSSon anD Karin Van eS
+
+because it is informative of how they personally gauge the importance of
+
+visualizations and because it sheds light on their own perceptions of the
+
+issues such representations raise and the pleasures they provide.
+
+Our findings are based on semi-structured interviews with sixteen users
+
+of the _Buienradar_ website and app. In selecting respondents, mostly from our
+
+personal network, we sought to consider the diversity of actual experiences
+
+among a range of people. This resulted in variations in age (with participants
+
+between 25 and 71, more or less evenly spread across the decades) and gender
+
+(eight men and eight women), family structure (people living alone or with a
+
+partner, versus members of families with children) and occupation (salaried
+
+versus self-employed, and within different sectors). Arguably, our sample is
+
+somewhat biased in terms of educational level, in that most of the people
+
+we interviewed have completed some form of further education (vocational
+
+or academic). Also, for practicality’s sake, all interview subjects have been
+
+recruited from the Randstad area of the Netherlands (the megalopolis
+
+comprising the country’s largest cities), where we live and work. Most of
+
+the interviews lasted between ten and twenty minutes, and they followed
+
+roughly the same pattern.
+
+**Usage patterns and preferences**
+
+Most of our interviewees regularly access information about the weather;
+
+two thirds do so at least once a day. About half of them rely for this purpose
+
+on the general news media: broadcasts on radio or television or (online) news
+
+publications. Oftentimes, they do not actively seek out such information, but
+
+encounter it as part of their daily routines in media consumption. Those who
+
+go looking for forecasts tend to prefer specialist websites or apps (sometimes
+
+as pre-installed on their devices). Overall, source selection is quite arbitrary:
+
+respondents often alternate between services, and ‘googling for the weather’
+
+is common, especially in looking for longer-range predictions (e.g. prior to
+
+holiday travel).
+
+If we compare forecasts in the mainstream media and on general weather
+
+sites with those provided by _Buienradar_ and similar services, more dis-
+
+tinct user patterns emerge. ‘Traditional’ forecasts, as we know them from
+
+newspapers and TV, tend to focus on averages for the day and week, and
+
+mostly feature still or animated maps and tables with icons and numerical
+
+information (see Figure 5.3). Generally speaking, people opt for _Buienradar_
+
+when they are looking specifically for predictions of rainfall (as opposed
+
+to other weather conditions) that are also more precise—both in terms of
+
+rain on your raDar
+
+83
+
+_Figure 5.3._ Weather report with textual and graphic elements in _NRC Handelsblad_ (a Dutch national
+
+newspaper) for the weekend of april 21 and 22, 2018. Screenshot by eef Masson, used under
+
+84
+
+eef MaSSon anD Karin Van eS
+
+when and where the rain will fall. As a rule, moreover, they are interested
+
+in short-term predictions (that is, information concerning the next one to
+
+three hours).
+
+Respondents tend to use _Buienradar_ as they are about to undertake an
+
+activity that involves leaving the house, often for a journey somewhere.
+
+Overwhelmingly, interviewees establish a relation here with bicycling—a
+
+highly common means of transportation in the Randstad area. Other activi-
+
+ties that prompt them to consult the service range from such day-to-day
+
+pursuits as walking the dog or hanging the laundry to dry, to sports practice
+
+at different levels of expertise. While some users check _Buienradar_ as a mat-
+
+ter of habit, others do so only if it is either (heavily) raining already, or if they
+
+have reason to believe that it might. In other words, people are motivated
+
+to access the platform by a desire to know if they may ‘get wet’—often in
+
+hopes that they can adapt their plans so as to avoid it. In this respect, the
+
+intensive use of weather apps seems to have engendered a shift in terms of
+
+how weather forecasts are commonly used (cf. for instance Lazo, Morss, &
+
+Demuth, 2009, p. 792).
+
+Our conversations also reveal strong but diverging preferences for specific
+
+_Buienradar_ functionalities and types of visualization. In addition, they
+
+suggest that users, over time, develop their own habits in navigating them.
+
+As regards preferences, our respondents roughly divide into three groups,
+
+based on whether they are interested primarily, or even exclusively, in the
+
+aforementioned ‘shower radar’ (map representation) or ‘rain chart’ (line
+
+graph), or a combination. A majority prefer the geographical representa-
+
+tion, focusing in their readings on the relation between current location
+
+(sometimes set to default, so that the map shows only a select part of the
+
+country; see Figure 5.4) and the timing of a given stage in the animation
+
+of rainclouds moving over it. Others, however, radically prefer the line
+
+graph, often with the argument that it is ‘clearer’ or that it provides ‘more
+
+specific’ or ‘more detailed’ information (either in terms of location, or in
+
+the sense that rainfall is more precisely quantified). For yet another group
+
+of respondents, use of the map and graph forms part of a two-stage process,
+
+whereby the graph is consulted for additional information.
+
+Aside from the map to chart navigation, common interactions with the
+
+default view involve zooming in on the map, and specific ways of toggling
+
+between the one- and three-hour views (on the website) or moving one’s
+
+cursor between different projection times (all media). Those who navigate
+
+beyond the initial map and chart (roughly half of our respondents) tend to
+
+do so only incidentally, and often in search of other kinds of information
+
+than about precipitation.
+
+rain on your raDar
+
+85
+
+**_Buienradar_** **readings: Data and visualization, prediction and**
+
+**interpretation**
+
+Each interview began with a request to explain to a hypothetical interlocutor
+
+what _Buienradar_ is. In retrospect, the answers given are quite revealing of
+
+people’s understanding of the service. Most characterizations focused either
+
+on the predictive aspect of the information provided or on the fact that it is
+
+rendered in a primarily visual form. In some cases, respondents highlighted
+
+precisely the combination of those features. A couple of interviewees also
+
+named a specific _type_ of representation, usually ‘map’ (a choice suggesting
+
+the close association of _Buienradar_ with the geographic view, in the common
+
+perception). A few even used such terms as ‘photographic’ or ‘radar’, alluding
+
+_Figure 5.4._ Shower radar and rain graph visualizations on the _Buienradar_ website, set to amster-
+
+dam, for Monday april 30, 2018, 11:35 a.m. cet. Screenshot by eef Masson, used under quotation
+
+86
+
+eef MaSSon anD Karin Van eS
+
+to the specific imaging technologies that they (mistakenly) assumed were
+
+used to produce the views. Interestingly, a select few also characterized
+
+it as a platform enabling the consultation of weather ‘data’; however, only
+
+one used the term ‘visualization’ (importantly, someone with a professional
+
+interest in the topic). In other words, respondents tended to be acutely
+
+aware of the fact that what _Buienradar_ offers are representations—even if
+
+they did not actually conceptualize them as data visualizations and were
+
+in doubt as to which other label to use instead.
+
+Furthermore, formulations used throughout the interviews attest to
+
+diverse, and in some respects contradictory, assumptions about the role
+
+of data and interpretation, both in the information provided and in the
+
+way _Buienradar_ presents it. This diversity manifests the most clearly if we
+
+separate claims along those two dimensions: statements about weather
+
+information, specifically prediction, and about weather (data) visualization.
+
+With respect to the former, users overwhelmingly seem to understand
+
+information that concerns future conditions as interpretive, and by im-
+
+plication, as products of human intervention. Overall, they are also quite
+
+permissive here in matters of accuracy: since the weather is hard, perhaps
+
+impossible, to predict, it is not at all odd that forecasts are not always ‘right’.
+
+However, readings of the _Buienradar_ views as _representations of_ data
+
+or information reveal very different assumptions about what exactly it
+
+is users are presented with. Formulations that show awareness of the
+
+representational status of the shower radar, rain chart, or any of the
+
+other visualizations provided still attest to an understanding of their
+
+relation to reality as barely mediated. Telling in this context was the use,
+
+during interviews, of such terms as ‘photographic’ or ‘radar’ (the latter
+
+likely prompted by the tool’s own name). Aside from the fact that such
+
+choices in wording attest to an at best rudimentary understanding of
+
+the relation between weather data and their registration, as well as their
+
+visualization, they also suggest that interviewees infer a direct, indexical
+
+relation between what they see on _Buienradar_ , and ‘the world out there’.
+
+Moreover, interpretations were often phrased in terms suggestive of
+
+the visualizations’ presumed objectivity and evidentiary power. In this
+
+respect, they align with the service’s self-promotion as one that provides
+
+direct access to ‘raw data’, eliminating in the process any form of human
+
+‘meddling’.
+
+Evidently, the dimensions of weather prediction and data visualization,
+
+in the respondents’ accounts, cannot always be disentangled. Even so, the
+
+interview results attest to these users’ desire to also consider the merits
+
+of the representation as such; for example, in comments on the clarity of
+
+rain on your raDar
+
+87
+
+maps, charts, or tables. Once again, this suggests that they have an eye for
+
+what data visualizations do—even when they obscure their own status as
+
+representations.
+
+**_Buienradar_** **readings: Interpretive strategies**
+
+Aside from navigational habits, the users we interviewed also displayed
+
+personalized readerly routines. During the interviews, we asked them to
+
+vocalize their thought process as they contemplated the different visualiza-
+
+tions. In doing so, we realized that their interpretations came about in
+
+intuitive ways and were often based on information once verified but then
+
+modified as part of individualized reading strategies. In many cases, for
+
+instance, interpretations of the map visualization accounted for the colour
+
+of animated clouds. However, while the map’s legend is quite unequivocal
+
+about how those colours are encoded, the interviewees’ readings of them
+
+were highly diverse. Many understood them in terms of rain intensity
+
+(‘how heavily it will rain’), an interpretation that ties in quite closely with
+
+their actual coding in terms of precipitation volumes. Others, however, did
+
+not take the colours to carry any meaning at all. And some respondents,
+
+including some true _Buienradar_ aficionados, associated them with rather
+
+more complex or encompassing atmospheric conditions (for instance, ‘red’ as
+
+taken to denote ‘thunder’ or ‘stormy weather’). These last examples suggest
+
+that our users, even if they built in their interpretations on what they had
+
+previously heard or read about the codes deployed, would oftentimes add
+
+to or tweak the information obtained.
+
+However, such reading habits do not necessarily derive from limited
+
+engagement with the site or app, or the visualizations specifically. In this
+
+respect also, our data show considerable differences between interview
+
+subjects, who may be roughly divided into two groups based on the expecta-
+
+tions they have from the service. Those in the first group tend to avoid
+
+information and representations that present some sort of an interpretational
+
+hurdle, for instance because they require non-standard knowledge. One
+
+map user for instance complained that the rain graph mistakenly presumes
+
+that the user understands what it means to confront a specific amount of
+
+precipitation (in mm). Respondents in this group therefore also applied
+
+simplifying reading strategies (e.g. interpreting the line in said graph as
+
+indicative of ‘rain’ or ‘no rain’, rather than a certain measure of precipitation).
+
+Another interviewee had difficulties interpreting tables with probability
+
+figures (presumably, a common issue in the reception of weather forecasts;
+
+88
+
+eef MaSSon anD Karin Van eS
+
+see Gigerenzer, Hertwig, Van Den Broek, Fasolo, & Katsikopoulos, 2005),
+
+which he therefore avoided. A select few also expressed a preference for
+
+simplicity in visual design, objecting to the _Buienradar_ (desktop) site’s
+
+overly cluttered interface or overload of information.
+
+A second group of respondents, by contrast, seemed prepared to engage
+
+much more deeply with the service’s representations. They made elaborate
+
+studies of their preferred weather visualizations, or took a comparative
+
+approach, contrasting the different visualizations amongst each other
+
+and even with those on other sites or apps. Some did so from a critical
+
+impulse, suspicious of either weather prediction or visualization practice.
+
+Others took this approach because they needed to very precisely plan
+
+(recurrent) activities that were weather-dependent, such as outdoor sports.
+
+These accounts suggest that in accessing the service, both factions tried to
+
+‘penetrate its underlying system’, so as to be able to see more clearly what
+
+the prediction and/or visualization algorithms actually do. Arguably, they
+
+thus attest to a drive to ‘take the forecasters’ place’—but with a different
+
+motivation than _Buienradar_ ’s initiators anticipated. Here, the perceived
+
+problem is not one of specialist intervention (which it is, for _some_ users!)
+
+but rather, that the access to data that _Buienradar_ provides is not quite
+
+‘direct’ _enough—_ in spite of the makers’ pledges. For this group, unimpeded
+
+access is in the interest of a more nuanced understanding of the reality
+
+the data reference, and presumably, the data’s representation blocks this
+
+reality from view.
+
+**_Buienradar_** **in the routines of everyday life**
+
+Many of our participants who access _Buienradar_ prior to open-air activ-
+
+ity take practical decisions based on their readings of the visualizations
+
+encountered. They use them for instance in determining what to wear
+
+or how to dress the children, whether to take further protective devices
+
+such as umbrellas, or even—if they have the choice—which means of
+
+transportation to choose. Prior research suggests that such decision-taking
+
+habits are common for forecasts across the board, regardless of the media
+
+or representations involved (cf. Lazo et al., 2009, p. 792). A difference,
+
+however, is that _Buienradar_ users sometimes also delay their plans, or even
+
+cancel them, quoting the very precise information the service provides.
+
+While obviously more common in people who have more of a hand in
+
+how they organize their days, such behaviour was widespread amongst
+
+our participants.
+
+rain on your raDar
+
+89
+
+Lazo, Morss, and Demuth (2009) observe that weather forecasts, as
+
+forms of communication, are ‘part of the infrastructure of our lives and
+
+livelihoods’ (2009, p. 795). The _Buienradar_ case confirms this, to the extent
+
+even that accessing the site or app has become profoundly entwined with
+
+people’s daily routines and patterns of behaviour. We distinguished earlier
+
+between those people who check the service when prompted by current
+
+weather conditions and those who do it as a force of habit. For the latter,
+
+the act of checking becomes inextricably interwoven with moments of
+
+departure. One account further suggested that such behaviour may be
+
+engrained in the social conduct of (specific) collectives. The respondent
+
+in question—someone in his early thirties—related that during outings
+
+with groups of peers, whenever plans were being made to move from one
+
+location to another, one person would always check _Buienradar_ .
+
+At times, the habitual use of such weather services may even become
+
+a routine in itself, functioning as a propeller in (re)shaping the flow of
+
+everyday life (cf. Nansen, Arnold, Gibbs, & Davis, 2009). One interviewee,
+
+a homemaker, explicitly assigned the service a role in setting up her day,
+
+but also claimed that the mere act of accessing the site helped her give her
+
+life substance. Arguably, this is only possible because _Buienradar_ provides
+
+a continuous stream of perpetually updated information—much like other
+
+contemporary (social) media do.
+
+**Summing up:** **_Buienradar_** **’s significance to people’s lives**
+
+At the beginning of this chapter, we referenced some sources that observe
+
+a widespread blind trust in information about the weather as presented
+
+by such services as _Buienradar_ . Our own account suggests that users do
+
+indeed take the platform’s visualizations very seriously, in that they consult
+
+them repeatedly and act upon how they read them. However, they seem
+
+to do so _in spite of_ a profound scepticism towards the information the
+
+platform provides. In the context of our conversations, such mistrust often
+
+derived from awareness of the fundamental unpredictability of atmos-
+
+pheric conditions, informed by a diverse body of (lay) knowledge about the
+
+limits of weather forecasting. But in a select few cases, interviewees also
+
+attributed it to the intricacies of data visualization (unsurprisingly, mostly
+
+respondents engaged in study or professional activities that presuppose a
+
+certain interest in such matters). For example, a couple of users argued that
+
+the _Buienradar_ maps and charts were (necessarily) selective in what they
+
+show, and one person suspected that they might actually be misleading.
+
+90
+
+eef MaSSon anD Karin Van eS
+
+Another was even prompted by the interview to wonder about which data
+
+models were used, and how this affected what she saw. Yet as a rule, such
+
+understandings did not seem to prevent the speakers from relying on
+
+the service. With reference to Sturken, we therefore conclude that today
+
+still, there is a widespread yearning for an experience of control through
+
+monitoring—even of something as fundamentally uncontrollable as the
+
+weather (2001, pp. 162, 165).
+
+In light of the above, it is hardly surprising that people gave rather
+
+ambiguous answers to questions about _Buienradar_ ’s importance to their
+
+lives. On the one hand, they found the service very useful. Some argued
+
+that while they previously did ‘just as well without’, not having it would
+
+require an adjustment—and a far-reaching reorganization of their daily
+
+routines. A few respondents actually found this scenario appealing, as they
+
+realized that _Buienradar_ ’s use profoundly impacted on the rhythms of their
+
+personal lives, or even, on people’s sense of self-reliance. But on the other
+
+hand, they also took care to put the service’s importance into perspective,
+
+pointing among others to the banality of the information provided and the
+
+availability of practical solutions and precautions. Overall, their behaviours
+
+supported the sincerity of their claims. For instance, several respondents
+
+related that they decided at some point to remove the (storage-consuming)
+
+_Buienradar_ app from their phones, opting instead for the mobile site, because
+
+other functionalities were more crucial to their lives (a navigation tool, for
+
+instance, or more space for pictures).
+
+Presumptions of ‘blind trust’ in the face of technology are further
+
+undercut by people’s profound awareness of their own habits as users,
+
+and above all, by their preparedness to reflect on them. Many interview-
+
+ees volunteered to comment—albeit sometimes with shame or in self-
+
+mockery—on the paradoxical aspects of their behaviour: the apparently
+
+inverse relation between how they act upon _Buienradar_ information, and
+
+a fundamental suspiciousness towards what the service does (predicting)
+
+or how it does it (selectively visualizing extrapolated data). Some also
+
+showed awareness of the social conditioning of their conduct, and of the
+
+relation between the platform’s economics (e.g. its use of adverts) and
+
+their dependence on it. A few even expressed appreciation of the pitfalls
+
+of an increasingly datafied existence—either for political reasons (e.g. in
+
+light of data collection and privacy-related issues) or social ones (as in the
+
+comments on self-reliance). This strengthens us in our conviction, inspired
+
+by Couldry, Fotopoulou, and Dickens (2016), that we cannot reduce the
+
+users of data visualizations to actors without agency, and should be alert
+
+also to signs of reflexiveness.
+
+rain on your raDar
+
+91
+
+Presumably, one reason why such critical attitudes are easily overlooked
+
+is that they may actually coincide with (intensive forms of) use. And even,
+
+we would like to add, with _enjoyment_ of such use. Several of our respondents
+
+access _Buienradar_ also because they derive some form of pleasure from
+
+engaging with its visualizations. For example, one Amsterdam resident
+
+explained that she finds the default map view the more attractive one,
+
+because it not only shows what is going to happen in her current location,
+
+but also ‘how a rain shower develops’ as it passes east over the country,
+
+which she finds ‘fun to watch’. While she also derives pleasure from study-
+
+ing physical indicators of atmospheric conditions or developments—for
+
+instance, the movement of a real-life flag or vane—there is an added
+
+appeal to weather observation via the shower radar. This suggests in turn
+
+that _Buienradar_ ’s use for monitoring the weather is about more than
+
+just ‘mastering’ one’s experiential world: it is also about engaging (in the
+
+process) with the latest technologies, and the particular gratification this
+
+provides.
+
+**Acknowledgements**
+
+Many thanks to all our interviewees for sharing their experiences; to Pauline
+
+van Romondt Vis for her valuable suggestions on conducting user research;
+
+and to the reviewers of this text for their editorial input.
+
+**References**
+
+Baard, L., Hellegers, B. (2017, August 29). Buienradar oorzaak matig zomerseizoen
+
+Twentse campings. _Tubantia_ . Retrieved from https://www.tubantia.nl/enschede/
+
+buienradar-oorzaak-matig-zomerseizoen-twentse-campings~ac5e2182/
+
+Couldry, N., Powell, A. (2014). Big data from the bottom up. _Big Data & Society,_ _1_ (2),
+
+1-5. https://doi.org/10.1177/2053951714539277
+
+Couldry, N., Fotopoulou, A., Dickens, L. (2016). Real social analytics: A contribution
+
+towards a phenomenology of a digital world. _The British Journal of Sociology,_
+
+_67_ (1), 118-137. https://doi.org/10.1111/1468-4446.12183
+
+Elegeert, T. (2015, May 8). Hoe betrouwbaar is Buienradar eigenlijk? _HP/De Tijd_ .
+
+Retrieved from https://www.hpdetijd.nl/2015-05-08/hoe-betrouwbaar-is-
+
+buienradar/
+
+Ermstrang, A. (2011, January 5). In één oogopslag. _Terdege_ , pp. 17-18. [Retrieved
+
+with Digibron.]
+
+92
+
+eef MaSSon anD Karin Van eS
+
+Galasz, P. (2014, July 12). Het regent buienradars, maar kloppen ze ook? _De Morgen_ .
+
+Retrieved from https://www.demorgen.be/wetenschap/het-regent-buienradars-
+
+maar-kloppen-ze-ook-b9a55f42/
+
+Gigerenzer, G., Hertwig, R., Van Den Broek, E., Fasolo, B., Katsikopoulos, K. V.
+
+(2005). ‘A 30% chance of rain tomorrow’: How does the public understand
+
+probabilistic weather forecasts? _Risk Analysis, 25_ (3), 623-629. https://doi.
+
+org/10.1111/j.1539-6924.2005.00608.x
+
+Kennedy, H. (2018). Living with data: Aligning data studies and data activism
+
+through a focus on everyday experiences of datafication. _Krisis, 2018_ (1), 18-30.
+
+http://krisis.eu/living-with-data/
+
+Kessler, F., Schäfer, M. T. (2018). Trust in techno-images: Early media collections
+
+as precursors of big data. _TMG—Journal for Media History, 21_ (2), 52-66. http://
+
+doi.org/10.18146/2213-7653.2018.366
+
+Lazo, J. K., Morss, R. E., Demuth, J. L. (2009). 300 million served: Sources, perceptions,
+
+uses, and values of weather forecasts. _Bulletin of the American Meteorological_
+
+_Society, 90_ (6), 785-98. https://doi.org/10.1175/2008BAMS2604.1
+
+Livingstone, S., Das, R. (2013). The end of audiences?: Theoretical echoes of reception
+
+amid the uncertainties of use. In: J. Hartley, J. Burgess, and A. Bruns (Eds.), _A_
+
+_companion to new media dynamics._ (pp. 104-121). Oxford: Wiley-Blackwell.
+
+Mathieu, D. (2015). The continued relevance of reception analysis in the age of social
+
+media. _Trípodos, 2015_ (36), 13-34. Retrieved October 9, 2018 from http://www.
+
+tripodos.com/index.php/Facultat\_Comunicacio\_Blanquerna/article/view/240.
+
+Michael, M., Lupton, D. (2016). Toward a manifesto for the ‘public understand-
+
+ing of big data’. _Public Understanding of Science, 25_ (1), 104-116. http://dx.doi.
+
+org/10.1177/0963662515609005
+
+Nansen, B., Arnold, M., Gibbs, M. R., Davis, H. (2009). Domestic orchestration:
+
+Rhythms in the mediated home. _Time & Society, 18_ (2-3), 181-207. https://doi.
+
+org/10.1177/0961463X09338082
+
+Pink, S., Leder Mackley, K. (2013). Saturated and situated: Expanding the meaning
+
+of media in the routines of everyday life. _Media, Culture & Society,_ _35_ (6), 677-691.
+
+http://dx.doi.org/10.1177/0163443713491298
+
+Pink, S., Sumartojo, S., Lupton, D., Heyes La Bond, C. (2017). Mundane data: The
+
+routines, contingencies and accomplishments of digital living. _Big Data &_
+
+_Society,_ _4_ (1), 1-12. http://dx.doi.org/10.1177/2053951717700924
+
+Ruckenstein, M. (2014). Visualized and interacted life: Personal analytics and
+
+engagements with data doubles. _Societies,_ _4_ (1), 68-84. https://doi.org/doi:10.3390/
+
+soc4010068
+
+Smith, G. J. D. (2018). Data doxa: The affective consequences of data practices. _Big_
+
+_Data & Society, 5_ (1), 1-15. https://doi.org/10.1177/2053951717751551
+
+rain on your raDar
+
+93
+
+Sturken, M. (2001). Desiring the weather: El Niño, the media, and California identity.
+
+_Public Culture,_ _13_ (2), 161-189.
+
+van Leur, H. (n.d.). Pluimen en apps [Blog post]. Retrieved October 9, 2018 from
+
+http://www.helgavanleur.nl/Columns/19/pluimen-en-apps
+
+Verenigde Internet Exploitanten (VINEX). (n.d.). _NOBO top 50 feb 2018_ . Retrieved
+
+October 9, 2018 from http://www.vinex.nl/resultaten/archief/
+
+**About the authors**
+
+**Eef Masson** is an Assistant Professor of Media Studies at the University
+
+of Amsterdam, Netherlands. She has published on non-fiction and non-
+
+theatrical film, media archives, museum media, and the use of digital tools
+
+for media (history) research. Recently, she has collaborated on projects on
+
+visual analysis and data visualization, specifically for purposes of archival
+
+access.
+
+**Karin van Es** is an Assistant Professor of Media and Culture Studies at
+
+Utrecht University, Netherlands, and coordinator of the Datafied Society
+
+research platform. Co-editor of the volume _The Datafied Society_ (AUP, 2017),
+
+she focuses in her current work on public service television and public
+
+values in the digital age.
+
+**6\.**
+
+**Between automation and**
+
+**interpretation : Using data**
+
+**visualization in social media**
+
+**analytics companies**
+
+_Salla-Maaria Laaksonen and Juho Pääkkönen_
+
+**Abstract**
+
+This chapter explores the use of data visualizations in social media analytics
+
+companies. Drawing on a dataset of ethnographic field notes and thematic
+
+interviews in four Finnish social media analytics companies, we argue that
+
+data visualizations are crucially involved in how analytics-based knowledge
+
+claims become accepted by companies and their clients. Basing on previous
+
+research on visualizations in organizations and as a representational
+
+practice, we explore their role in social media analytics. We identify three
+
+practices of using visualizations, which we have named have simple-boxing,
+
+flatter-boxing, and pretty-boxing. We argue that these practices enable
+
+analysts to achieve the simultaneous aims of producing credible and
+
+valuable analytics in a context marked by high business promises.
+
+**Keywords:** Visualization in data analytics; Analytics as business; Auto-
+
+mated analytics; Interpretation; Visual analytics; Epistemology of data
+
+analytics
+
+**Introduction**
+
+The abundance of social media data and the development of computational
+
+methods have led to the birth of new business opportunities, including
+
+the growing field of data analytics. One nascent area inside this field
+
+is social media analytics, or refining and processing data generated by
+
+human behaviour on social media, with the aim of transferring them to
+
+Engebretsen, M. and H. Kennedy (eds.), _Data Visualization in Society_ . Amsterdam: Amsterdam
+
+University Press, 2020
+
+doi 10.5117/9789463722902\_ch06
+
+96
+
+Salla-Maaria laaKSonen anD JuHo pääKKönen
+
+business knowledge. David Beer (2017) describes data analytics companies
+
+as new powerful _data intermediaries_ who build infrastructure to shape
+
+the circulation of social data and construct narratives of omnipotent and
+
+intelligent calculative technologies to reach objective, correct solutions and
+
+decisions in organizations. Beer (2017, p. 466) posits that the ‘data analytics
+
+industry is powerful in shaping what is said, made visible or known through
+
+data’, and calls for more studies explicating the ways in which this industry
+
+cultivates visions of data-led thinking. At present, we lack an adequate
+
+account of knowledge production in data analytics, although the field’s
+
+societal implications are proliferating (cf. Beer & Burrows, 2013). This issue
+
+is particularly pressing for novel contexts of analytics, such as social media
+
+analytics, which are currently becoming established (Kennedy, 2016).
+
+An essential part of making sense of digital datasets is the use of visu-
+
+alizations—such as regular line, bar, or pie charts, or more sophisticated
+
+algorithmic visualizations, such as clustering diagrams or network graphs
+
+(Kennedy & Hill, 2018). Visualization techniques also play an increasingly
+
+important role in organizations, which utilize visual representations of
+
+data in both their internal and outward communication and negotiations
+
+(Quattrone et al., 2012; Halpern, 2014). While the most obvious aim of data
+
+visualizations is to communicate information, they can also shape the
+
+actions and understandings of their users (cf. Beer & Burrows, 2013; Ken-
+
+nedy, Hill, Aiello, & Allen, 2016). This means that they are devices which
+
+bear material agency in their immediate purposes and contexts of use (cf.
+
+Leonardi, 2011) and work to construct conceptions of both data and analytics.
+
+In this chapter, we explore processes of knowledge production in data
+
+analytics, by investigating the use of data visualization in the business of
+
+social media analytics. We approach visualizations as visual representations
+
+of data, the use of which is intertwined with epistemic conceptions that guide
+
+how analytics are conducted, both as business and as knowledge production.
+
+Thus we are interested in the conceptions of what constitutes knowledge
+
+in analytics, and the role visualizations play in the process. Drawing on
+
+ethnographic field notes and thematic interviews in four Finnish social media
+
+analytics companies, we argue that data visualizations are crucially involved
+
+in how analytics-based knowledge claims become accepted by companies
+
+and their clients. We explore their role in this process, and the associated
+
+epistemic conceptions concerning social media data and its analysis.
+
+To begin, and to formulate our research question, we first introduce social
+
+media analytics as a research context, and discuss previous literature on the
+
+uses of visualization beyond social media analytics. Then, in the subsequent
+
+sections, we present our empirical material and findings.
+
+BetWeen autoMation anD interpretation
+
+97
+
+**Social media analytics as a research context**
+
+Visuals have achieved a dominant position in contemporary organizations
+
+(e.g. Sørensen, 2014). Organizational, economic, and political life is represented
+
+and enacted by visualizations such as flowcharts and diagrams (Locke &
+
+Lowe, 2012), infographics (Amit-Danhi & Shifman, 2018), or network visualiza-
+
+tions (Venturini, Bounegru, Jacomy, & Gray, 2017), which have reached an
+
+almost paradigmatic status in social media visualizations. In the business
+
+context, visualizations are strongly marked with practical value evaluations:
+
+they make sense of complex data, translating them to usable or valuable
+
+information (Halpern, 2014). Being valuable means giving insights to the
+
+current state of affairs but also includes a prophetic dimension by enabling
+
+a sight to the future (Beer, 2017). Visualizations, hence, are technologies that
+
+find value which it is impossible for an unaided human eye to locate.
+
+Visualization in social media analytics is marked by two specificities:
+
+consulting business and the nature of data. First, while statistical methods
+
+and visualization practices are old conventions, the data on which the
+
+analyses are conducted are of a novel nature: the validity and generalizability
+
+of social media data have not been demonstrated or commonly constructed.
+
+Many hype-generating narratives evolve around the business insights that
+
+can be extracted from social media analytics, but practices of using these
+
+novel data sources are yet to be firmly established.
+
+Second, social media analytics are situated in a business-to-business
+
+(B2B) context, where companies’ business proposals are coined around
+
+the notion of selling data, which also means they need to construct value
+
+for those data and repeat the hype narrative highlighting its importance,
+
+omnipotence and visionary capabilities (Beer, 2017). This places visualiza-
+
+tions in a new context, where their role and function is defined in B2B
+
+negotiations. Analytics companies are simultaneously required to produce
+
+credible analytics and justified knowledge claims in a nascent area, while
+
+meeting hype-inflated expectations of business value. These two aims are
+
+potentially in conflict, for instance when selling analytics demands that
+
+results are presented in an appealing form, which might not represent the
+
+analytics process accurately.
+
+**Data visualizations as revelation and persuasion**
+
+As noted above, in organizations, visualizations are an established form of
+
+knowledge production. They are representations that have been established
+
+98
+
+Salla-Maaria laaKSonen anD JuHo pääKKönen
+
+as useful and credible means of depicting information, making them inter-
+
+twined with practices and structures of institutional politics and legitimacy
+
+(Scott & Orlikowski, 2012; Lynch & Woolgar, 1988). The role of visualizations
+
+is further emphasized through the prevalent process of datafication, whereby
+
+increasingly many aspects of human life are quantified and captured in
+
+a form amenable for computational analysis (e.g. van Dijck, 2014). Data
+
+visualization is essentially a way to access and make sense of data, and
+
+thus the increasing pace of datafication leads to a growing importance of
+
+visualization methods (Kennedy & Hill, 2018).
+
+Previous research has discussed visualization in data analytics as a
+
+representational practice that enables one to _reveal_ hitherto hidden, or
+
+otherwise inaccessible, information in data (Coopmans, 2014; Halpern,
+
+2014). As such, the commercial attraction of visualization stems from the
+
+promise of yielding insight into data, portrayed as a vital strategic resource
+
+for business (Coopmans, 2014). However, data analysis promises unforeseen
+
+increases in business value only for those who are in possession of the
+
+required visualization tools and skills to use them—a conception dubbed
+
+as _artful revelation_ by Catelijne Coopmans (2014). Underlying the notion of
+
+artful revelation is the idea that visual representations of data enable viewers
+
+to see for themselves, or witness patterns in data first-hand, thus lending
+
+credibility to the produced knowledge. The idea of first-hand witnessing as a
+
+source of credibility has its roots in the history of scientific experiments and
+
+publishing (Shapin, 1984). Further, in the context of visualizations, credibility
+
+through witnessing is linked to the ideal of ‘mechanical objectivity’ (Daston
+
+& Galison, 1992), according to which visual representations should strive to
+
+depict patterns in data truthfully, free from the biasing influence of subjective
+
+interests and aesthetic judgements (Frow, 2014; see also Kennedy et al., 2016).
+
+However, digital visualization techniques can also allow images to be
+
+manipulated without being restricted by the underlying data, to make
+
+them aesthetically pleasing, or to highlight certain selected aspects and
+
+downplay others (Frow, 2014). Consequently, as Emma Frow (2014) has
+
+argued in the context of scientific publishing, the issue of credibility in
+
+digital visualization concerns the skills of those producing the visualizations.
+
+Visualizations that look carefully prepared and aesthetically pleasing are
+
+easily ‘interpreted by readers as reflecting skill and expertise on the part
+
+of the author’ (p. 258). Thus, credible revelation in digital data visualization
+
+is as much a matter of skilfully selecting and portraying the right aspects
+
+in data, as one of depicting objectively existing patterns.
+
+In this vein, critical accounts portray visualizations as doing _persuasive_
+
+_work_ , that is, presenting particular viewpoints as more acceptable or valuable
+
+BetWeen autoMation anD interpretation
+
+99
+
+than others (see Kennedy et al., 2016 for a summary). Kennedy et al. (2016)
+
+have shown that the persuasive powers of visualization can be linked to
+
+prevalent visualization conventions, which imbue visualizations with an
+
+‘aura of objectivity’ (p. 723), making them seem transparent and factual.
+
+However, as Frow (2014) argues, perceptions of the objectivity of digital
+
+visualizations—and thus the issue of their credibility—are intertwined with
+
+assessments of the skill of the visualizers on the part of the visualizations’
+
+viewers. Consequently, skilful use and aesthetic aspects are central to the
+
+persuasive work of visualizations.
+
+Acknowledging the specificities of social media analytics as a research
+
+context, as well as the previous research on the purposes of visualizations
+
+in society, we formulate our research question as follows: _How are data_
+
+_visualizations used in social media analytics, and how are the credibility and_
+
+_value of analytics constructed through visualization processes?_
+
+**Data and method**
+
+Our empirical study is based on ethnographic field notes and thematic
+
+interviews collected in four companies that analyse social media data
+
+as a part of their business endeavours. In total six person across the four
+
+companies were interviewed. The interviewees were all in positions of
+
+management or middle-management, although, in the smaller companies
+
+these are in practice also operative employees. The companies vary in size
+
+and stage: Three are mid or early-stage start-ups, with less than fifteen
+
+employees. The fourth company is an established firm, the main business
+
+of which is surveys, but which aims to expand to social media data. The
+
+main product of one of the smaller companies is network analyses and
+
+visualizations. Another smaller company focuses mainly on distributing
+
+and cleaning social media datasets instead of doing in-depth analyses
+
+themselves, but they offer some basic visualizations and summaries.
+
+We approached the interview transcripts and ethnographic notes quali-
+
+tatively, focusing on the parts where the material concerns visualization.
+
+Using Atlas.TI and an inductive approach, we trace the different functions
+
+and meanings associated with visualizations, and the ways in which they
+
+are used to reveal information and to persuade. Both authors first coded
+
+the material independently using a grounded approach (cf. Glaser & Strauss,
+
+1967), after which we met to discuss and refine the coding, and to group
+
+our codings into larger categories and themes. After reclassifying the mate-
+
+rial, we ended up with six themes: interestingness, objectivity, credibility,
+
+100
+
+Salla-Maaria laaKSonen anD JuHo pääKKönen
+
+communication to lay people, aesthetics, and customer apprehension. Next,
+
+the passages under these codes were reread and reorganized to chart out,
+
+first, the central role visualizations play in imbuing social media analytics
+
+with credibility and value, and second, the practices of generating visualiza-
+
+tions, through which this role is enacted.
+
+**Credibility and value in social media analytics**
+
+In data analytics, the belief that data constitute a baseline of truth is preva-
+
+lent (Ruppert, Isin, & Bigo, 2017). However, in our material, we observed
+
+that social media analytics are characterized by the conception that social
+
+media data are _messy_ and _heterogeneous_ ; it is a form of data that is unreliable
+
+compared to traditional, institutionalized data forms which have been
+
+accepted as solid evidence for phenomena. Despite this starting point, our
+
+case companies were preoccupied with the idea that there is something
+
+essential hidden in the data: it is a matter of revelation and presentation
+
+to find it. The analysts expressed that the credibility of analysis is based,
+
+first, on the data containing patterns, which can be uncovered and utilized
+
+in a reliable manner, and second, the practice of using automated means
+
+to produce results that are free from subjective bias. Consequently, the
+
+results of analysis and measurements were deemed credible when they were
+
+grounded in, or driven by, data and analysed using objective means. This
+
+notion relies on the idea of quantification as a source of trust in contexts
+
+where expertise has not been demonstrated (Porter, 1995; Halpern, 2014;
+
+Elish & boyd, 2018).
+
+In a context marked by the idea of messy data, visualizations are used
+
+for imbuing analytics with credibility and value. They are used to build
+
+coherence and to reveal hidden structures and patterns of that which _is_
+
+in the data. Thus, epistemically visualizations not only describe, but bring
+
+out the essential, show patterns in data in a manner that does not distort
+
+their depiction, letting the data drive the visualization. Automation plays
+
+a crucial role in the process, as interpretation takes place as an interactive
+
+process between the machine and the human:
+
+We would need something programmatic to browse through that stuff
+
+and condense it, and to categorize, classify and present it. And then the
+
+researcher could sort of see that infographic, in quotation marks, and
+
+detect the point they want to take up, what I want to bring out and make
+
+a point, that this information could be valuable.
+
+BetWeen autoMation anD interpretation
+
+101
+
+Credibility through automation, then, is seen as a prerequisite for valuable,
+
+marketable analyses. However, although automation and data-drivenness are
+
+associated with credible analytics, visualizations are a means through which
+
+patterns in data are ultimately revealed, in the sense of making them visible,
+
+that is, amenable for assessment and examination. Without visualization
+
+one has to trust the algorithm, but visualizations let the interpreter do the
+
+interpretations. This is a form of credibility produced through witnessing,
+
+which is specific to visual depiction of patterns.
+
+Despite being based on algorithmic data-driven analytics, data visualiza-
+
+tion is also an acquired skill when it comes to discovering patterns in data.
+
+In Halpern’s (2014, p. 22) words, visualizing is ‘making something that is
+
+out of sensory recognition relatable to the human being’. Thus, visualiza-
+
+tion expertise is relevant for assessing the credibility of analytics, as the
+
+results of algorithmic analysis can be hard to decipher without the aid of
+
+visual representations. Further, demonstrating expertise in visualization
+
+to clients also lends value to analytics, as will become apparent below.
+
+Next, we will scrutinize three practices through which human skills are
+
+involved in the process of creating credibility and value in social media
+
+data visualization.
+
+**Simple-boxing to conceal complexity**
+
+The consulting context is marked with an unequal distribution of knowl-
+
+edge: the customers are buying expertise from the consultant. This generates
+
+a need to communicate potentially complex information to the customers
+
+in an understandable delivery format, which implies simplification. The
+
+necessity of simplicity also affects visualization choices and preferences; in
+
+practice, it leads good visualization practice to be a customer-driven concept
+
+within the companies. Good visualizations are easily comprehended and
+
+effectively work as descriptions of the situation or, preferably, decision-
+
+making devices for the customers. This means that visualizations need to
+
+show, in one glimpse, understandable depictions of reality, stripped of its
+
+messiness and complexities. This is a process referred to as ‘simple-boxing’
+
+by one of our informants, during which details of the complex reality
+
+become hidden.
+
+So we will probably put some colour symbols there like red and green
+
+or something according to the sentiment. So that in a glimpse you could
+
+see if there’s a lot of red or blue or green.
+
+102
+
+Salla-Maaria laaKSonen anD JuHo pääKKönen
+
+In this vein, as a part of its simple-boxing process, the network analysis com-
+
+pany has developed heuristics considering the amount of nodes that can be
+
+reasonably presented in a network graph so that it remains understandable to
+
+the customer. The company has learned by practice to filter out information
+
+that is deemed unnecessary and irrelevant based on expertise accumulated
+
+in business negotiations. This process is also affected by the presentation
+
+technologies and conventions institutionalized in business practices. One of
+
+our case companies explained how they select the dimensions of a statistical
+
+model so that they can be fitted and beautifully visualized on a single
+
+PowerPoint slide. They have developed an understanding that neither a
+
+salesperson nor the customer can handle more dimensions.
+
+As a way of communicating complex information, simple-boxing also
+
+serves to enable assessments of the credibility and value of analytics. The
+
+following quote from the firm specializing in survey research demonstrates
+
+how communicating information effectively means revealing it by means
+
+of data visualization.
+
+We have in fact thought about the issue of how to get to raw data in such
+
+a way […] that we could somehow define it more strictly, standardize in
+
+a way the output […] to visualize it to the researcher so that it would be
+
+easier for them to […] recognize whether there is anything meaningful
+
+there, versus just getting 50,000 lines of some text.
+
+Simple-boxing thus is a way of crafting visualizations that enables the
+
+analysts to comprehend complex information and communicate it effectively
+
+to different parties, including clients, consultants selling the analytics,
+
+and colleagues. Nevertheless, simple, comprehensible visualizations are
+
+regarded as representing patterns in data truthfully, provided they are
+
+based on analyses that are judged to be reliable. For instance, one analyst
+
+suggested that a visualization of clustering results truthfully depicts the
+
+underlying patterns in data. This was despite a somewhat subjective choice
+
+of the number of clustering dimensions displayed in the results. Thus,
+
+simple-boxing with visualizations need not imply unrealistic representation,
+
+provided that the depicted results are produced through credible analytics.
+
+**Flatter-boxing to highlight the interesting**
+
+Apart from working as devices that reveal essential information, our informants
+
+also identify a need for visualizations to point out what is _interesting_ in the data.
+
+BetWeen autoMation anD interpretation
+
+103
+
+Revealing the interesting is a practice thought to be dependent on the skills
+
+of the analyst, which involves finding the potential structure and patterns,
+
+and picking correct ways to visualize them. For example, both generating and
+
+interpreting visualizations are referred to as craftsmanship in the network
+
+analyses consulting company—an expert can immediately see if there is a
+
+structure in a network visualization. As the following quote highlights, the
+
+represented patterns might not constitute an ‘absolute truth’, and thus their
+
+status is dependent on the conceptions and craftsmanship of the analyst.
+
+Absolute truths are hard to formulate about [network visualizations].
+
+When you have, over the years, done quite many of those […] you start
+
+to form some sort of a picture about what the network might tell, kind
+
+of a carpenter’s feel, that you learn to recognize different kinds of wood
+
+merely by smell or touch.
+
+One popular way of building structure and pointing out the interesting
+
+from social media data is by making lists and rankings. This is a practice
+
+postulated by the business context: in a situation of constantly striving for
+
+profit and competition any information that creates order becomes valuable
+
+(cf. Halpern, 2014). For instance, one of our case companies publishes lists
+
+of actors’ performance on social media and uses various visualizations to
+
+track their relative positions over time. These processes require visualiza-
+
+tions to depict patterns in data that are deemed to be interesting, such as
+
+displaying differences or orderings among the measured units, ‘so that

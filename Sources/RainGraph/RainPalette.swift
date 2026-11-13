@@ -14,6 +14,8 @@ public struct RainPalette: Sendable {
     /// Stand-in for `AccessoryWidgetBackground` and the Smart Stack background.
     public var plate: Color
     public var stack: Color
+    /// Smart Stack background when no rain is forecast, so the card's colour says rain or not.
+    public var stackDry: Color = Color(white: 0.13)
 
     /// Buienradar's own graph fill (`fillColor` in its graph feed).
     public static let buienradarBlue = Color(red: 0x5A / 255, green: 0x9B / 255, blue: 0xD3 / 255)

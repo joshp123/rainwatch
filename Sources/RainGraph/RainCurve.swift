@@ -4,13 +4,18 @@ import SwiftUI
 /// every sample so it never dips below zero or rises above a real peak.
 enum RainCurve {
     /// Any rain gets at least this fraction of full height, so drizzle never looks dry.
-    static let traceFloor = 0.12
+    static let traceFloor = 0.16
+
+    /// Drawn height for a Buienradar graph height. The square root keeps Buienradar's order and
+    /// scale lines but lifts drizzle and light rain, which is most Dutch rain, off the baseline
+    /// of a graph only 20 to 40 points tall.
+    public static func display(_ height: Double) -> Double {
+        height > 0 ? max(traceFloor, (min(height, 100) / 100).squareRoot()) : 0
+    }
 
     /// Points along the curve as (time 0…1, height 0…1).
     static func points(_ forecast: RainForecast, subdivisions: Int = 10) -> [(t: Double, v: Double)] {
-        let values = forecast.samples.map { sample in
-            sample.isRain ? max(traceFloor, min(sample.height, 100) / 100) : 0
-        }
+        let values = forecast.samples.map { display($0.height) }
         let times = forecast.samples.map { forecast.position(of: $0.date) }
         guard values.count > 1 else { return values.isEmpty ? [] : [(0, values[0])] }
 
@@ -60,16 +65,19 @@ public struct RadialRainArea: Shape {
     let forecast: RainForecast
     var startAngle: Angle
     var sweep: Angle
-    /// Baseline radius and full-height radius, as fractions of half the frame.
+    /// Baseline radius and full-height radius, as fractions of half the frame. Any rain reaches at
+    /// least `rainFloor`, so drizzle covers a track drawn between `baseline` and `rainFloor`.
     var baseline: Double
     var full: Double
+    var rainFloor: Double?
 
-    public init(forecast: RainForecast, startAngle: Angle, sweep: Angle, baseline: Double, full: Double) {
+    public init(forecast: RainForecast, startAngle: Angle, sweep: Angle, baseline: Double, full: Double, floorAtBaseline rainFloor: Double? = nil) {
         self.forecast = forecast
         self.startAngle = startAngle
         self.sweep = sweep
         self.baseline = baseline
         self.full = full
+        self.rainFloor = rainFloor
     }
 
     public func path(in rect: CGRect) -> Path {
@@ -77,7 +85,8 @@ public struct RadialRainArea: Shape {
         let half = min(rect.width, rect.height) / 2
         func point(_ t: Double, _ v: Double) -> CGPoint {
             let angle = startAngle.radians + t * sweep.radians
-            let radius = half * (baseline + v * (full - baseline))
+            let base = v > 0 ? (rainFloor ?? baseline) : baseline
+            let radius = half * (base + v * (full - base))
             return CGPoint(x: centre.x + radius * cos(angle), y: centre.y + radius * sin(angle))
         }
         return Path { path in
