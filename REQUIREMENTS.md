@@ -24,7 +24,7 @@ On 13 November at 13:30 I sampled Buienradar's nowcast at 94 places in the Nethe
 
 ## Requirements
 
-1. The circular complication answers question 1 from the watch face without a tap, the way Apple's Sunrise/Sunset complication names the next event: the clock time of the next change in the middle, and what changes ("RAIN" or "DRY") in the gap below, as Apple's gauges put "AQI" there. It uses Apple's gauge anatomy: a 240° arc open at the bottom, one value, one short word.
+1. The circular complication answers question 1 from the watch face without a tap. The arc is Buienradar's graph bent round, on Apple's gauge anatomy (a 240° arc open at the bottom): the blue line says rain, its height says how hard, and a dot marks the next change. The middle shows the minutes until that dot ("30 MIN"), as Apple's own Rain complication counts down ("IN 3M"). With no rain there is no line, only "Dry".
 2. The arc and the line are Buienradar's own data. Time runs along them, from now to two hours, and height shows intensity on Buienradar's Light, Moderate and Heavy lines.
 3. Any rain at all shows as visibly different from dry. A forecast with no rain says so.
 4. A dot marks the moment the headline counts down to, so the words and the line agree.
@@ -37,17 +37,17 @@ On 13 November at 13:30 I sampled Buienradar's nowcast at 94 places in the Nethe
 
 ## Words
 
-| Now | Circular (middle, gap) | Headline | Second line |
+| Now | Circular middle | Headline | Second line |
 |---|---|---|---|
-| No rain in the two hours | Dry | No rain forecast | (none) |
-| Dry, rain later | 14:00, RAIN | Dry for 30 min | Light rain 14:00–14:25 |
-| Raining, stops, comes back | 13:35, DRY | Rain stops in 5 min | Dry 13:35–14:15 |
-| Raining, stops | 15:10, DRY | Rain stops in 1 h 40 min | Dry from 15:10 |
-| Raining throughout | Rain | Rain for 2 hours | Heaviest around 14:15 |
+| No rain in the two hours | Dry (no line) | No rain forecast | (none) |
+| Dry, rain later | 30 MIN | Dry for 30 min | Light rain 14:00–14:25 |
+| Raining, stops, comes back | 5 MIN | Rain stops in 5 min | Dry 13:35–14:15 |
+| Raining, stops | 100 MIN | Rain stops in 1 h 40 min | Dry from 15:10 |
+| Raining throughout | 2H+ | Rain for 2 hours | Heaviest around 14:15 |
 
-The circular names a clock time, as Apple's Sunrise/Sunset complication does. Apple's own Weather Rain complication shows a rain-cloud glyph over "IN 3M" or "NOW" (MacRumors thread, May 2024, screenshots in `research/prior-art-apple-rain/`), but it never says when rain stops; a clock time with RAIN or DRY works for both. Sentences, where there is room, use minutes, as Dark Sky and Apple Weather do.
+The circular carries no RAIN or DRY label: the line already says which. Apple's own Weather Rain complication shows a rain-cloud glyph over "IN 3M" or "NOW" (MacRumors thread, May 2024, screenshots in `research/prior-art-apple-rain/`). A clock time in the middle was tried and rejected: next to the watch's own clock it read as another clock.
 
-The rain rises outwards from the track, so the arc is Buienradar's graph bent round with its baseline inside. Growing inwards would keep the track at the rim like Apple's other gauges, but it turns the graph upside down and pushes heavy rain into the time.
+The rain rises outwards from the track, so the arc is Buienradar's graph bent round with its baseline inside. Growing inwards would keep the track at the rim like Apple's other gauges, but it turns the graph upside down and pushes heavy rain into the middle.
 
 Intensity words follow Buienradar's lines: Drizzle below Light, then Light rain, Rain and Heavy rain. The wording follows the convention Dark Sky set and Apple Weather and Forecast Bar use ("rain starting in 12 minutes", "rain stopping in 55 minutes"), turned so that the dry case answers "can I go now, and for how long". The survey is in `research/copy-survey.md`.
 
@@ -57,4 +57,4 @@ Apple's own next-hour rain chart, and the prior-art agent, use capsule bars. The
 
 The Smart Stack card is blue when rain is forecast and neutral when not, as Apple's Weather, Stocks and Sleep widgets colour theirs by state, with an SF Symbol before the headline (WWDC23 session 10309).
 
-The line plots the square root of Buienradar's graph height. That keeps Buienradar's order and scale lines, but lifts drizzle and light rain, which is most Dutch rain, off the baseline of a graph only 20 to 40 points tall. A 26% shower fills half the graph instead of a quarter.
+In the circle the line plots Buienradar's own height, so peaks of different strength look different; the track sits at 58% of the radius to give them about 9 points to rise. In the rectangular slot and Smart Stack the line plots the square root of Buienradar's graph height. That keeps Buienradar's order and scale lines, but lifts drizzle and light rain, which is most Dutch rain, off the baseline of a graph only 20 to 40 points tall. A 26% shower fills half the graph instead of a quarter.

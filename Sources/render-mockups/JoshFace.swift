@@ -8,7 +8,7 @@ import SwiftUI
 struct JoshFace: View {
     let screenshot: NSImage
     let forecast: RainForecast
-    var growth: CircularRainGauge.Growth = .outward
+    var middle: CircularRainGauge.Middle = .minutes
 
     static let topMiddleSlot = CGPoint(x: 105.5, y: 38.5)
     static let largeSlot = CGRect(x: 12, y: 117, width: 190, height: 78)
@@ -21,7 +21,7 @@ struct JoshFace: View {
             Circle().fill(.black)
                 .frame(width: 48, height: 48)
                 .position(Self.topMiddleSlot)
-            CircularRainGauge(forecast: forecast, palette: .fullColour, growth: growth)
+            CircularRainGauge(forecast: forecast, palette: .fullColour, middle: middle)
                 .frame(width: 45, height: 45)
                 .position(Self.topMiddleSlot)
             Rectangle().fill(.black)

@@ -54,12 +54,12 @@ public struct RainCopy: Sendable {
         return "Heaviest around \(Self.clock(peak.date))"
     }
 
-    /// Circular, laid out like Apple's gauges and its Sunrise/Sunset complication: the clock time
-    /// of the next change in the middle, and what changes ("RAIN" or "DRY") in the gap below.
-    public var circular: (value: String, gapLabel: String?) {
+    /// Circular middle: minutes until the change the dot marks, the way Apple's own Rain
+    /// complication counts down ("IN 3M"). The line says whether that change is rain or dry.
+    public var circular: (value: String, unit: String?) {
         guard forecast.hasRain else { return ("Dry", nil) }
-        guard let change else { return ("Rain", nil) }
-        return (Self.clock(change), isRainingNow ? "DRY" : "RAIN")
+        guard let minutesLeft else { return ("2H+", nil) }
+        return ("\(minutesLeft)", "MIN")
     }
 
     /// Inline and corner: one short line.

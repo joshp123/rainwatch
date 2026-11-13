@@ -6,16 +6,26 @@ enum RainCurve {
     /// Any rain gets at least this fraction of full height, so drizzle never looks dry.
     static let traceFloor = 0.16
 
-    /// Drawn height for a Buienradar graph height. The square root keeps Buienradar's order and
-    /// scale lines but lifts drizzle and light rain, which is most Dutch rain, off the baseline
-    /// of a graph only 20 to 40 points tall.
-    public static func display(_ height: Double) -> Double {
-        height > 0 ? max(traceFloor, (min(height, 100) / 100).squareRoot()) : 0
+    enum Scale {
+        /// Lifts drizzle and light rain, which is most Dutch rain, off the baseline of a flat graph
+        /// only 20 to 40 points tall, keeping Buienradar's order and scale lines.
+        case squareRoot
+        /// Buienradar's own height, so a heavy peak stands clearly above a light one.
+        case linear
+    }
+
+    static func display(_ height: Double, _ scale: Scale = .squareRoot) -> Double {
+        guard height > 0 else { return 0 }
+        let fraction = min(height, 100) / 100
+        switch scale {
+        case .squareRoot: return max(traceFloor, fraction.squareRoot())
+        case .linear: return max(0.1, fraction)
+        }
     }
 
     /// Points along the curve as (time 0…1, height 0…1).
-    static func points(_ forecast: RainForecast, subdivisions: Int = 10) -> [(t: Double, v: Double)] {
-        let values = forecast.samples.map { display($0.height) }
+    static func points(_ forecast: RainForecast, scale: Scale = .squareRoot, subdivisions: Int = 10) -> [(t: Double, v: Double)] {
+        let values = forecast.samples.map { display($0.height, scale) }
         let times = forecast.samples.map { forecast.position(of: $0.date) }
         guard values.count > 1 else { return values.isEmpty ? [] : [(0, values[0])] }
 
@@ -59,7 +69,8 @@ public struct RainArea: Shape {
     }
 }
 
-/// The same area bent round an arc: time runs clockwise along the arc, height grows outwards.
+/// The same area bent round an arc: time runs clockwise along the arc, height grows outwards, on
+/// Buienradar's linear scale.
 /// Angles are clockwise from three o'clock, as on screen.
 public struct RadialRainArea: Shape {
     let forecast: RainForecast
@@ -90,7 +101,7 @@ public struct RadialRainArea: Shape {
             return CGPoint(x: centre.x + radius * cos(angle), y: centre.y + radius * sin(angle))
         }
         return Path { path in
-            let curve = RainCurve.points(forecast)
+            let curve = RainCurve.points(forecast, scale: .linear)
             path.move(to: point(0, 0))
             for p in curve { path.addLine(to: point(p.t, p.v)) }
             for p in curve.reversed() { path.addLine(to: point(p.t, 0)) }

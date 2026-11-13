@@ -128,65 +128,77 @@ struct TimeAxis: View {
     }
 }
 
-/// Circular family, drawn like Apple's own gauges (the Weather temperature gauge sits next to it on
-/// Josh's face): a 240° arc open at the bottom, one value in the middle, a short word in the gap.
-/// The arc is the next two hours, clockwise from now at the lower left. It is Buienradar's graph bent
-/// round: the baseline is the track and rain rises from it towards the rim. The dot marks the change
-/// the middle value names.
+/// Circular family. The arc is Buienradar's graph bent round: a 240° arc open at the bottom, like
+/// Apple's gauges, running clockwise from now at the lower left to two hours at the lower right.
+/// The track is the baseline; rain rises from it towards the rim, on Buienradar's linear scale, so
+/// a heavy peak stands well above a light one. The dot marks the next change.
+/// With no rain there is no line, only "Dry".
 public struct CircularRainGauge: View {
-    /// Inward: the dry track sits at the rim like Apple's gauges and rain thickens towards the
-    /// middle. Outward: the track sits inside and rain rises towards the rim.
-    public enum Growth: Sendable { case inward, outward }
+    public enum Middle: Sendable {
+        /// Minutes until the change at the dot.
+        case minutes
+        /// Nothing, so the graph can use the whole circle.
+        case none
+    }
 
     let forecast: RainForecast
     let palette: RainPalette
-    let growth: Growth
+    let middle: Middle
 
     static let start = Angle.degrees(150)
     static let sweep = Angle.degrees(240)
 
-    public init(forecast: RainForecast, palette: RainPalette, growth: Growth = .outward) {
+    public init(forecast: RainForecast, palette: RainPalette, middle: Middle = .minutes) {
         self.forecast = forecast
         self.palette = palette
-        self.growth = growth
+        self.middle = middle
     }
 
     public var body: some View {
         GeometryReader { proxy in
             let side = min(proxy.size.width, proxy.size.height)
             let half = side / 2
-            let stroke = side * 0.06
+            let stroke = side * 0.045
             let halfStroke = stroke / side
-            let track = growth == .inward ? 1 - halfStroke : 0.76
+            let track = middle == .minutes ? 0.58 : 0.42
+            let floor = track + halfStroke
             let copy = RainCopy(forecast)
             ZStack {
-                ArcLine(startAngle: Self.start, sweep: Self.sweep, radius: track)
-                    .stroke(palette.baseline, style: StrokeStyle(lineWidth: stroke, lineCap: .round))
-                RadialRainArea(forecast: forecast, startAngle: Self.start, sweep: Self.sweep,
-                               baseline: growth == .inward ? track + halfStroke : track - halfStroke,
-                               full: growth == .inward ? track - halfStroke - 0.22 : 1,
-                               floorAtBaseline: growth == .inward ? track - halfStroke : track + halfStroke)
-                    .fill(palette.rain)
-                    .accentable()
-                if let change = copy.change {
-                    let angle = Self.start.radians + forecast.position(of: change) * Self.sweep.radians
-                    ChangeDot(palette: palette)
-                        .position(x: half + half * track * cos(angle), y: half + half * track * sin(angle))
+                if forecast.hasRain {
+                    ArcLine(startAngle: Self.start, sweep: Self.sweep, radius: track)
+                        .stroke(palette.baseline, style: StrokeStyle(lineWidth: stroke, lineCap: .round))
+                    RadialRainArea(forecast: forecast, startAngle: Self.start, sweep: Self.sweep,
+                                   baseline: track - halfStroke, full: 0.99, floorAtBaseline: floor)
+                        .fill(palette.rain)
+                        .accentable()
+                    if let change = copy.change {
+                        let angle = Self.start.radians + forecast.position(of: change) * Self.sweep.radians
+                        ChangeDot(palette: palette)
+                            .position(x: half + half * track * cos(angle), y: half + half * track * sin(angle))
+                    }
                 }
-                Text(copy.circular.value)
-                    .font(RainFont.rounded(side * (copy.circular.value.count > 4 ? (growth == .inward ? 0.29 : 0.255) : 0.31), .semibold))
-                    .foregroundStyle(palette.primary)
-                    .offset(y: -side * 0.02)
-                if let label = copy.circular.gapLabel {
-                    Text(label)
-                        .font(RainFont.rounded(side * 0.19, .bold))
-                        .foregroundStyle(label == "RAIN" ? palette.rain : palette.primary)
-                        .position(x: half, y: side * (growth == .inward ? 0.86 : 0.83))
+                if middle == .minutes || !forecast.hasRain {
+                    centre(side: side, copy: copy)
                 }
             }
             .frame(width: side, height: side)
         }
         .aspectRatio(1, contentMode: .fit)
+    }
+
+    private func centre(side: CGFloat, copy: RainCopy) -> some View {
+        let (value, unit) = copy.circular
+        return VStack(spacing: -side * 0.05) {
+            Text(value)
+                .font(RainFont.rounded(side * (value.count > 2 ? 0.24 : 0.3), .semibold))
+                .foregroundStyle(palette.primary)
+            if let unit {
+                Text(unit)
+                    .font(RainFont.rounded(side * 0.14, .bold))
+                    .foregroundStyle(palette.secondary)
+            }
+        }
+        .offset(y: unit == nil ? 0 : side * 0.09)
     }
 }
 

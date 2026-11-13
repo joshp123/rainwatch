@@ -129,31 +129,31 @@ struct CircularDetail: View {
     }
 }
 
-/// Rain growing inwards or outwards from the arc, enlarged and on Josh's face at true size.
-struct GrowthComparison: View {
+/// The two middles for the circular gauge, enlarged and on Josh's face at true size.
+struct MiddleComparison: View {
     let screenshot: NSImage
-    static let scenarios: [Scenario] = [.showerComing, .drizzleStops, .rainingEasing, .rainComing, .rainAllWindow]
+    static let scenarios: [Scenario] = [.dry, .showerComing, .drizzleStops, .rainingEasing, .rainComing, .rainAllWindow]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
-            ForEach([CircularRainGauge.Growth.inward, .outward], id: \.self) { growth in
-                HStack(alignment: .center, spacing: 20) {
-                    Caption(title: growth == .inward ? "Inwards" : "Outwards",
-                            detail: growth == .inward ? "track at the rim" : "track inside, rain to the rim")
-                        .frame(width: 120, alignment: .leading)
+            ForEach([CircularRainGauge.Middle.minutes, .none], id: \.self) { middle in
+                HStack(alignment: .center, spacing: 18) {
+                    Caption(title: middle == .minutes ? "Minutes" : "Graph only",
+                            detail: middle == .minutes ? "until the dot" : "whole circle for the line")
+                        .frame(width: 110, alignment: .leading)
                     ForEach(Self.scenarios, id: \.self) { scenario in
-                        CircularRainGauge(forecast: scenario.forecast, palette: .fullColour, growth: growth)
+                        CircularRainGauge(forecast: scenario.forecast, palette: .fullColour, middle: middle)
                             .frame(width: 45, height: 45)
                             .scaleEffect(2.2)
                             .frame(width: 100, height: 100)
                     }
-                    JoshFace(screenshot: screenshot, forecast: Scenario.rainComing.forecast, growth: growth)
+                    JoshFace(screenshot: screenshot, forecast: Scenario.rainComing.forecast, middle: middle)
                         .frame(width: Ultra3.screen.width, height: 80, alignment: .top)
                         .clipped()
                 }
             }
-            HStack(spacing: 20) {
-                Color.clear.frame(width: 120, height: 1)
+            HStack(spacing: 18) {
+                Color.clear.frame(width: 110, height: 1)
                 ForEach(Self.scenarios, id: \.self) { scenario in
                     Text(scenario.rawValue)
                         .font(RainFont.rounded(10, .medium))
@@ -174,7 +174,7 @@ struct GrowthComparison: View {
 
 try MainActor.assumeIsolated {
     if let screenshot {
-        try render(GrowthComparison(screenshot: screenshot), to: "inward-vs-outward.png")
+        try render(MiddleComparison(screenshot: screenshot), to: "circular-middles.png")
     }
     if let screenshot {
         try render(FaceSheet(screenshot: screenshot), to: "on-your-face.png", scale: 2)
