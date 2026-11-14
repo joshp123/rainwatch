@@ -16,7 +16,7 @@ Decided by Josh on 14 November:
 
 Open:
 - **The English store name.** Bare "RainWatch" is taken. "RainWatch: Rain Forecast" and "RainWatch – Rain Forecast" were both accepted; any other "RainWatch …" name up to 30 characters can be tried with one command.
-- **The server.** `server/PROPOSAL.md` was rejected by Josh. A council of Fable and Astra is writing `server/DESIGN.md`.
+- **The server.** `server/DESIGN.md` waits for Josh's go, the address and the WeatherKit limit (its last section).
 
 ## 2. The list
 
@@ -37,7 +37,7 @@ Who does it: Claude (or another agent), unless it says Josh. "Josh" means only w
 | # | Task | Who | Status |
 |---|---|---|---|
 | 6 | App icon, an Icon Composer file at `App/Rain/AppIcon.icon` | Claude, from Fable's review | Done; checked in the watch's app grid |
-| 7 | Server: every 5 minutes, KNMI's forecast becomes two files on AWS (`server/PROPOSAL.md`) | Claude | Waits for Josh's go and item 2 |
+| 7 | Server: once per KNMI run, the forecast becomes a pack of 32 km squares and a contents list on AWS (`server/DESIGN.md`) | Claude | Design signed by Fable and Astra and reviewed cold; waits for Josh's go |
 | 8 | The app reads the server: 25 bytes for its line, one file for the radar page | Claude | After 7 |
 | 9 | Credit and error messages name the real source ("Source: KNMI"); today they say Buienradar | Claude | With 8 |
 | 10 | Outside KNMI's area: WeatherKit on the watch. Minute by minute for an hour in the UK, Ireland, the US, Australia and Japan, hourly elsewhere. Apple's Weather mark and legal link shown, hourly data fetched at most once an hour | Claude | To do. Needed for "worldwide" |
