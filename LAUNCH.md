@@ -41,7 +41,7 @@ Who does it: Claude (or another agent), unless it says Josh. "Josh" means only w
 | 8 | The app reads the server: 25 bytes for its line, one file for the radar page | Claude | After 7 |
 | 9 | Credit and error messages name the real source ("Source: KNMI"); today they say Buienradar | Claude | With 8 |
 | 10 | Outside KNMI's area: WeatherKit on the watch. Minute by minute for an hour in the UK, Ireland, the US, Australia and Japan, hourly elsewhere. Apple's Weather mark and legal link shown, hourly data fetched at most once an hour | Claude | To do. Needed for "worldwide" |
-| 11 | Europe outside KNMI's area: OPERA's open radar composite and our own pySTEPS forecast, 2 hours in 5-minute steps (`research/radar-sota.md`) | Claude | First update after launch; check OPERA's delay, which countries share, and the computing cost first. WeatherKit covers Europe at launch |
+| 11 | Europe outside KNMI's area: OPERA's open radar composite and our own forecast, 2 hours in 5-minute steps (`research/radar-sota.md`) | Claude | On hold. On one day of light showers OPERA saw 5% of the rain KNMI saw over the Netherlands and Belgium, and its rain-rate product almost none (`research/opera-check.md`). Needs a check in heavier rain, against a second national radar, before we promise anything. WeatherKit covers Europe at launch |
 | 12 | Choose a Place, for anyone who refuses location (Apple Guideline 5.1.1(iv)) | Claude | Done, with a UI test of the reviewer's route |
 | 13 | iPhone wrapper, the only form App Store Connect accepts | Claude | Done; signs, and is accepted for App Store export |
 | 14 | Dutch translation of every word in the app and of the location prompt | Claude writes, Josh reads | To do |
@@ -88,7 +88,7 @@ Detail and sources: `research/radar-sota.md`.
 - **KNMI's picture already has the neighbours' radars:** two Dutch, three Belgian and three German, cleaned and adjusted to rain gauges. It reaches about 300 km west of the Dutch coast, so British radars would change nothing within two hours. Buienradar adds them for its larger map and its longer-range radars.
 - **The method matters more than the radars.** KNMI's operational forecast, like Buienradar's, moves today's rain along and can't see showers form or die. The state of the art blends that with a weather model; Belgium's RMI runs this operationally, and KNMI publishes its own blend free, as a pilot.
 - **Measured over 66 rainy days,** KNMI's plain forecast is best for the first 30 minutes and its blend from there to 2 hours, so BuienWatch shows them in that order. On the one day Buienradar could be compared (13 November), both of KNMI's forecasts beat it.
-- **Outside KNMI's area,** Europe's radar composite (OPERA) has been open since May 2026; running the same method on it would give a 2-hour forecast across Europe (item 11).
+- **Outside KNMI's area,** Europe's radar composite (OPERA) has been open since May 2026, but on the one day checked it missed most light showers that KNMI saw over the Netherlands and Belgium (`research/opera-check.md`). It is not good enough to forecast from until a heavier-rain check says otherwise (item 11).
 
 ### Coverage
 
