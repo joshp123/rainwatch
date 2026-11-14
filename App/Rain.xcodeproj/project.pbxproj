@@ -10,8 +10,11 @@
 		0826FF3CD0532276101FE5C6 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = B63D41E8863446BE4D00593B /* PrivacyInfo.xcprivacy */; };
 		0A1D01DAF814D649CBD1A57E /* RainUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCBDA42EF1F0EABADA8F70BF /* RainUITests.swift */; };
 		27573C743B2DCC739921613C /* RainApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76FBC3379322E9F2BB1F03BF /* RainApp.swift */; };
+		33AED277446BA20DF165C8E3 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 68ECAF15C842676E6654B6C7 /* InfoPlist.xcstrings */; };
 		50D5FB73E5EE55A91F01EFE8 /* Rain.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = D0DFCBBAE96F646AA450D859 /* Rain.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		5FA3C18A06A752D68D7EF0C9 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 68ECAF15C842676E6654B6C7 /* InfoPlist.xcstrings */; };
 		6AB72E45888650E454164A94 /* RainGraph in Frameworks */ = {isa = PBXBuildFile; productRef = 7BBE3C71B351E044B65650D4 /* RainGraph */; };
+		74D5C7CD706FDB49CCEF775C /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 68ECAF15C842676E6654B6C7 /* InfoPlist.xcstrings */; };
 		7F2F8AFC6DD5CFA9CC2FC9F7 /* RainGraph in Frameworks */ = {isa = PBXBuildFile; productRef = B9CE89E80650D5D474B56FB9 /* RainGraph */; };
 		B22967C882EA0E5BBDBF8E0E /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = B63D41E8863446BE4D00593B /* PrivacyInfo.xcprivacy */; };
 		C515955A92FFF24D64E9D61C /* RadarPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24A5456AC0840FD7A47E7340 /* RadarPage.swift */; };
@@ -78,6 +81,7 @@
 		46B7917EA7465055193A0A13 /* AppIcon.icon */ = {isa = PBXFileReference; path = AppIcon.icon; sourceTree = "<group>"; };
 		5EA8CD1D830406319B28510E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		62D213F8CBF45908BD07AE5C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		68ECAF15C842676E6654B6C7 /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
 		76FBC3379322E9F2BB1F03BF /* RainApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RainApp.swift; sourceTree = "<group>"; };
 		8A0DB4767FA1352EE3E8111A /* RainUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RainUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9D596FEADDDC9BDA6C9CE992 /* RainWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = RainWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -112,6 +116,7 @@
 		3C6166FDED9AF98DBFAF027F /* Shared */ = {
 			isa = PBXGroup;
 			children = (
+				68ECAF15C842676E6654B6C7 /* InfoPlist.xcstrings */,
 				B63D41E8863446BE4D00593B /* PrivacyInfo.xcprivacy */,
 			);
 			path = Shared;
@@ -187,6 +192,7 @@
 			buildConfigurationList = 7DD4CD69357C0ACB8F7DE641 /* Build configuration list for PBXNativeTarget "RainContainer" */;
 			buildPhases = (
 				A025ECBD1AB2BD5A12C18ABB /* Sources */,
+				B94604C5A2E9D96EEBADA4F1 /* Resources */,
 				FCD6851A402E016E8BCA74FA /* Embed Watch Content */,
 			);
 			buildRules = (
@@ -319,6 +325,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				33AED277446BA20DF165C8E3 /* InfoPlist.xcstrings in Resources */,
 				B22967C882EA0E5BBDBF8E0E /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -328,7 +335,16 @@
 			buildActionMask = 2147483647;
 			files = (
 				C9F58103C88666020C5E3BD5 /* AppIcon.icon in Resources */,
+				5FA3C18A06A752D68D7EF0C9 /* InfoPlist.xcstrings in Resources */,
 				0826FF3CD0532276101FE5C6 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B94604C5A2E9D96EEBADA4F1 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				74D5C7CD706FDB49CCEF775C /* InfoPlist.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

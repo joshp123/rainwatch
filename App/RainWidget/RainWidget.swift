@@ -109,7 +109,7 @@ struct RainWidget: Widget {
         StaticConfiguration(kind: "rain", provider: RainProvider()) { entry in
             RainComplicationView(entry: entry)
         }
-        .configurationDisplayName("BuienWatch")
+        .configurationDisplayName(Bundle.main.displayName)
         .description("Rain for the next two hours.")
         .supportedFamilies([.accessoryCircular, .accessoryRectangular, .accessoryCorner, .accessoryInline])
     }

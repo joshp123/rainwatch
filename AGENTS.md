@@ -12,6 +12,12 @@ The goal is a glance he can trust: whether it is dry now and for how long, drawn
 
 `LAUNCH.md` is the plan for the App Store: Josh's open decisions first, then every task with its owner and status. Keep its status columns current when a task moves.
 
+## App Store Connect and Apple's developer account: command line only
+
+Josh, 14 November 2026: "No, I'm not gonna use touch ID. You're gonna figure out how to drive this via the CLI instead of computer use. This is a hard rule ... You need to be using command line tools and finding the appropriate first party command line tools instead of just doing random computer use shit."
+
+So every App Store Connect and developer-account task (the app record, names and languages, the listing, privacy answers, trader status, builds, TestFlight, submission) is done from the shell, never by driving Xcode, a browser or the Developer app on screen, and never with a step that needs Josh's Touch ID. Use Apple's own tools first: `xcodebuild` to archive, export and upload, `xcrun altool` and `notarytool`, and the App Store Connect API. Where Apple's API stops (it cannot create an app, answer App Privacy or set trader status), use `asc` (github.com/rorkai/App-Store-Connect-CLI, installed from its GitHub release in `~/.local/bin`; Homebrew's copy is years old). Its `asc web` commands sign in to the App Store Connect website as Josh: `--two-factor-method sms` with `--two-factor-code-command "asc web auth messages-code"` reads Apple's text from Messages on this Mac, so the code needs no one. If a task seems to have no command-line route, read the tool's docs and source before concluding that, and ask Josh rather than reach for the screen.
+
 ## Look at every image before anyone else does
 
 Josh, 13 November 2026: "look at those images? some look weird? lots is clipped? you need to set this up properly in a repo ... with a rule to always look at images and critique it". Mock-ups and screenshots from this project have gone to him clipped, overlapping and inconsistent because the agent showed them without looking.

@@ -64,7 +64,7 @@ struct ContentView: View {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Rain where you are")
                             .font(.title3.weight(.semibold))
-                        Text("BuienWatch needs your location. On the next screen, choose Allow While Using App, so your watch face stays up to date.")
+                        Text("\(Bundle.main.displayName) needs your location. On the next screen, choose Allow While Using App, so your watch face stays up to date.")
                             .font(.body)
                             .foregroundStyle(.secondary)
                         Button("Continue") {
@@ -96,7 +96,7 @@ struct ContentView: View {
                     }
                     .padding(.top, 10)
                 }
-                .navigationTitle(placeName ?? "BuienWatch")
+                .navigationTitle(placeName ?? Bundle.main.displayName)
                 // Apple's Weather colours its pages by the weather; blue here means rain is due.
                 .containerBackground((forecast.hasRain ? RainPalette.buienradarBlue.opacity(0.45) : Color.black).gradient,
                                      for: .navigation)
@@ -141,7 +141,7 @@ struct ContentView: View {
             ContentUnavailableView {
                 Label("Location Needed", systemImage: "location.slash")
             } description: {
-                Text("Allow location for BuienWatch in Settings, or choose a place.")
+                Text("Allow location for \(Bundle.main.displayName) in Settings, or choose a place.")
             } actions: {
                 Button("Choose a Place") { picking = true }
             }

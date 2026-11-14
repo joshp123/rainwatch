@@ -6,6 +6,7 @@ options:
     watchOS: "26.0"
     iOS: "26.0"
   createIntermediateGroups: true
+  developmentLanguage: en
 packages:
   RainGraph:
     path: ..
@@ -22,12 +23,15 @@ targets:
   RainContainer:
     type: application.watchapp2-container
     platform: iOS
+    sources:
+      - path: Shared/InfoPlist.xcstrings
+        buildPhase: resources
     dependencies:
       - target: Rain
     info:
       path: RainContainer/Info.plist
       properties:
-        CFBundleDisplayName: BuienWatch
+        CFBundleDisplayName: RainWatch
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         ITSWatchOnlyContainer: true
@@ -47,13 +51,15 @@ targets:
         buildPhase: resources
       - path: Shared/PrivacyInfo.xcprivacy
         buildPhase: resources
+      - path: Shared/InfoPlist.xcstrings
+        buildPhase: resources
     dependencies:
       - package: RainGraph
       - target: RainWidget
     info:
       path: Rain/Info.plist
       properties:
-        CFBundleDisplayName: BuienWatch
+        CFBundleDisplayName: RainWatch
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         WKApplication: true
@@ -89,12 +95,14 @@ targets:
       - RainWidget
       - path: Shared/PrivacyInfo.xcprivacy
         buildPhase: resources
+      - path: Shared/InfoPlist.xcstrings
+        buildPhase: resources
     dependencies:
       - package: RainGraph
     info:
       path: RainWidget/Info.plist
       properties:
-        CFBundleDisplayName: BuienWatch
+        CFBundleDisplayName: RainWatch
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         NSWidgetWantsLocation: true

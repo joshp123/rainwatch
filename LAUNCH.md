@@ -1,6 +1,6 @@
 <!-- Written by AI on 2026.11.14 by model claude opus 5.5, at Josh's request. The one list of what stands between BuienWatch and the App Store. -->
 
-# Launching BuienWatch on the App Store
+# Launching RainWatch (BuienWatch in Dutch) on the App Store
 
 Josh's goal: "we know exactly what we want to use to sell or market the app, and how to get it smoothly approved". It must "just work" outside the Netherlands, at the best quality the open data allows, with the Netherlands best of all.
 
@@ -9,14 +9,14 @@ The evidence is in `research/`. Every App Store step and its command is in `laun
 ## 1. Decisions
 
 Decided by Josh on 14 November:
-- **Name:** BuienWatch.
-- **Price:** free, with no ads or in-app purchases. It is declared "not a trader" in the EU, so no address shows. No postbox for now.
+- **Name:** RainWatch in English, BuienWatch in Dutch. On the watch the name under the icon follows the wearer's language (`App/Shared/InfoPlist.xcstrings`). On the App Store, Apple refused the bare "RainWatch" for the English listing ("already being used"), although the other app is listed as "RainWatch – Cute Cloud Weather"; it accepted "RainWatch: Rain Forecast", which the record carries for now. The Dutch listing is BuienWatch.
+- **Price:** free, with no ads or in-app purchases. The account is declared "not a trader" in the EU (done 14 November), so no address shows. No postbox for now.
 - **Countries:** worldwide, with the quality stated honestly for each area (section 3).
 - **Languages:** the listing's main language is English (U.K.), with Dutch. The Dutch store indexes both.
 
 Open:
-- **The English name.** App Store names are set per language, not per country, so the English listing could be called something else. "RainWatch" is in use by another Apple Watch weather app, "RainWatch – Cute Cloud Weather". Only App Store Connect's own check can say whether it accepts the bare "RainWatch" (item 3).
-- **The server.** `server/PROPOSAL.md` costs about US$0.15 a month at launch and sets out what any cheaper option would break. It waits for Josh's go.
+- **The English store name.** Bare "RainWatch" is taken. "RainWatch: Rain Forecast" and "RainWatch – Rain Forecast" were both accepted; any other "RainWatch …" name up to 30 characters can be tried with one command.
+- **The server.** `server/PROPOSAL.md` was rejected by Josh. A council of Fable and Astra is writing `server/DESIGN.md`.
 
 ## 2. The list
 
@@ -28,9 +28,9 @@ Who does it: Claude (or another agent), unless it says Josh. "Josh" means only w
 |---|---|---|---|
 | 1 | Apple's Program License Agreement | Claude | Done 14 Nov, in the Developer app |
 | 2 | KNMI account and API key, stored in `nix-secrets` | Terra | Done 14 Nov; tested. 1,000 requests an hour, no expiry |
-| 3 | App Store Connect app record, bundle `nl.jjp.rain`, English (U.K.) | Claude | Created 14 Nov (app 6834856580), but under Xcode's placeholder name "RainContainer": rename it to BuienWatch, add Dutch, and test "RainWatch" for English (U.S.), in one App Store Connect session with Josh's Touch ID |
-| 4 | Trader status: "not a trader" | Claude, in App Store Connect | After 3 |
-| 5 | App Store Connect API key, so the `asc` command line can manage the listing | Claude | After 3 |
+| 3 | App Store Connect app record, bundle `nl.jjp.rain`, English (U.K.) | Claude | Done 14 Nov (app 6834856580): English name "RainWatch: Rain Forecast" (bare "RainWatch" refused as taken), Dutch listing "BuienWatch", all with `asc` |
+| 4 | Trader status: "not a trader" | Claude | Done 14 Nov, from the shell; read back as DECLARED_NOT_TRADER |
+| 5 | App Store Connect API key, so the `asc` command line can manage the listing | Claude | Done 14 Nov: "BuienWatch listing", App Manager role, in `nix-secrets` |
 
 **B. The app**
 
@@ -49,7 +49,7 @@ Who does it: Claude (or another agent), unless it says Josh. "Josh" means only w
 | 16 | Version 1.0.0, build 1 | Claude | With the first upload |
 | 17 | Real-watch pass: every forecast state, Always On, Night Mode, VoiceOver, larger text, offline, and a day's refresh log | Claude, with Josh wearing it | To do |
 | 18 | Josh moves his complication from the old Rain app to BuienWatch; then the old app is removed | Josh, then Claude | BuienWatch is installed next to Rain |
-| 19a | Record Buienradar's forecasts at the 48 places for a month, to compare them with KNMI's over many rainy days: Buienradar keeps no archive, so it could only be scored on the one day its forecasts were saved (13 November) | Claude | Proposed: a small scheduled job on the Mac mini |
+| 19a | Record Buienradar's forecasts at the 64 Dutch grid points for a month, to compare them with KNMI's over many rainy days: Buienradar keeps no archive, so it could only be scored on the one day its forecasts were saved (13 November) | Claude | Recording since 14 Nov 18:46 on mini-server-1, every 15 minutes (`/var/lib/buienradar-recorder`) |
 | 19 | Score KNMI's plain forecast against its blended one over a season | Claude | Done: plain for the first 30 minutes, blend after, better on 77% of days in the second hour (`research/verification/season.md`). Built into the server, with the plain forecast as fallback |
 
 **C. The store page**
@@ -58,7 +58,7 @@ Who does it: Claude (or another agent), unless it says Josh. "Josh" means only w
 |---|---|---|---|
 | 20 | Subtitle, keywords and description, in English and Dutch. "buien" and "regen" go in the Dutch keywords. No "Buienradar", "real-time", "accurate" or "best" | Claude; Josh reads before it goes live | Drafts in `research/launch-runbook.md` (C5) |
 | 21 | Five screenshots at 422 × 514, from the real watch, in English and Dutch, each with a headline of eight words or fewer ("Will I get wet?") | Claude | To do |
-| 22 | App Privacy answers: coarse location, for app functionality, not linked to the person, no tracking | Claude | After 3 |
+| 22 | App Privacy answers: coarse location, for app functionality, not linked to the person, no tracking | Claude | Applied 14 Nov from `store/privacy.json`, not yet published; recheck once the server design is settled |
 | 23 | Category (Weather), age rating, copyright | Claude | After 3 |
 | 24 | Notes for the reviewer: watch-only, Choose a Place, the data sources; a 60-second demo video | Claude | Before 27 |
 
