@@ -28,7 +28,7 @@ Who does it: Claude (or another agent), unless it says Josh. "Josh" means only w
 |---|---|---|---|
 | 1 | Apple's Program License Agreement | Claude | Done 14 Nov, in the Developer app |
 | 2 | KNMI account and API key, stored in `nix-secrets` | Terra | Done 14 Nov; tested. 1,000 requests an hour, no expiry |
-| 3 | App Store Connect app record: BuienWatch, bundle `nl.jjp.rain`, English (U.K.) and Dutch. Try "RainWatch" as the English name | Claude, through Xcode's Organizer, which is signed in | Next |
+| 3 | App Store Connect app record, bundle `nl.jjp.rain`, English (U.K.) | Claude | Created 14 Nov (app 6834856580), but under Xcode's placeholder name "RainContainer": rename it to BuienWatch, add Dutch, and test "RainWatch" for English (U.S.), in one App Store Connect session with Josh's Touch ID |
 | 4 | Trader status: "not a trader" | Claude, in App Store Connect | After 3 |
 | 5 | App Store Connect API key, so the `asc` command line can manage the listing | Claude | After 3 |
 
@@ -49,6 +49,7 @@ Who does it: Claude (or another agent), unless it says Josh. "Josh" means only w
 | 16 | Version 1.0.0, build 1 | Claude | With the first upload |
 | 17 | Real-watch pass: every forecast state, Always On, Night Mode, VoiceOver, larger text, offline, and a day's refresh log | Claude, with Josh wearing it | To do |
 | 18 | Josh moves his complication from the old Rain app to BuienWatch; then the old app is removed | Josh, then Claude | BuienWatch is installed next to Rain |
+| 19a | Record Buienradar's forecasts at the 48 places for a month, to compare them with KNMI's over many rainy days: Buienradar keeps no archive, so it could only be scored on the one day its forecasts were saved (13 November) | Claude | Proposed: a small scheduled job on the Mac mini |
 | 19 | Score KNMI's plain forecast against its blended one over a season | Claude | Done: plain for the first 30 minutes, blend after, better on 77% of days in the second hour (`research/verification/season.md`). Built into the server, with the plain forecast as fallback |
 
 **C. The store page**
@@ -65,7 +66,7 @@ Who does it: Claude (or another agent), unless it says Josh. "Josh" means only w
 
 | # | Task | Who | Status |
 |---|---|---|---|
-| 25 | Upload with `xcodebuild` (the `asc` tool can't upload watch-only apps); internal TestFlight on Josh's watch | Claude | After 3, 7 to 10 |
+| 25 | Upload builds; internal TestFlight on Josh's watch | Claude | Build 1.0.0 (1) uploaded 14 Nov through Xcode. The data server and WeatherKit come before external testing |
 | 26 | External TestFlight: 5 to 10 Dutch testers for two weeks | Josh picks the testers and approves the invitation; Claude runs it | After 25 |
 | 27 | Nominate for featuring when external testing starts, three weeks or more before release | Claude | With 26 |
 | 28 | Submit for review. Allow two weeks. After a rejection over the listing, resubmit the same build | Claude | After 26 |
