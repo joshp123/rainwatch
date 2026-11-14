@@ -58,7 +58,12 @@ public struct ForecastChart: View {
                     AreaMark(x: .value("Time", date(point.t)), y: .value("Rain", point.v * 100), series: .value("Spell", run))
                         .foregroundStyle(LinearGradient(colors: [RainPalette.buienradarBlue.opacity(0.8), RainPalette.buienradarBlue.opacity(0.25)],
                                                         startPoint: .top, endPoint: .bottom))
-                    LineMark(x: .value("Time", date(point.t)), y: .value("Rain", point.v * 100), series: .value("Spell", run))
+                }
+                // The line follows the rain only: at the window's edges the area closes with a
+                // vertical side, which as a line would read as rain starting from nothing.
+                let edge = Array(runs[run].dropFirst().dropLast())
+                ForEach(edge.indices, id: \.self) { index in
+                    LineMark(x: .value("Time", date(edge[index].t)), y: .value("Rain", edge[index].v * 100), series: .value("Spell", run))
                         .foregroundStyle(RainPalette.buienradarBlue)
                         .lineStyle(StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
                 }
@@ -85,11 +90,9 @@ public struct ForecastChart: View {
             // there's no rain we should just have no line".
             AxisMarks(preset: .inset, position: .trailing, values: forecast.hasRain ? Self.scaleLines : []) { value in
                 AxisGridLine(stroke: StrokeStyle(lineWidth: 1, dash: [2, 3]))
-                AxisValueLabel {
-                    // A backing keeps the label readable where rain fills behind it.
+                // Above its rule, so the label never breaks the dashed line.
+                AxisValueLabel(anchor: .bottomTrailing) {
                     Text(value.as(Double.self) == Self.scaleLines[0] ? "Light" : "Heavy")
-                        .padding(.horizontal, 3)
-                        .background(.black.opacity(0.6), in: Capsule())
                 }
             }
         }

@@ -32,16 +32,15 @@ public enum RainCurve {
         let times = forecast.samples.map { forecast.position(of: $0.date.addingTimeInterval(RainForecast.step / 2)) }
         guard values.count > 1 else { return values.isEmpty ? [] : [(0, values[0])] }
 
-        // Tangents: the mean of the neighbouring slopes, flat at peaks and troughs and beside a dry
-        // sample, then limited so no segment overshoots.
+        // Tangents: the mean of the neighbouring slopes, flat at peaks, troughs and dry samples, then
+        // limited so no segment overshoots or dips below zero.
         let n = values.count
         var slopes = (0..<(n - 1)).map { (values[$0 + 1] - values[$0]) / (times[$0 + 1] - times[$0]) }
         slopes = slopes.map { $0.isFinite ? $0 : 0 }
         var tangents = [Double](repeating: 0, count: n)
         for k in 1..<(n - 1) {
             let (before, after) = (slopes[k - 1], slopes[k])
-            let flat = before * after <= 0 || values[k - 1] == 0 || values[k + 1] == 0
-            tangents[k] = flat ? 0 : (before + after) / 2
+            tangents[k] = before * after <= 0 ? 0 : (before + after) / 2
         }
         for k in 0..<(n - 1) where slopes[k] != 0 {
             let a = tangents[k] / slopes[k], b = tangents[k + 1] / slopes[k]
@@ -69,44 +68,13 @@ public enum RainCurve {
 }
 
 extension RainCurve {
-    /// The curve with `gap` (the time round the change dot) drawn dry. Rain the cut leaves beside
-    /// the gap narrower than half of it is drawn dry too: it would show as a stray splinter, since
-    /// a real shower lasts at least one five-minute sample and is always wider.
-    static func points(_ forecast: RainForecast, scale: Scale, gap: ClosedRange<Double>?) -> [(t: Double, v: Double)] {
-        var curve = points(forecast, scale: scale)
-        guard let gap else { return curve }
-        for i in curve.indices where gap.contains(curve[i].t) { curve[i].v = 0 }
-        let narrowest = (gap.upperBound - gap.lowerBound) / 2
-        var start: Int?
-        for i in curve.indices {
-            let wet = curve[i].v > 0.0005
-            if wet, start == nil { start = i }
-            guard let first = start, !wet || i == curve.indices.last else { continue }
-            let last = wet ? i : i - 1
-            if curve[last].t - curve[first].t < narrowest {
-                for k in first...last { curve[k].v = 0 }
-            }
-            start = nil
-        }
-        return curve
-    }
-
-    /// The baseline either side of `gap`, without a stub narrower than half the gap.
-    static func baseline(around gap: ClosedRange<Double>?) -> [ClosedRange<Double>] {
-        guard let gap else { return [0...1] }
-        let pieces = [0...max(0, gap.lowerBound), min(1, gap.upperBound)...1]
-        return pieces.filter { $0.upperBound - $0.lowerBound >= (gap.upperBound - gap.lowerBound) / 2 }
-    }
-
     /// The curve cut into its wet stretches, each starting and ending on the baseline, so dry time
     /// draws nothing at all (a zero-height area leaves a coloured hairline along the baseline).
-    /// `gap` is a stretch of time left empty around the change dot, so the dot never touches the
-    /// rain on any face (tinted faces keep only alpha, so a dark ring or a cut-out doesn't survive).
-    static func wetRuns(_ forecast: RainForecast, scale: Scale, gap: ClosedRange<Double>? = nil) -> [[(t: Double, v: Double)]] {
+    static func wetRuns(_ forecast: RainForecast, scale: Scale) -> [[(t: Double, v: Double)]] {
         var runs: [[(t: Double, v: Double)]] = []
         var run: [(t: Double, v: Double)] = []
         var lastDry: (t: Double, v: Double)?
-        for point in points(forecast, scale: scale, gap: gap) {
+        for point in points(forecast, scale: scale) {
             if point.v > 0.0005 {
                 if run.isEmpty { run.append((lastDry?.t ?? point.t, 0)) }
                 run.append(point)
@@ -128,17 +96,15 @@ extension RainCurve {
 public struct RainArea: Shape {
     let forecast: RainForecast
     var scale: RainCurve.Scale = .squareRoot
-    var gap: ClosedRange<Double>?
 
-    public init(forecast: RainForecast, scale: RainCurve.Scale = .squareRoot, gap: ClosedRange<Double>? = nil) {
+    public init(forecast: RainForecast, scale: RainCurve.Scale = .squareRoot) {
         self.forecast = forecast
         self.scale = scale
-        self.gap = gap
     }
 
     public func path(in rect: CGRect) -> Path {
         Path { path in
-            for run in RainCurve.wetRuns(forecast, scale: scale, gap: gap) {
+            for run in RainCurve.wetRuns(forecast, scale: scale) {
                 for (index, point) in run.enumerated() {
                     let p = CGPoint(x: rect.minX + point.t * rect.width, y: rect.maxY - point.v * rect.height)
                     index == 0 ? path.move(to: p) : path.addLine(to: p)
@@ -154,17 +120,15 @@ public struct RainArea: Shape {
 public struct RainEdge: Shape {
     let forecast: RainForecast
     var scale: RainCurve.Scale = .squareRoot
-    var gap: ClosedRange<Double>?
 
-    public init(forecast: RainForecast, scale: RainCurve.Scale = .squareRoot, gap: ClosedRange<Double>? = nil) {
+    public init(forecast: RainForecast, scale: RainCurve.Scale = .squareRoot) {
         self.forecast = forecast
         self.scale = scale
-        self.gap = gap
     }
 
     public func path(in rect: CGRect) -> Path {
         Path { path in
-            for run in RainCurve.wetRuns(forecast, scale: scale, gap: gap) {
+            for run in RainCurve.wetRuns(forecast, scale: scale) {
                 for (index, point) in run.dropFirst().dropLast().enumerated() {
                     let p = CGPoint(x: rect.minX + point.t * rect.width, y: rect.maxY - point.v * rect.height)
                     index == 0 ? path.move(to: p) : path.addLine(to: p)
@@ -186,10 +150,9 @@ public struct RadialRainArea: Shape {
     var full: Double
     var rainFloor: Double?
     var scale: RainCurve.Scale
-    var gap: ClosedRange<Double>?
 
     public init(forecast: RainForecast, startAngle: Angle, sweep: Angle, baseline: Double, full: Double,
-                floorAtBaseline rainFloor: Double? = nil, scale: RainCurve.Scale = .squareRoot, gap: ClosedRange<Double>? = nil) {
+                floorAtBaseline rainFloor: Double? = nil, scale: RainCurve.Scale = .squareRoot) {
         self.forecast = forecast
         self.startAngle = startAngle
         self.sweep = sweep
@@ -197,7 +160,6 @@ public struct RadialRainArea: Shape {
         self.full = full
         self.rainFloor = rainFloor
         self.scale = scale
-        self.gap = gap
     }
 
     public func path(in rect: CGRect) -> Path {
@@ -210,7 +172,7 @@ public struct RadialRainArea: Shape {
             return CGPoint(x: centre.x + radius * cos(angle), y: centre.y + radius * sin(angle))
         }
         return Path { path in
-            let curve = RainCurve.points(forecast, scale: scale, gap: gap)
+            let curve = RainCurve.points(forecast, scale: scale)
             path.move(to: point(0, 0))
             for p in curve { path.addLine(to: point(p.t, p.v)) }
             for p in curve.reversed() { path.addLine(to: point(p.t, 0)) }
@@ -219,30 +181,56 @@ public struct RadialRainArea: Shape {
     }
 }
 
-public struct ArcLine: Shape {
+/// The gauge's grey track, already stroked. Its ends are round like Apple's gauges, except an end
+/// where rain is falling, which is cut square so the cap can't poke out from under the rain.
+public struct GaugeTrack: Shape {
     var startAngle: Angle
     var sweep: Angle
     var radius: Double
-    /// A stretch of the arc, as fractions 0…1 of the sweep, left undrawn round the change dot.
-    var gap: ClosedRange<Double>?
-
-    public init(startAngle: Angle, sweep: Angle, radius: Double, gap: ClosedRange<Double>? = nil) {
-        self.startAngle = startAngle
-        self.sweep = sweep
-        self.radius = radius
-        self.gap = gap
-    }
+    var lineWidth: CGFloat
+    var roundStart = true
+    var roundEnd = true
 
     public func path(in rect: CGRect) -> Path {
         let centre = CGPoint(x: rect.midX, y: rect.midY)
         let r = min(rect.width, rect.height) / 2 * radius
-        return Path { path in
-            for piece in RainCurve.baseline(around: gap) {
-                path.move(to: CGPoint(x: centre.x + r * cos((startAngle + sweep * piece.lowerBound).radians),
-                                      y: centre.y + r * sin((startAngle + sweep * piece.lowerBound).radians)))
-                path.addArc(center: centre, radius: r, startAngle: startAngle + sweep * piece.lowerBound,
-                            endAngle: startAngle + sweep * piece.upperBound, clockwise: false)
-            }
+        func end(_ angle: Angle) -> Path {
+            let p = CGPoint(x: centre.x + r * cos(angle.radians), y: centre.y + r * sin(angle.radians))
+            return Path(ellipseIn: CGRect(x: p.x - lineWidth / 2, y: p.y - lineWidth / 2, width: lineWidth, height: lineWidth))
         }
+        var track = Path { path in
+            path.addArc(center: centre, radius: r, startAngle: startAngle, endAngle: startAngle + sweep, clockwise: false)
+        }
+        .strokedPath(StrokeStyle(lineWidth: lineWidth, lineCap: .butt))
+        if roundStart { track = track.union(end(startAngle)) }
+        if roundEnd { track = track.union(end(startAngle + sweep)) }
+        return track
+    }
+}
+
+/// A shape with a hole cut round the change dot, as Apple's gauge indicator has. The hole is in the
+/// path itself, so it survives tinted faces, which keep only alpha: a dark ring round the dot would
+/// turn solid there and fuse the dot to the rain.
+public struct Holed<Content: Shape>: Shape {
+    var content: Content
+    var stroke: StrokeStyle?
+    var hole: Path?
+
+    public func path(in rect: CGRect) -> Path {
+        let path = stroke.map { content.path(in: rect).strokedPath($0) } ?? content.path(in: rect)
+        return hole.map { path.subtracting($0) } ?? path
+    }
+}
+
+extension Shape {
+    /// This shape, stroked first if `stroke` is given, with `hole` cut out of it.
+    func cut(_ hole: Path?, stroke: StrokeStyle? = nil) -> Holed<Self> {
+        Holed(content: self, stroke: stroke, hole: hole)
+    }
+}
+
+extension Path {
+    static func disc(_ centre: CGPoint, radius: CGFloat) -> Path {
+        Path(ellipseIn: CGRect(x: centre.x - radius, y: centre.y - radius, width: radius * 2, height: radius * 2))
     }
 }

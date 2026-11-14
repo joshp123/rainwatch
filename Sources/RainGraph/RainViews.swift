@@ -77,31 +77,30 @@ struct RainChart: View {
                     }
                     .stroke(palette.grid, style: StrokeStyle(lineWidth: 1, dash: [1, 3]))
                 }
-                let changeT = RainCopy(forecast).change.map { forecast.position(of: $0) }
-                // Nothing is drawn within 4.5 points of the dot: on tinted faces WidgetKit keeps
-                // only alpha, so a dark ring or a cut-out would fuse the dot to the rain.
-                let gap = changeT.map { ($0 - 4.5 / size.width)...($0 + 4.5 / size.width) }
-                RainArea(forecast: forecast, scale: scale, gap: gap)
+                let dot = RainCopy(forecast).change.map { CGPoint(x: size.width * forecast.position(of: $0), y: size.height) }
+                // The dot's radius plus 2 points.
+                let hole = dot.map { Path.disc($0, radius: 4.5) }
+                RainArea(forecast: forecast, scale: scale)
+                    .cut(hole)
                     .fill(palette.rain.opacity(0.55))
                     .accentable()
-                RainEdge(forecast: forecast, scale: scale, gap: gap)
-                    .stroke(palette.rain, style: StrokeStyle(lineWidth: 1.5, lineCap: .round, lineJoin: .round))
+                RainEdge(forecast: forecast, scale: scale)
+                    .cut(hole, stroke: StrokeStyle(lineWidth: 1.5, lineCap: .round, lineJoin: .round))
+                    .fill(palette.rain)
                     .accentable()
                 Path { path in
-                    let segments = RainCurve.baseline(around: gap)
-                    for segment in segments where segment.upperBound > segment.lowerBound {
-                        path.move(to: CGPoint(x: size.width * segment.lowerBound, y: size.height))
-                        path.addLine(to: CGPoint(x: size.width * segment.upperBound, y: size.height))
-                    }
+                    path.move(to: CGPoint(x: 0, y: size.height))
+                    path.addLine(to: CGPoint(x: size.width, y: size.height))
                     for hour in forecast.hourMarks {
                         let x = size.width * forecast.position(of: hour)
                         path.move(to: CGPoint(x: x, y: size.height))
                         path.addLine(to: CGPoint(x: x, y: size.height + 4))
                     }
                 }
-                .stroke(palette.baseline, lineWidth: 1.5)
-                if let changeT {
-                    ChangeDot(palette: palette).position(x: size.width * changeT, y: size.height)
+                .cut(hole, stroke: StrokeStyle(lineWidth: 1.5))
+                .fill(palette.baseline)
+                if let dot {
+                    ChangeDot(palette: palette).position(dot)
                 }
             }
         }
@@ -208,18 +207,28 @@ public struct CircularRainGauge: View {
                         let angle = Self.start.radians + forecast.position(of: change) * Self.sweep.radians
                         return CGPoint(x: half + half * track * cos(angle), y: half + half * track * sin(angle))
                     }
-                    // Nothing is drawn within a dot's width either side of it, so it stays apart from
-                    // the rain on tinted faces too.
-                    let gap = copy.change.map { change -> ClosedRange<Double> in
-                        let t = forecast.position(of: change)
-                        let width = (side * 0.075) / (half * track) / Self.sweep.radians
-                        return (t - width)...(t + width)
+                    let hole = side * 0.065
+                    // The rain is cut straight across, along the radii either side of the dot: a
+                    // round hole would leave a fleck of a short spell of rain beyond it.
+                    let wedge = copy.change.map { change -> Path in
+                        let angle = Self.start + Self.sweep * forecast.position(of: change)
+                        let spread = Angle(radians: hole / (half * track))
+                        return Path { path in
+                            path.move(to: CGPoint(x: half, y: half))
+                            path.addArc(center: CGPoint(x: half, y: half), radius: half,
+                                        startAngle: angle - spread, endAngle: angle + spread, clockwise: false)
+                            path.closeSubpath()
+                        }
                     }
-                    ArcLine(startAngle: Self.start, sweep: Self.sweep, radius: track, gap: gap)
-                        .stroke(palette.baseline, style: StrokeStyle(lineWidth: stroke, lineCap: .round))
+                    GaugeTrack(startAngle: Self.start, sweep: Self.sweep, radius: track, lineWidth: stroke,
+                               roundStart: (forecast.samples.first?.height ?? 0) == 0,
+                               roundEnd: (forecast.samples.last?.height ?? 0) == 0)
+                        .cut(dot.map { Path.disc($0, radius: hole) })
+                        .fill(palette.baseline)
                     RadialRainArea(forecast: forecast, startAngle: Self.start, sweep: Self.sweep,
                                    baseline: track - halfStroke, full: Self.rim, floorAtBaseline: track + halfStroke,
-                                   scale: .squareRoot, gap: gap)
+                                   scale: .squareRoot)
+                        .cut(wedge)
                         .fill(palette.rain)
                         .accentable()
                     if let dot {
