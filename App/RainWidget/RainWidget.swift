@@ -109,8 +109,8 @@ struct RainWidget: Widget {
         StaticConfiguration(kind: "rain", provider: RainProvider()) { entry in
             RainComplicationView(entry: entry)
         }
-        .configurationDisplayName("Rain")
-        .description("Buienradar rain for the next two hours.")
+        .configurationDisplayName("BuienWatch")
+        .description("Rain for the next two hours.")
         .supportedFamilies([.accessoryCircular, .accessoryRectangular, .accessoryCorner, .accessoryInline])
     }
 }

@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Rain</string>
+	<string>BuienWatch</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -23,7 +23,7 @@
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Rain uses your location to show the rain forecast where you are. To fetch it, Rain sends your location rounded to about 1 km. Your last location is kept only on this watch.</string>
+	<string>BuienWatch uses your location to show the rain forecast where you are. To fetch it, BuienWatch sends your location rounded to about 1 km. Your last location is kept only on this watch.</string>
 	<key>WKApplication</key>
 	<true/>
 	<key>WKWatchOnly</key>

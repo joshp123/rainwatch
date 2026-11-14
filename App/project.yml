@@ -27,7 +27,7 @@ targets:
     info:
       path: RainContainer/Info.plist
       properties:
-        CFBundleDisplayName: Rain
+        CFBundleDisplayName: BuienWatch
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         ITSWatchOnlyContainer: true
@@ -50,13 +50,13 @@ targets:
     info:
       path: Rain/Info.plist
       properties:
-        CFBundleDisplayName: Rain
+        CFBundleDisplayName: BuienWatch
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         WKApplication: true
         WKWatchOnly: true
         ITSAppUsesNonExemptEncryption: false
-        NSLocationWhenInUseUsageDescription: "Rain uses your location to show the rain forecast where you are. To fetch it, Rain sends your location rounded to about 1 km. Your last location is kept only on this watch."
+        NSLocationWhenInUseUsageDescription: "BuienWatch uses your location to show the rain forecast where you are. To fetch it, BuienWatch sends your location rounded to about 1 km. Your last location is kept only on this watch."
     entitlements:
       path: Rain/Rain.entitlements
       properties:
@@ -90,12 +90,12 @@ targets:
     info:
       path: RainWidget/Info.plist
       properties:
-        CFBundleDisplayName: Rain
+        CFBundleDisplayName: BuienWatch
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         NSWidgetWantsLocation: true
         ITSAppUsesNonExemptEncryption: false
-        NSLocationWhenInUseUsageDescription: "Rain uses your location to show the rain forecast where you are. To fetch it, Rain sends your location rounded to about 1 km. Your last location is kept only on this watch."
+        NSLocationWhenInUseUsageDescription: "BuienWatch uses your location to show the rain forecast where you are. To fetch it, BuienWatch sends your location rounded to about 1 km. Your last location is kept only on this watch."
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
     entitlements:

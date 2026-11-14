@@ -72,7 +72,7 @@ struct ContentView: View {
                     }
                     .padding(.top, 10)
                 }
-                .navigationTitle(placeName ?? "Rain")
+                .navigationTitle(placeName ?? "BuienWatch")
                 // Apple's Weather colours its pages by the weather; blue here means rain is due.
                 .containerBackground((forecast.hasRain ? RainPalette.buienradarBlue.opacity(0.45) : Color.black).gradient,
                                      for: .navigation)
@@ -117,7 +117,7 @@ struct ContentView: View {
             ContentUnavailableView {
                 Label("Location Needed", systemImage: "location.slash")
             } description: {
-                Text("Allow location for Rain in Settings, or choose a place.")
+                Text("Allow location for BuienWatch in Settings, or choose a place.")
             } actions: {
                 Button("Choose a Place") { picking = true }
             }

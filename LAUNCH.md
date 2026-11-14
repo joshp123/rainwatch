@@ -6,17 +6,17 @@ Josh's goal: "we know exactly what we want to use to sell or market the app, and
 
 The evidence is in `research/`: `global-data.md` (which data, where), `launch-runbook.md` (every App Store step with its command), `launch-playbook.md` (what Paul Solt and kr0der do) and `app-review-readiness.md` (Apple's rules and the law). Realistic time to "Ready for Sale": four to six weeks, mostly waiting on Apple.
 
-## 1. Decisions only Josh can make
+## 1. Decisions
 
-1. **A KNMI key.** KNMI's two-hour radar nowcast (1 km, five-minute steps, CC BY 4.0, free for commercial use) replaces Buienradar, whose terms need permission for any mobile app. KNMI forbids putting a key in an app, so the key lives on Rain's backend. Josh registers a free account at dataplatform.knmi.nl and requests a key (one account per person, his name). The shared anonymous key works for testing and hit its rate limit today.
-2. **Where the backend runs, and its cost.** Every five minutes a job reads KNMI's nowcast (and later Germany's, the Nordics' and Austria's), cuts it into tiles about 100 km square, and publishes them as static files; the watch downloads its tile. The prototype (`server/knmi_probe.py`) does the cut in 0.07 seconds. Options:
-   - Recommendation: AWS, where Josh's website already runs and whose infrastructure code exists (`~/code/opentofu-infra`): a scheduled Lambda with numpy and h5py, S3 and CloudFront. Estimated $0 to $5 a month at 10,000 users (about 6 million requests), mostly S3 writes (`research/trader-and-hosting.md`; tile count and run time not yet measured).
-   - ChatGPT Sites doesn't fit: it hosts web pages and apps, not background jobs ("background services ... aren't supported"), and from 1 January 2027 6 million requests would use about 960 hosting credits against 125 on Plus or 375 on Pro.
-   - Cloudflare is the fallback, from $5 a month.
-3. **Price.** Recommendation: a one-off €2.99 ($2.99, £2.99), with no subscription, in-app purchase or ads; about €2.10 net per sale under the Small Business Program. Rivals with watch features charge €17 to €25 a year; the Dutch rain apps are free with ads (`research/name-and-price.md`). A paid app needs the Paid Apps Agreement, tax and bank details.
-4. **EU trader status.** A paid app makes Josh a trader; Apple then shows an address, phone and email on Rain's EU store page. Recommendation: stay an individual and give a rented postbox address (PriPost, about €100 in the first year); Apple accepts a P.O. box with a receipt or bill as proof. A BV costs €1,300 to €1,800 to found and €1,300 or more a year, and the store would still show the BV's address. A free app with no income could be declared "not a trader" (`research/trader-and-hosting.md`).
-5. **The name.** Josh suggested RainWatch or BuienWatch. RainWatch is taken in the NL, UK and US stores by another Apple Watch weather app. BuienWatch is free but echoes Buienradar and Buienalarm, whose owners could object, and means nothing outside the Netherlands. Recommendation: "Rain Ahead", free in all three stores, with "buien" and "regen" in the Dutch subtitle and keywords. Still to check: the BOIP, EUIPO and UK trademark registers (they need a real browser), and App Store Connect's own name check.
-6. **Countries at launch.** Decided by Josh: worldwide, with the quality stated honestly per area (section 2). The listing's primary language is English (U.K.), with Dutch; the Netherlands store indexes both.
+Decided by Josh on 14 November:
+- **Name: BuienWatch.** The English name is still open; see below.
+- **Price: free**, with no ads or in-app purchases, so it can be declared "not a trader" in the EU and shows no address. No postbox for now.
+- **Countries: worldwide**, with the quality stated honestly per area (section 2). The listing's primary language is English (U.K.), with Dutch; the Netherlands store indexes both.
+- **KNMI key and Apple's licence agreement:** Josh asked for both to be done for him; Terra is doing them.
+
+Open:
+- **Names per language.** App Store Connect allows one name per language, not per country, so the Dutch listing can say BuienWatch and the English one something else; a Dutch person whose phone is set to English sees the English name. "RainWatch" is in use by another Apple Watch weather app, whose full name is "RainWatch – Cute Cloud Weather". Whether App Store Connect accepts the bare "RainWatch" next to it is answered only by its own name check, once the app record exists.
+- **Server.** Proposal in `server/PROPOSAL.md`: about US$0.15 a month at launch on Josh's AWS account, free of fixed costs, with what any cheaper option would break. Waiting for Josh's go.
 
 ## 2. The data: works everywhere, best in the Netherlands
 
