@@ -74,7 +74,7 @@ struct RainProvider: TimelineProvider {
             ReloadLog.record("no location")
             return timeline(cached: Snapshot.saved, otherwise: .noLocation, now: now)
         }
-        let source = place.isLive ? "live" : "saved \(RainCopy.clock(place.at))"
+        let source = place.chosen.map { "chosen \($0.name)" } ?? (place.isLive ? "live" : "saved \(RainCopy.clock(place.at))")
         do {
             let snapshot = try await Snapshot.fetch(latitude: place.coordinate.latitude, longitude: place.coordinate.longitude, now: now)
             ReloadLog.record("fetched, location \(source)")

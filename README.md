@@ -21,7 +21,7 @@ xcodebuild -project Rain.xcodeproj -scheme Rain -destination 'platform=watchOS S
 
 Install `build/Build/Products/Debug-watchsimulator/Rain.app` with `xcrun simctl install`, then set a location with `xcrun simctl location <device> set 51.92,4.48`. On watchOS the location permission has to be granted by tapping Allow in the app; `simctl privacy` does not reach it.
 
-Device builds sign with team 7M8BR7R488 and automatic signing, with the app group `group.nl.jjp.rain`.
+Device builds sign with team 7M8BR7R488 and automatic signing, with the app group `group.nl.jjp.rain`. The watch app is `nl.jjp.rain.watchkitapp`. For the App Store, archive the `RainContainer` scheme for `generic/platform=iOS`: App Store Connect only takes a watch-only app inside an iPhone app, `nl.jjp.rain`, that never runs.
 
 To read the reload log from the real watch:
 

@@ -45,8 +45,8 @@ Still to prove before launch: a rainy-day comparison of KNMI against Buienradar 
 | Backend: KNMI tiles, then DWD, MET Norway, GeoSphere; the app reads one format from it | Claude | Needs decisions 1 and 2 |
 | WeatherKit on the watch for everywhere else, with Apple's mark and legal link | Claude | To do |
 | Source credit and error text that switch with the source ("Source: KNMI"; the error screens name Buienradar today) | Claude | To do |
-| **Place picker** for when location is off or outside the data: a submission blocker (Guideline 5.1.1(iv) requires manual entry when location is declined) | Claude | To do |
-| **iPhone container target** so App Store Connect accepts the build; bundle IDs become `nl.jjp.rain` (container), `nl.jjp.rain.watchkitapp` and `.widget`. Josh re-adds the complication once afterwards | Claude | To do at release time |
+| **Place picker** for when location is off or outside the data: a submission blocker (Guideline 5.1.1(iv) requires manual entry when location is declined) | Claude | Done; the reviewer's path is a UI test |
+| **iPhone container target** so App Store Connect accepts the build; bundle IDs are now `nl.jjp.rain` (container), `nl.jjp.rain.watchkitapp` and `.widget` | Claude | Done, archive checked unsigned; signing waits for Josh to accept Apple's new Program License Agreement. Josh re-adds the complication once after the first install |
 | Real-watch pass of every state (the `-scenario` route in AGENTS.md), Always On, Night Mode, VoiceOver, larger text, offline, a day's refresh log | Claude, Josh wearing it | To do |
 | App icon (one layered 1088 × 1088 image) | Claude drafts, Josh chooses | To do |
 | Dutch translation of the app | Claude, a Dutch read by Josh | To do |

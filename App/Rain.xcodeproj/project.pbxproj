@@ -10,10 +10,12 @@
 		0826FF3CD0532276101FE5C6 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = B63D41E8863446BE4D00593B /* PrivacyInfo.xcprivacy */; };
 		0A1D01DAF814D649CBD1A57E /* RainUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCBDA42EF1F0EABADA8F70BF /* RainUITests.swift */; };
 		27573C743B2DCC739921613C /* RainApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76FBC3379322E9F2BB1F03BF /* RainApp.swift */; };
+		50D5FB73E5EE55A91F01EFE8 /* Rain.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = D0DFCBBAE96F646AA450D859 /* Rain.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		6AB72E45888650E454164A94 /* RainGraph in Frameworks */ = {isa = PBXBuildFile; productRef = 7BBE3C71B351E044B65650D4 /* RainGraph */; };
 		7F2F8AFC6DD5CFA9CC2FC9F7 /* RainGraph in Frameworks */ = {isa = PBXBuildFile; productRef = B9CE89E80650D5D474B56FB9 /* RainGraph */; };
 		B22967C882EA0E5BBDBF8E0E /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = B63D41E8863446BE4D00593B /* PrivacyInfo.xcprivacy */; };
 		C515955A92FFF24D64E9D61C /* RadarPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24A5456AC0840FD7A47E7340 /* RadarPage.swift */; };
+		C61DC05755C10F88133FF3FB /* PlacePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDE443DA153B758F14C90BBE /* PlacePicker.swift */; };
 		C9165D0FF9414C17A0EFFF46 /* RainWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E5830986D952F71247765B /* RainWidget.swift */; };
 		CCF1C72DB096A5FB96074BE3 /* RainWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 9D596FEADDDC9BDA6C9CE992 /* RainWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
@@ -25,6 +27,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 803C3D1FB8A4010D29281EF6;
 			remoteInfo = RainWidget;
+		};
+		74919C92BE267CA258CBCF97 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 6B278A453160CA5964542B5E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 80660A19AB5CFDC9CDA54D1D;
+			remoteInfo = Rain;
 		};
 		7B08ED762D0B0475E1FBC6E5 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -47,18 +56,31 @@
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		FCD6851A402E016E8BCA74FA /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				50D5FB73E5EE55A91F01EFE8 /* Rain.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		11E5830986D952F71247765B /* RainWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RainWidget.swift; sourceTree = "<group>"; };
 		1F9A00C4F9B89E5A7D762A86 /* RainWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = RainWidget.entitlements; sourceTree = "<group>"; };
 		24A5456AC0840FD7A47E7340 /* RadarPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadarPage.swift; sourceTree = "<group>"; };
+		3E3D2F253DB2162EA5C37245 /* RainContainer.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = RainContainer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5EA8CD1D830406319B28510E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		62D213F8CBF45908BD07AE5C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		76FBC3379322E9F2BB1F03BF /* RainApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RainApp.swift; sourceTree = "<group>"; };
 		8A0DB4767FA1352EE3E8111A /* RainUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RainUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9D596FEADDDC9BDA6C9CE992 /* RainWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = RainWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		B63D41E8863446BE4D00593B /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		BDE443DA153B758F14C90BBE /* PlacePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlacePicker.swift; sourceTree = "<group>"; };
 		D0DFCBBAE96F646AA450D859 /* Rain.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Rain.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DCBDA42EF1F0EABADA8F70BF /* RainUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RainUITests.swift; sourceTree = "<group>"; };
 		F8C4BF18348C0C6C2C270C31 /* buienradar-apple-watch */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "buienradar-apple-watch"; path = ..; sourceTree = SOURCE_ROOT; };
@@ -113,6 +135,7 @@
 			isa = PBXGroup;
 			children = (
 				62D213F8CBF45908BD07AE5C /* Info.plist */,
+				BDE443DA153B758F14C90BBE /* PlacePicker.swift */,
 				24A5456AC0840FD7A47E7340 /* RadarPage.swift */,
 				FD980AE5FE9CA11F1F1DF450 /* Rain.entitlements */,
 				76FBC3379322E9F2BB1F03BF /* RainApp.swift */,
@@ -136,6 +159,7 @@
 			isa = PBXGroup;
 			children = (
 				D0DFCBBAE96F646AA450D859 /* Rain.app */,
+				3E3D2F253DB2162EA5C37245 /* RainContainer.app */,
 				8A0DB4767FA1352EE3E8111A /* RainUITests.xctest */,
 				9D596FEADDDC9BDA6C9CE992 /* RainWidget.appex */,
 			);
@@ -155,6 +179,25 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		468A47A313FCD34B78B86F6C /* RainContainer */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7DD4CD69357C0ACB8F7DE641 /* Build configuration list for PBXNativeTarget "RainContainer" */;
+			buildPhases = (
+				A025ECBD1AB2BD5A12C18ABB /* Sources */,
+				FCD6851A402E016E8BCA74FA /* Embed Watch Content */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				3D4BE26BDE97097CECA82DB4 /* PBXTargetDependency */,
+			);
+			name = RainContainer;
+			packageProductDependencies = (
+			);
+			productName = RainContainer;
+			productReference = 3E3D2F253DB2162EA5C37245 /* RainContainer.app */;
+			productType = "com.apple.product-type.application.watchapp2-container";
+		};
 		803C3D1FB8A4010D29281EF6 /* RainWidget */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = D0106967CAFE77854D318B08 /* Build configuration list for PBXNativeTarget "RainWidget" */;
@@ -224,6 +267,10 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
+					468A47A313FCD34B78B86F6C = {
+						DevelopmentTeam = 7M8BR7R488;
+						ProvisioningStyle = Automatic;
+					};
 					803C3D1FB8A4010D29281EF6 = {
 						DevelopmentTeam = 7M8BR7R488;
 						ProvisioningStyle = Automatic;
@@ -257,6 +304,7 @@
 			projectRoot = "";
 			targets = (
 				80660A19AB5CFDC9CDA54D1D /* Rain */,
+				468A47A313FCD34B78B86F6C /* RainContainer */,
 				A22DEADBA476A2A188E85AB1 /* RainUITests */,
 				803C3D1FB8A4010D29281EF6 /* RainWidget */,
 			);
@@ -287,6 +335,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C61DC05755C10F88133FF3FB /* PlacePicker.swift in Sources */,
 				C515955A92FFF24D64E9D61C /* RadarPage.swift in Sources */,
 				27573C743B2DCC739921613C /* RainApp.swift in Sources */,
 			);
@@ -308,6 +357,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A025ECBD1AB2BD5A12C18ABB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -321,6 +377,11 @@
 			target = 803C3D1FB8A4010D29281EF6 /* RainWidget */;
 			targetProxy = 3AD342EE0A8373616DC0DF18 /* PBXContainerItemProxy */;
 		};
+		3D4BE26BDE97097CECA82DB4 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 80660A19AB5CFDC9CDA54D1D /* Rain */;
+			targetProxy = 74919C92BE267CA258CBCF97 /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
@@ -330,7 +391,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Rain/Rain.entitlements;
 				INFOPLIST_FILE = Rain/Info.plist;
-				PRODUCT_BUNDLE_IDENTIFIER = nl.jjp.rain;
+				PRODUCT_BUNDLE_IDENTIFIER = nl.jjp.rain.watchkitapp;
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = 4;
@@ -343,10 +404,24 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Rain/Rain.entitlements;
 				INFOPLIST_FILE = Rain/Info.plist;
-				PRODUCT_BUNDLE_IDENTIFIER = nl.jjp.rain;
+				PRODUCT_BUNDLE_IDENTIFIER = nl.jjp.rain.watchkitapp;
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = 4;
+			};
+			name = Release;
+		};
+		547096E7F0D0DDB4DB4EBB76 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = RainContainer/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = nl.jjp.rain;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
@@ -360,7 +435,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = nl.jjp.rain.uitests;
+				PRODUCT_BUNDLE_IDENTIFIER = nl.jjp.rain.watchkitapp.uitests;
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = 4;
@@ -416,17 +491,31 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 0.1.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = watchos;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 6.0;
 				WATCHOS_DEPLOYMENT_TARGET = 26.0;
 			};
 			name = Release;
+		};
+		DEA1775C6012FF4E4C322BB1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = RainContainer/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = nl.jjp.rain;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
 		};
 		F73C1EE82ADA025EBCBA3FF8 /* Release */ = {
 			isa = XCBuildConfiguration;
@@ -438,7 +527,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = nl.jjp.rain.widget;
+				PRODUCT_BUNDLE_IDENTIFIER = nl.jjp.rain.watchkitapp.widget;
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = 4;
@@ -455,7 +544,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = nl.jjp.rain.uitests;
+				PRODUCT_BUNDLE_IDENTIFIER = nl.jjp.rain.watchkitapp.uitests;
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = 4;
@@ -517,12 +606,12 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 0.1.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = watchos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 6.0;
@@ -540,7 +629,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = nl.jjp.rain.widget;
+				PRODUCT_BUNDLE_IDENTIFIER = nl.jjp.rain.watchkitapp.widget;
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = 4;
@@ -573,6 +662,15 @@
 			buildConfigurations = (
 				801853183F6CFD561949F866 /* Debug */,
 				FA528633B1CD6A86D9121AAF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		7DD4CD69357C0ACB8F7DE641 /* Build configuration list for PBXNativeTarget "RainContainer" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DEA1775C6012FF4E4C322BB1 /* Debug */,
+				547096E7F0D0DDB4DB4EBB76 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

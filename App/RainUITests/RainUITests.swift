@@ -81,11 +81,58 @@ final class RainUITests: XCTestCase {
         keep("radar-rain")
     }
 
+    /// Apple's reviewer may refuse location: the app must still work, with a place picked by name.
+    func testChoosePlaceWithoutLocation() {
+        app.resetAuthorizationStatus(for: .location)
+        app.launchArguments = ["-freshInstall", "YES"]
+        addTeardownBlock { @MainActor in
+            // Put the wearer's location back for the other tests.
+            self.app.resetAuthorizationStatus(for: .location)
+        }
+        app.launch()
+        answerLocation("Don't Allow")
+        XCTAssertTrue(app.staticTexts["Location Needed"].waitForExistence(timeout: 30), "Refusing location should say so")
+        let choose = app.buttons["Choose a Place"].firstMatch
+        XCTAssertTrue(choose.exists, "Refusing location should offer a place instead")
+        keep("place-location-refused")
+        choose.tap()
+        let field = app.textFields["Town or Postcode"].firstMatch
+        XCTAssertTrue(field.waitForExistence(timeout: 5))
+        field.tap()
+        app.typeText("Utrecht")
+        // The watch keyboard runs outside the app; a person finishes with its Done button.
+        let done = [app, XCUIApplication(bundleIdentifier: "com.apple.Carousel")]
+            .map { $0.buttons["Done"].firstMatch }
+            .first { $0.waitForExistence(timeout: 3) }
+        XCTAssertNotNil(done, "The keyboard should offer Done")
+        done?.tap()
+        let utrecht = app.buttons.containing(NSPredicate(format: "label BEGINSWITH 'Utrecht'")).firstMatch
+        XCTAssertTrue(utrecht.waitForExistence(timeout: 20), "Searching should find the town")
+        keep("place-search")
+        utrecht.tap()
+        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label BEGINSWITH 'Updated'")).firstMatch.waitForExistence(timeout: 30),
+                      "Picking a town should show its forecast")
+        XCTAssertTrue(app.staticTexts["Utrecht"].exists, "The page should be named after the picked town")
+        keep("place-forecast")
+        // Back to the wearer's location, as someone would after a trip.
+        let change = app.buttons["Change Place"].firstMatch
+        for _ in 0..<5 where !change.isHittable { app.swipeUp() }
+        change.tap()
+        let mine = app.buttons["Use My Location"].firstMatch
+        XCTAssertTrue(mine.waitForExistence(timeout: 5))
+        mine.tap()
+        XCTAssertTrue(app.staticTexts["Location Needed"].waitForExistence(timeout: 30))
+    }
+
     /// Location permission is asked by the system, outside the app.
     private func allowLocation() {
+        answerLocation("Allow While Using App", "Allow Once")
+    }
+
+    private func answerLocation(_ labels: String...) {
         for bundle in ["com.apple.Carousel", "com.apple.springboard"] {
             let system = XCUIApplication(bundleIdentifier: bundle)
-            for label in ["Allow While Using App", "Allow Once"] {
+            for label in labels {
                 let button = system.buttons[label]
                 if button.waitForExistence(timeout: 3) {
                     button.tap()

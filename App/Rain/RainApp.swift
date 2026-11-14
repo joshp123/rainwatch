@@ -13,6 +13,11 @@ struct RainApp: App {
         let shared = UserDefaults(suiteName: Place.appGroup)
         shared?.set(UserDefaults.standard.string(forKey: "scenario"), forKey: "debugScenario")
         shared?.set(Date.now, forKey: "debugScenarioSet")
+        // `-freshInstall YES` starts as a new install would, for the path Apple's reviewer takes.
+        if UserDefaults.standard.bool(forKey: "freshInstall") {
+            Place.forget()
+            Snapshot.forget()
+        }
         WidgetCenter.shared.reloadAllTimelines()
     }
     #endif
@@ -44,6 +49,7 @@ struct ContentView: View {
     @State private var couldNotUpdate = false
     @State private var placeName: String?
     @State private var session: CLServiceSession?
+    @State private var picking = false
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
@@ -61,6 +67,10 @@ struct ContentView: View {
                         Button("Try Again") { Task { await refresh() } }
                             .padding(.top, 6)
                     }
+                    Button { picking = true } label: {
+                        Label(Place.chosen == nil ? "Choose a Place" : "Change Place", systemImage: "mappin.and.ellipse")
+                    }
+                    .padding(.top, 10)
                 }
                 .navigationTitle(placeName ?? "Rain")
                 // Apple's Weather colours its pages by the weather; blue here means rain is due.
@@ -76,6 +86,16 @@ struct ContentView: View {
                         }
                     }
                 }
+            }
+        }
+        .sheet(isPresented: $picking) {
+            PlacePicker { place in
+                Place.choose(place)
+                picking = false
+                placeName = place?.name
+                load = .loading(place == nil ? "Finding where you are" : "Asking Buienradar")
+                couldNotUpdate = false
+                Task { await refresh() }
             }
         }
         .onChange(of: scenePhase, initial: true) { _, phase in
@@ -94,8 +114,13 @@ struct ContentView: View {
     @ViewBuilder private func failed(_ failure: Failure) -> some View {
         switch failure {
         case .noLocation:
-            ContentUnavailableView("Location Needed", systemImage: "location.slash",
-                                   description: Text("Allow Rain in Settings, Privacy & Security, Location Services."))
+            ContentUnavailableView {
+                Label("Location Needed", systemImage: "location.slash")
+            } description: {
+                Text("Allow location for Rain in Settings, or choose a place.")
+            } actions: {
+                Button("Choose a Place") { picking = true }
+            }
         case .offline:
             ContentUnavailableView {
                 Label("No Connection", systemImage: "wifi.slash")
@@ -105,8 +130,13 @@ struct ContentView: View {
                 Button("Try Again") { Task { await refresh() } }
             }
         case .notCovered:
-            ContentUnavailableView("No Forecast Here", systemImage: "mappin.slash",
-                                   description: Text("Buienradar covers the Netherlands and nearby countries."))
+            ContentUnavailableView {
+                Label("No Forecast Here", systemImage: "mappin.slash")
+            } description: {
+                Text("Buienradar covers the Netherlands and nearby countries.")
+            } actions: {
+                Button("Choose a Place") { picking = true }
+            }
         case .noForecast:
             ContentUnavailableView {
                 Label("No Forecast", systemImage: "cloud.rain")
@@ -119,6 +149,9 @@ struct ContentView: View {
     }
 
     private static var saved: Load? {
+        if Place.chosen == nil, [.denied, .restricted].contains(CLLocationManager().authorizationStatus) {
+            return .failed(.noLocation)
+        }
         guard let snapshot = Snapshot.saved, Date.now < snapshot.staleAt,
               let forecast = RainForecast.at(.now, from: snapshot.samples) else { return nil }
         return .ready(forecast, fetched: snapshot.fetched, place: CLLocationCoordinate2D(latitude: snapshot.latitude, longitude: snapshot.longitude))
@@ -154,14 +187,26 @@ struct ContentView: View {
             return
         }
         #endif
-        // Opened on the saved forecast: name its town at once rather than after the fetch.
-        if placeName == nil, case let .ready(_, _, saved) = load {
-            Task { if placeName == nil { placeName = await Self.town(at: saved) } }
+        let chosen = Place.chosen
+        // Someone who refused location gets the choice of a place, not their last known position.
+        let status = CLLocationManager().authorizationStatus
+        if chosen == nil, status == .denied || status == .restricted {
+            load = .failed(.noLocation)
+            return
         }
-        session = CLServiceSession(authorization: .whenInUse)
+        if let chosen {
+            placeName = chosen.name
+            session = nil
+        } else {
+            // Opened on the saved forecast: name its town at once rather than after the fetch.
+            if placeName == nil, case let .ready(_, _, saved) = load {
+                Task { if placeName == nil { placeName = await Self.town(at: saved) } }
+            }
+            session = CLServiceSession(authorization: .whenInUse)
+        }
         do {
             // The first time, Core Location waits for an answer to its permission question.
-            let asking = CLLocationManager().authorizationStatus == .notDetermined
+            let asking = chosen == nil && CLLocationManager().authorizationStatus == .notDetermined
             let place = try await Place.current(timeout: .seconds(asking ? 120 : 8)).coordinate
             if case .loading = load { load = .loading("Asking Buienradar") }
             let snapshot = try await Snapshot.fetch(latitude: place.latitude, longitude: place.longitude)
@@ -173,7 +218,7 @@ struct ContentView: View {
             couldNotUpdate = false
             // Free of the widget budget while the app is in front.
             WidgetCenter.shared.reloadAllTimelines()
-            placeName = await Self.town(at: place) ?? placeName
+            if chosen == nil { placeName = await Self.town(at: place) ?? placeName }
         } catch Place.Failure.noLocation {
             fail(.noLocation)
         } catch Buienradar.Failure.notCovered {

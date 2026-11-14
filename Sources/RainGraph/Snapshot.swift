@@ -44,6 +44,10 @@ public struct Snapshot: Codable, Sendable {
         (try? Data(contentsOf: file)).flatMap { try? JSONDecoder().decode(Snapshot.self, from: $0) }
     }
 
+    public static func forget() {
+        try? FileManager.default.removeItem(at: file)
+    }
+
     private static var file: URL {
         let folder = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: Place.appGroup)
             ?? FileManager.default.temporaryDirectory

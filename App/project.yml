@@ -4,6 +4,7 @@ options:
   bundleIdPrefix: nl.jjp
   deploymentTarget:
     watchOS: "26.0"
+    iOS: "26.0"
   createIntermediateGroups: true
 packages:
   RainGraph:
@@ -16,6 +17,26 @@ settings:
     MARKETING_VERSION: "0.1.0"
     CURRENT_PROJECT_VERSION: "1"
 targets:
+  # The App Store takes a watch-only app only inside an iPhone app that never runs: an archive of
+  # the watch app alone can't be sent to App Store Connect. Archive this target's scheme for iOS.
+  RainContainer:
+    type: application.watchapp2-container
+    platform: iOS
+    dependencies:
+      - target: Rain
+    info:
+      path: RainContainer/Info.plist
+      properties:
+        CFBundleDisplayName: Rain
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        ITSWatchOnlyContainer: true
+        LSApplicationLaunchProhibited: true
+        ITSAppUsesNonExemptEncryption: false
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: nl.jjp.rain
+    scheme: {}
   Rain:
     type: application
     platform: watchOS
@@ -42,7 +63,8 @@ targets:
         com.apple.security.application-groups: [group.nl.jjp.rain]
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: nl.jjp.rain
+        # Apple requires the container's bundle ID as the prefix of the watch app's.
+        PRODUCT_BUNDLE_IDENTIFIER: nl.jjp.rain.watchkitapp
     scheme:
       testTargets: [RainUITests]
   RainUITests:
@@ -53,7 +75,7 @@ targets:
       - target: Rain
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: nl.jjp.rain.uitests
+        PRODUCT_BUNDLE_IDENTIFIER: nl.jjp.rain.watchkitapp.uitests
         TEST_TARGET_NAME: Rain
         GENERATE_INFOPLIST_FILE: YES
   RainWidget:
@@ -82,4 +104,4 @@ targets:
         com.apple.security.application-groups: [group.nl.jjp.rain]
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: nl.jjp.rain.widget
+        PRODUCT_BUNDLE_IDENTIFIER: nl.jjp.rain.watchkitapp.widget
