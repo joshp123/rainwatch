@@ -69,6 +69,35 @@ public enum RainCurve {
 }
 
 extension RainCurve {
+    /// The curve with `gap` (the time round the change dot) drawn dry. Rain the cut leaves beside
+    /// the gap narrower than half of it is drawn dry too: it would show as a stray splinter, since
+    /// a real shower lasts at least one five-minute sample and is always wider.
+    static func points(_ forecast: RainForecast, scale: Scale, gap: ClosedRange<Double>?) -> [(t: Double, v: Double)] {
+        var curve = points(forecast, scale: scale)
+        guard let gap else { return curve }
+        for i in curve.indices where gap.contains(curve[i].t) { curve[i].v = 0 }
+        let narrowest = (gap.upperBound - gap.lowerBound) / 2
+        var start: Int?
+        for i in curve.indices {
+            let wet = curve[i].v > 0.0005
+            if wet, start == nil { start = i }
+            guard let first = start, !wet || i == curve.indices.last else { continue }
+            let last = wet ? i : i - 1
+            if curve[last].t - curve[first].t < narrowest {
+                for k in first...last { curve[k].v = 0 }
+            }
+            start = nil
+        }
+        return curve
+    }
+
+    /// The baseline either side of `gap`, without a stub narrower than half the gap.
+    static func baseline(around gap: ClosedRange<Double>?) -> [ClosedRange<Double>] {
+        guard let gap else { return [0...1] }
+        let pieces = [0...max(0, gap.lowerBound), min(1, gap.upperBound)...1]
+        return pieces.filter { $0.upperBound - $0.lowerBound >= (gap.upperBound - gap.lowerBound) / 2 }
+    }
+
     /// The curve cut into its wet stretches, each starting and ending on the baseline, so dry time
     /// draws nothing at all (a zero-height area leaves a coloured hairline along the baseline).
     /// `gap` is a stretch of time left empty around the change dot, so the dot never touches the
@@ -77,8 +106,7 @@ extension RainCurve {
         var runs: [[(t: Double, v: Double)]] = []
         var run: [(t: Double, v: Double)] = []
         var lastDry: (t: Double, v: Double)?
-        for var point in points(forecast, scale: scale) {
-            if let gap, gap.contains(point.t) { point.v = 0 }
+        for point in points(forecast, scale: scale, gap: gap) {
             if point.v > 0.0005 {
                 if run.isEmpty { run.append((lastDry?.t ?? point.t, 0)) }
                 run.append(point)
@@ -182,9 +210,7 @@ public struct RadialRainArea: Shape {
             return CGPoint(x: centre.x + radius * cos(angle), y: centre.y + radius * sin(angle))
         }
         return Path { path in
-            let curve = RainCurve.points(forecast, scale: scale).map { point in
-                (t: point.t, v: gap?.contains(point.t) == true ? 0 : point.v)
-            }
+            let curve = RainCurve.points(forecast, scale: scale, gap: gap)
             path.move(to: point(0, 0))
             for p in curve { path.addLine(to: point(p.t, p.v)) }
             for p in curve.reversed() { path.addLine(to: point(p.t, 0)) }
@@ -210,9 +236,8 @@ public struct ArcLine: Shape {
     public func path(in rect: CGRect) -> Path {
         let centre = CGPoint(x: rect.midX, y: rect.midY)
         let r = min(rect.width, rect.height) / 2 * radius
-        let pieces: [ClosedRange<Double>] = gap.map { [0...max(0, $0.lowerBound), min(1, $0.upperBound)...1] } ?? [0...1]
         return Path { path in
-            for piece in pieces where piece.upperBound - piece.lowerBound > 0.001 {
+            for piece in RainCurve.baseline(around: gap) {
                 path.move(to: CGPoint(x: centre.x + r * cos((startAngle + sweep * piece.lowerBound).radians),
                                       y: centre.y + r * sin((startAngle + sweep * piece.lowerBound).radians)))
                 path.addArc(center: centre, radius: r, startAngle: startAngle + sweep * piece.lowerBound,

@@ -2,70 +2,76 @@
 
 # Launching Rain on the App Store
 
-Josh's goal: "we know exactly what we want to use to sell or market the app, and how to get it smoothly approved". This is the plan to get there: what only Josh can decide, then every task in order, who does it and where it stands. The evidence is in `research/app-review-readiness.md` (approval and law), `research/launch-playbook.md` (what Paul Solt and kr0der do, from the posts Josh saved) and Fable's design review (summarised under Product).
+Josh's goal: "we know exactly what we want to use to sell or market the app, and how to get it smoothly approved". He wants it to "just work" outside the Netherlands, at the highest quality the open data allows, with the Netherlands best of all.
+
+The evidence is in `research/`: `global-data.md` (which data, where), `launch-runbook.md` (every App Store step with its command), `launch-playbook.md` (what Paul Solt and kr0der do) and `app-review-readiness.md` (Apple's rules and the law). Realistic time to "Ready for Sale": four to six weeks, mostly waiting on Apple.
 
 ## 1. Decisions only Josh can make
 
-These come first because the rest depends on them.
+1. **A KNMI key.** KNMI's two-hour radar nowcast (1 km, five-minute steps, CC BY 4.0, free for commercial use) replaces Buienradar, whose terms need permission for any mobile app. KNMI forbids putting a key in an app, so the key lives on Rain's backend. Josh registers a free account at dataplatform.knmi.nl and requests a key (one account per person, his name). The shared anonymous key works for testing and hit its rate limit today.
+2. **Where the backend runs, and its cost.** Every five minutes a job reads KNMI's nowcast (and later Germany's, the Nordics' and Austria's), cuts it into tiles about 100 km square, and publishes them as static files; the watch downloads its tile. The prototype (`server/knmi_probe.py`) does the cut in 0.07 seconds. Options:
+   - AWS, where Josh's website already runs: a scheduled function, storage and CloudFront.
+   - Cloudflare: a scheduled Worker and R2 storage.
+   - 10,000 users would make about 6 million requests a month for small static files (`research/global-data.md`). That may fit both providers' free allowances; I have not checked today's prices, and the research's estimate for a small server and CDN is €5 to €20 a month. Recommendation: AWS, because the account and infrastructure code (`~/code/opentofu-infra`) already exist.
+3. **Price.** Free, or a one-off €2 to €4. The playbook's evidence is against subscriptions for a utility like this. A paid app needs the Paid Apps Agreement, tax and bank details, and the Small Business Program (15% instead of 30%).
+4. **EU trader status.** A paid app makes Josh a trader; Apple then shows his address, phone and email on Rain's EU store page (a P.O. box is allowed).
+5. **The name.** "Rain" is generic, so it may be taken and is hard to find in search. It is only proven available when App Store Connect accepts it, and it needs a trademark check (EUIPO, BOIP). Fallback: "Rain Ahead".
+6. **Countries at launch.** Recommendation: worldwide, with the quality stated honestly per area (section 2). The listing's primary language is English (U.K.), with Dutch; the Netherlands store indexes both.
 
-1. **The data.** Buienradar's terms, verified on its page: its free data is for non-commercial use with credit, and "het gebruik voor mobiele toepassingen of commerciële doeleinden vereist toestemming van Buienradar" (use in mobile apps or for commercial purposes needs Buienradar's permission). That covers a free app too, and the radar key Rain uses was copied from Buienradar's website. Options:
-   - **Ask Buienradar for written permission** (info@buienradar.nl; the brand belongs to RTL and DPG Media). It keeps today's data and quality. The answer may be no, slow, or free-only.
-   - **Move to KNMI open data** (CC BY 4.0, free with a registered key): five-minute radar and a two-hour radar nowcast. It needs work: download and decode KNMI's files, read the forecast at your location and draw the radar, probably on a small server rather than the watch. Quality, latency and running cost are unknown until a prototype measures them.
-   - Recommendation: send the request now, and in parallel build a one-day KNMI prototype that answers whether it can run on the watch or needs a server, and how its forecast compares with Buienradar's at the same places. A "no" then costs days, not the launch.
-2. **Price.** Free, or a one-off price. The playbook's evidence is against subscriptions for a utility like this (kr0der's subscription apps lost money); its recommendation is a one-off €2 to €4. If Buienradar allows free use only, that decides it. Paid apps need Apple's Paid Apps Agreement, tax and bank details, and should join the Small Business Program (Apple's cut 15% instead of 30%).
-3. **EU trader status.** Under the Digital Services Act, Apple shows a trader's address, phone and email on the app's EU store page. A paid app points to trader status. Josh decides his status, and whether to use a business address.
-4. **The name.** "Rain" is generic: its availability is only known when App Store Connect accepts it, and it needs a trademark search (EUIPO, BOIP). "Buienradar" cannot be in the name, subtitle, keywords or screenshots without permission.
-5. **Market and language.** The Netherlands first, with Dutch and English listings, or wider. Buienradar's graph covers the Netherlands and nearby countries; KNMI's radar covers the Netherlands.
-6. **Outside the coverage area or without location.** Today Rain shows "No Forecast Here" or "Location Needed". An App Review tester, probably in the US, would see only that. Recommendation: let the wearer choose a place (search or a short list), use it when location is off or out of range, and give the tester a demo route in the review notes.
+## 2. The data: works everywhere, best in the Netherlands
 
-## 2. Product: make it shippable
+| Area | Source | Rain line | Radar |
+|---|---|---|---|
+| Netherlands, Belgium, Luxembourg, western Germany, Kent | KNMI radar nowcast, via Rain's backend | 2 h, 5 min, 1 km | Real frames, 2 h ahead |
+| Rest of Germany | DWD radar nowcast (free, credit DWD), via the backend | 2 h, 5 min | Real frames |
+| Norway, Sweden, Finland, Denmark | MET Norway nowcast (CC BY 4.0) | 2 h, 5 min, where radar covers | Observed only, until tested |
+| Austria | GeoSphere INCA nowcast (CC BY 4.0) | 3 h, 15 min | Real frames |
+| UK, Ireland, US, Australia, Japan | Apple WeatherKit next-hour forecast, on the watch | 1 h, minute by minute | None at first |
+| Everywhere else | Apple WeatherKit hourly forecast | Hourly, labelled "Hourly only" | None |
 
-| Task | Who | Status |
-|---|---|---|
-| Complications, Smart Stack, app, radar, every state rendered by `RainUITests` | Claude | Done |
-| Design pass from Fable's review: circle words always about rain ("IN" until it arrives, "FOR" while it lasts), real peak heights in the circle, stale after an hour not 30 minutes, app opens on the saved forecast, local time zone and clock format, words-only corner and inline, Smart Stack priority | Claude | Done, not yet on the real watch (it was out of range) |
-| Data source: Buienradar with its required credit, or KNMI (decision 1) | Claude | Blocked on decision 1 |
-| Place picker and fallback for no location or outside coverage (decision 6) | Claude | Blocked on decision 6 |
-| Real-watch pass of every complication state (the debug `-scenario` route in AGENTS.md), plus Always On, Night Mode, tinted faces, VoiceOver, larger text, offline, denied location | Claude, Josh wearing it | To do |
-| A day's refresh log from the watch, to set the stale limit from measured gaps | Josh wears it with Rain on the face; Claude reads the log | To do |
-| Radar rain contrast checked on the real watch (pale blue on the dark map was weak in the simulator) | Claude | To do |
-| App icon (watchOS: one layered 1088 × 1088 px square, masked to a circle) | Claude drafts, Josh chooses | To do |
-| Dutch localisation of the app (decision 5) | Claude | To do |
-| Privacy policy page, hosted on Josh's site, linked from the app | Claude drafts, Josh publishes | To do |
-| Privacy manifest (`PrivacyInfo.xcprivacy`: the app group's `UserDefaults` is a required-reason API) and `ITSAppUsesNonExemptEncryption = NO` (HTTPS only) | Claude | To do |
-| Location purpose string that says what happens to the location | Claude | To do |
-| Version 1.0, release build, archive | Claude | To do |
+Later, in order of users: the backend extrapolates open radar where there is no national nowcast (the US, the UK, then Europe from the EUMETNET OPERA composite).
 
-## 3. The store page: what sells it
+What gets worse outside the Netherlands, said plainly in the app: a shorter horizon, coarser steps, or hourly only. WeatherKit is free up to 500,000 calls a month on Josh's membership; past that Apple charges from $49.99 a month. Its terms require the Apple Weather mark and legal link on screen, and forbid caching it on a server. Rejected after checking: RainViewer (no forecast since January 2026, personal use only), Open-Meteo (free tier non-commercial), the Bureau of Meteorology (paid licence), Rainbow.ai (paid; its global coverage is "coming soon").
 
-From the playbook (Paul Solt's screenshot method, written up from designer Theodora / @DesignerAnts) and Apple's specifications.
+Still to prove before launch: a rainy-day comparison of KNMI against Buienradar at 20 or more places, to know KNMI is as good.
+
+## 3. Product: what must change to ship
 
 | Task | Who | Status |
 |---|---|---|
-| Title, subtitle ("says the job", for example "Rain in the next 2 hours"), keywords, description and promotional text, in English and Dutch, with no unsupported "real-time" or accuracy claims | Claude drafts, Josh approves | To do |
-| Up to five Apple Watch screenshots at 422 × 514 (Ultra 3), from the real watch, each with one headline of eight words or fewer about the moment, not the feature: "Will I get wet?", then the circle on a face, the Smart Stack card, the forecast, the radar | Claude | To do |
-| No preview video: Apple's specification lists none for Apple Watch. A short radar clip goes on Josh's site and social posts instead | Claude | To do |
-| Support URL and privacy policy URL | Josh's site | To do |
-| Review notes: watch-only, where location is asked, how to reach the radar, the data source and its permission, the demo route; plus a demo video of the app (kr0der's practice) | Claude | To do |
+| Complications, Smart Stack, app and radar, every state tested by `RainUITests` | Claude | Done |
+| Fable's design reviews: circle words always about rain, peaks that show (one square-root scale, a deeper band), a smooth line over a fill, a dot that stands apart on tinted faces, the app opening on the saved forecast, stale after an hour | Claude | Done; the circle checked on the real watch |
+| Privacy manifest, encryption declaration, a location text that says what happens | Claude | Done |
+| Backend: KNMI tiles, then DWD, MET Norway, GeoSphere; the app reads one format from it | Claude | Needs decisions 1 and 2 |
+| WeatherKit on the watch for everywhere else, with Apple's mark and legal link | Claude | To do |
+| Source credit and error text that switch with the source ("Source: KNMI"; the error screens name Buienradar today) | Claude | To do |
+| **Place picker** for when location is off or outside the data: a submission blocker (Guideline 5.1.1(iv) requires manual entry when location is declined) | Claude | To do |
+| **iPhone container target** so App Store Connect accepts the build; bundle IDs become `nl.jjp.rain` (container), `nl.jjp.rain.watchkitapp` and `.widget`. Josh re-adds the complication once afterwards | Claude | To do at release time |
+| Real-watch pass of every state (the `-scenario` route in AGENTS.md), Always On, Night Mode, VoiceOver, larger text, offline, a day's refresh log | Claude, Josh wearing it | To do |
+| App icon (one layered 1088 × 1088 image) | Claude drafts, Josh chooses | To do |
+| Dutch translation of the app | Claude, a Dutch read by Josh | To do |
+| Privacy policy and support page on Josh's site, linked in the app | Claude drafts, Josh publishes | To do |
 
-## 4. App Store Connect: approval
+## 4. The store page: what sells it
 
-Everything here acts on Josh's Apple account and is visible to Apple, so each step waits for his go-ahead. His membership is active (the team holds a Developer ID certificate); Xcode creates the App Store certificate on first upload.
+- **Words.** Subtitle "Rain in the next 2 hours" / "Regen de komende 2 uur"; keywords and description drafted in `research/launch-runbook.md` (C5). No "Buienradar", "real-time", "accurate" or "best" anywhere.
+- **Screenshots.** Up to five at 422 × 514, from the real watch, each with one headline of eight words or fewer about the moment ("Will I get wet?", then the circle on a face, the Smart Stack card, the forecast, the radar). No bezel: at 422 × 514 a frame shrinks the watch. Built by a small renderer in this repo, in English and Dutch. Apple Watch has no preview video.
+- **Ratings.** Apple Watch has no in-app review prompt (the API is unavailable on watchOS). Ratings come from a "write a review" link on the support page and in the launch post.
+- **Featuring.** Nominate in App Store Connect when external TestFlight starts, three weeks or more before release; Rain uses what Apple promotes on watchOS (complications, the Smart Stack, the Digital Crown).
 
-| Task | Who | Status |
-|---|---|---|
-| Create the app record (App Store Connect's iOS flow, then watchOS), with bundle IDs `nl.jjp.rain` and `nl.jjp.rain.widget` | Claude with Josh's go-ahead | To do |
-| Paid Apps Agreement, tax and bank details, Small Business Program (if paid) | Josh | Decision 2 |
-| Trader status (decision 3), age rating questionnaire, content rights (needs decision 1 settled), App Privacy answers, price and countries | Claude prepares, Josh confirms | To do |
-| Upload a build to TestFlight; wear it for two weeks, including a rainy commute; two or three calls with Dutch cyclists watching them use it (Paul Solt's practice) | Claude uploads, Josh tests | To do |
-| Submit for review | Josh's go-ahead | To do |
-| Optional: drive App Store Connect from the terminal with the `asc` CLI (rorkai/App-Store-Connect-CLI), which kr0der uses, with an App Store Connect API key from Josh's keyring | Claude | If wanted |
+## 5. App Store Connect: the steps
 
-## 5. Launch and after
+Step by step, with commands, in `research/launch-runbook.md`. In short:
 
-The playbook's evidence points away from paid marketing for a small utility (kr0der's ads and content farms did not pay; Paul Solt's big result came from Apple featuring a plain, good utility).
+1. **Day 0, Josh:** confirm agreements; request App Store Connect API access (Apple reviews it case by case); set trader status; if paid, tax and bank.
+2. **Build:** add the container, archive and upload with `xcodebuild` (the `asc` CLI cannot upload watch-only apps); everything after the upload through `asc`, as kr0der does.
+3. **Record and page:** Josh creates the app record in the browser (it needs his two-factor sign-in); then categories, age rating, App Privacy, metadata and screenshots through `asc`.
+4. **TestFlight:** internal at once, then 5 to 10 Dutch testers for two weeks, with two or three calls watching them use it (Paul Solt's practice).
+5. **Submit:** Josh presses Submit for the first review. Review notes explain watch-only use, the place picker and the data sources, with a 60-second demo video (kr0der's practice). Plan two weeks for review; after a metadata rejection, resubmit the same build (Paul Solt lost eight days accepting "use the latest build").
+6. **Release:** manual release (phased release is only for updates), then a fresh install from the store on Josh's watch.
 
-- Nominate Rain for featuring in App Store Connect once the page and a stable build are ready; it uses what Apple promotes on watchOS: complications, the Smart Stack and the Digital Crown.
+## 6. After launch
+
 - One launch post on X and a Dutch page; Dutch communities such as Tweakers and r/thenetherlands. Every post waits for Josh to approve its text and where it goes.
-- Ask for ratings only with Apple's own prompt (`requestReview`), after several useful forecasts, never from a custom prompt (Guideline 5.6.1); add a "Rate Rain" link.
-- Turn on review notifications and reply to written reviews in the first month.
+- No paid ads: kr0der's ads and content farms did not pay; Paul Solt's big result came from Apple featuring a plain, good utility.
+- Reply to written reviews in the first month; check conversion in App Analytics after 30 days and adjust the first screenshot.

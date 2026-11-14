@@ -88,7 +88,7 @@ struct RainChart: View {
                     .stroke(palette.rain, style: StrokeStyle(lineWidth: 1.5, lineCap: .round, lineJoin: .round))
                     .accentable()
                 Path { path in
-                    let segments: [ClosedRange<Double>] = gap.map { [0...max(0, $0.lowerBound), min(1, $0.upperBound)...1] } ?? [0...1]
+                    let segments = RainCurve.baseline(around: gap)
                     for segment in segments where segment.upperBound > segment.lowerBound {
                         path.move(to: CGPoint(x: size.width * segment.lowerBound, y: size.height))
                         path.addLine(to: CGPoint(x: size.width * segment.upperBound, y: size.height))
