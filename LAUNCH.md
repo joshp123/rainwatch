@@ -49,7 +49,7 @@ Who does it: Claude (or another agent), unless it says Josh. "Josh" means only w
 | 16 | Version 1.0.0, build 1 | Claude | With the first upload |
 | 17 | Real-watch pass: every forecast state, Always On, Night Mode, VoiceOver, larger text, offline, and a day's refresh log | Claude, with Josh wearing it | To do |
 | 18 | Josh moves his complication from the old Rain app to BuienWatch; then the old app is removed | Josh, then Claude | BuienWatch is installed next to Rain |
-| 19 | Score KNMI's plain forecast against its blended one over a season of its archive, summer showers included; use the blend wherever it wins (it also gives 6 hours and the chance of rain) | Claude | Running |
+| 19 | Score KNMI's plain forecast against its blended one over a season | Claude | Done: plain for the first 30 minutes, blend after, better on 77% of days in the second hour (`research/verification/season.md`). Built into the server, with the plain forecast as fallback |
 
 **C. The store page**
 
@@ -86,7 +86,7 @@ Detail and sources: `research/radar-sota.md`.
 
 - **KNMI's picture already has the neighbours' radars:** two Dutch, three Belgian and three German, cleaned and adjusted to rain gauges. It reaches about 300 km west of the Dutch coast, so British radars would change nothing within two hours. Buienradar adds them for its larger map and its longer-range radars.
 - **The method matters more than the radars.** KNMI's operational forecast, like Buienradar's, moves today's rain along and can't see showers form or die. The state of the art blends that with a weather model; Belgium's RMI runs this operationally, and KNMI publishes its own blend free, as a pilot.
-- **Measured on one rainy case** (13 November), the blend beat KNMI's plain forecast in the first hour and lost in the second; both beat Buienradar. A season of KNMI's archive is being scored now (item 19).
+- **Measured over 66 rainy days,** KNMI's plain forecast is best for the first 30 minutes and its blend from there to 2 hours, so BuienWatch shows them in that order. On the one day Buienradar could be compared (13 November), both of KNMI's forecasts beat it.
 - **Outside KNMI's area,** Europe's radar composite (OPERA) has been open since May 2026; running the same method on it would give a 2-hour forecast across Europe (item 11).
 
 ### Coverage

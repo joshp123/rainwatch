@@ -53,7 +53,13 @@ The blend is better in the first hour, with far fewer false alarms, and worse af
 ## What BuienWatch should do
 
 1. **At launch,** use KNMI's plain forecast, as built and proposed.
-2. **Next,** score the plain forecast against the blend over the archive. If the blend wins the first hour across a season, use it for the first hour, or wherever it wins. That also opens a 6-hour forecast and the chance of rain, at no extra cost. The risk is that KNMI ends the pilot. The plain forecast stays as the fallback.
+2. **Show the plain forecast for the first 30 minutes, then the blend.** The season test (`research/verification/season.md`) scored 66 rainy days from April 2025 to November 2026, 24 of them in summer and 10 with thunderstorm cells. The 13 November pattern, where the blend was worse in the second hour, did not hold:
+   - **5 minutes ahead:** the plain forecast is better.
+   - **10 to 30 minutes:** level.
+   - **35 to 60 minutes:** the blend is slightly better.
+   - **65 to 120 minutes:** the blend is better, CSI 0.48 against 0.44, on 77% of days.
+   
+   Switching at 30 minutes gains 0.027 CSI over the plain forecast alone (95% interval 0.016 to 0.038). The newest 30 days agree. If KNMI's blend file is late or the pilot ends, the server falls back to the plain forecast.
 3. **Don't build our own Dutch radar picture.** KNMI's already has the Belgian and German radars and is cleaned and gauge-adjusted. Ours would be worse and take more work.
 4. **Outside KNMI's area,** use OPERA's open European composite and run pySTEPS on it ourselves. That gives a 2-hour, 5-minute forecast across Europe in place of WeatherKit's hourly one, and it is where adding other countries' radars pays. Still to check: OPERA's delay, which countries share, whether the Met Office does, and the computing cost.
 5. **Machine learning:** not now. Revisit when an open model trained for this region exists, or KNMI ships one.

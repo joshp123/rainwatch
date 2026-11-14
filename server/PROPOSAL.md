@@ -8,7 +8,7 @@
 
 Every 5 minutes, when KNMI publishes a new nowcast, a job:
 
-1. Fetches KNMI's nowcast (224 KB) and its latest observed radar, using Josh's own key.
+1. Fetches KNMI's plain forecast (0.2 to 1.2 MB), its blended forecast (2 to 40 MB) and its latest observed radar, using Josh's own key. It uses the plain forecast for the first 30 minutes and the blend after that (where at least half of its 20 versions show rain), because that order scored best over 66 rainy days (`research/verification/season.md`). If the blend is late or KNMI ends the pilot, it uses the plain forecast throughout.
 2. Writes two files to storage:
    - **The forecast file.** It holds every 1 km cell's 25 five-minute values, one byte each on Buienradar's own scale. A cell's values sit at a fixed place in the file, so a watch downloads only its own 25 bytes with one HTTP range request.
    - **The radar file.** It holds every frame of the radar page, compressed (7 KB when dry). The app downloads it only when the radar page opens.
