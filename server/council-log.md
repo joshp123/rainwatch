@@ -99,3 +99,6 @@ Read DESIGN.md in full after the post-Opus corrections. Signed: five-minute fair
 - `server/check_against_knmi.py`: 600 rainy cells of that run read back with the client, 18,600 values (2,002 wet), each compared with a value worked out straight from KNMI's files with pyproj. 0 mismatches; largest rounding difference 2.32%.
 - That check found a real fault first: 37 values wrong. The job compared `value * 0.01 >= 0.1` in 32-bit floats, where 0.10 mm/h comes out just under 0.1, so blend versions at exactly 0.10 mm/h were counted dry. Fixed by comparing KNMI's whole numbers (`>= 10`). The earlier prototype (`pack_probe.py`) has the same fault; its pack is 1.4% smaller than the fixed job's (273,064 against 277,007 B).
 - Nothing was written in opentofu-infra: where the job runs is being reviewed again at Josh's request.
+
+## Claude Opus: the job on the VPS (14 Nov 2026, 18:37 UTC)
+- `job.py` ran once on gohome-hub (Hetzner CAX21, aarch64, NixOS) with Python, numpy and h5py from nixpkgs: run 18:30Z, blend present, 9 KNMI calls (first run, no observed files cached), 8.55 s wall including downloads, peak 465 MB. `watch_client.py` read Rotterdam back from the folder. The test folder was deleted; nothing was installed or left on the machine.
