@@ -27,7 +27,7 @@ Who does it: Claude (or another agent), unless it says Josh. "Josh" means only w
 | # | Task | Who | Status |
 |---|---|---|---|
 | 1 | Apple's Program License Agreement | Claude | Done 14 Nov, in the Developer app |
-| 2 | KNMI account and API key, stored in `nix-secrets` | Terra | In progress: past the CAPTCHA with Josh's go |
+| 2 | KNMI account and API key, stored in `nix-secrets` | Terra | Done 14 Nov; tested. 1,000 requests an hour, no expiry |
 | 3 | App Store Connect app record: BuienWatch, bundle `nl.jjp.rain`, English (U.K.) and Dutch. Try "RainWatch" as the English name | Claude, through Xcode's Organizer, which is signed in | Next |
 | 4 | Trader status: "not a trader" | Claude, in App Store Connect | After 3 |
 | 5 | App Store Connect API key, so the `asc` command line can manage the listing | Claude | After 3 |
@@ -36,7 +36,7 @@ Who does it: Claude (or another agent), unless it says Josh. "Josh" means only w
 
 | # | Task | Who | Status |
 |---|---|---|---|
-| 6 | App icon, an Icon Composer file at `App/Rain/AppIcon.icon` | Claude; Fable reviewing | Built and checked in the watch's app grid |
+| 6 | App icon, an Icon Composer file at `App/Rain/AppIcon.icon` | Claude, from Fable's review | Done; checked in the watch's app grid |
 | 7 | Server: every 5 minutes, KNMI's forecast becomes two files on AWS (`server/PROPOSAL.md`) | Claude | Waits for Josh's go and item 2 |
 | 8 | The app reads the server: 25 bytes for its line, one file for the radar page | Claude | After 7 |
 | 9 | Credit and error messages name the real source ("Source: KNMI"); today they say Buienradar | Claude | With 8 |
