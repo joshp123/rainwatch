@@ -23,7 +23,7 @@
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>BuienWatch uses your location to show the rain forecast where you are. To fetch it, BuienWatch sends your location rounded to about 1 km. Your last location is kept only on this watch.</string>
+	<string>To show the rain where you are. It is sent rounded to about 1 km.</string>
 	<key>WKApplication</key>
 	<true/>
 	<key>WKWatchOnly</key>

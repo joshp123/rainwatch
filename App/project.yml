@@ -59,7 +59,7 @@ targets:
         WKApplication: true
         WKWatchOnly: true
         ITSAppUsesNonExemptEncryption: false
-        NSLocationWhenInUseUsageDescription: "BuienWatch uses your location to show the rain forecast where you are. To fetch it, BuienWatch sends your location rounded to about 1 km. Your last location is kept only on this watch."
+        NSLocationWhenInUseUsageDescription: "To show the rain where you are. It is sent rounded to about 1 km."
     entitlements:
       path: Rain/Rain.entitlements
       properties:
@@ -99,7 +99,7 @@ targets:
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         NSWidgetWantsLocation: true
         ITSAppUsesNonExemptEncryption: false
-        NSLocationWhenInUseUsageDescription: "BuienWatch uses your location to show the rain forecast where you are. To fetch it, BuienWatch sends your location rounded to about 1 km. Your last location is kept only on this watch."
+        NSLocationWhenInUseUsageDescription: "To show the rain where you are. It is sent rounded to about 1 km."
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
     entitlements:

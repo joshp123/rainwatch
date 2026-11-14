@@ -69,7 +69,7 @@ struct RainProvider: TimelineProvider {
         #endif
         let place: Place.Found
         do {
-            place = try await Place.current()
+            place = try await Place.current(mayAsk: false)
         } catch {
             ReloadLog.record("no location")
             return timeline(cached: Snapshot.saved, otherwise: .noLocation, now: now)

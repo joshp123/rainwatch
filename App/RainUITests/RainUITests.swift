@@ -9,7 +9,10 @@ final class RainUITests: XCTestCase {
 
     override func setUp() async throws {
         continueAfterFailure = false
+        // That test starts from a fresh install with location never asked (App/test.sh resets it).
+        if name.contains("WithoutLocation") { return }
         app.launch()
+        continuePastIntro()
         allowLocation()
     }
 
@@ -83,14 +86,14 @@ final class RainUITests: XCTestCase {
 
     /// Apple's reviewer may refuse location: the app must still work, with a place picked by name.
     func testChoosePlaceWithoutLocation() {
-        app.resetAuthorizationStatus(for: .location)
         app.launchArguments = ["-freshInstall", "YES"]
-        addTeardownBlock { @MainActor in
-            // Put the wearer's location back for the other tests.
-            self.app.resetAuthorizationStatus(for: .location)
-        }
         app.launch()
-        answerLocation("Don't Allow")
+        XCTAssertTrue(app.staticTexts["Rain where you are"].waitForExistence(timeout: 15), "A first launch should explain the location question first")
+        keep("place-intro")
+        app.buttons["Continue"].tap()
+        sleep(2)
+        keep("place-location-question")
+        answerLocation("Don’t Allow")
         XCTAssertTrue(app.staticTexts["Location Needed"].waitForExistence(timeout: 30), "Refusing location should say so")
         let choose = app.buttons["Choose a Place"].firstMatch
         XCTAssertTrue(choose.exists, "Refusing location should offer a place instead")
@@ -122,6 +125,12 @@ final class RainUITests: XCTestCase {
         XCTAssertTrue(mine.waitForExistence(timeout: 5))
         mine.tap()
         XCTAssertTrue(app.staticTexts["Location Needed"].waitForExistence(timeout: 30))
+    }
+
+    /// The first launch explains the location question before the system asks it.
+    private func continuePastIntro() {
+        let next = app.buttons["Continue"]
+        if next.waitForExistence(timeout: 5) { next.tap() }
     }
 
     /// Location permission is asked by the system, outside the app.

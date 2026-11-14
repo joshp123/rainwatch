@@ -33,6 +33,8 @@ struct RainApp: App {
 /// location permission; every time it fetches, it saves the place and reloads the complications.
 struct ContentView: View {
     enum Load {
+        /// Before the first location question: says which answer keeps the face up to date.
+        case intro
         case loading(String)
         case ready(RainForecast, fetched: Date, place: CLLocationCoordinate2D)
         case failed(Failure)
@@ -44,17 +46,39 @@ struct ContentView: View {
     }
 
     /// Opens on the forecast the face was just showing, if it is still fresh, and refreshes over it.
-    @State private var load = ContentView.saved ?? Load.loading("Finding where you are")
+    @State private var load = ContentView.firstScreen
     /// The last refresh failed while an older forecast is on screen.
     @State private var couldNotUpdate = false
     @State private var placeName: String?
     @State private var session: CLServiceSession?
     @State private var picking = false
+    /// Set once Continue is tapped on the intro, so the system's question comes when it's expected.
+    @State private var askedForLocation = false
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         NavigationStack {
             switch load {
+            case .intro:
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Rain where you are")
+                            .font(.title3.weight(.semibold))
+                        Text("BuienWatch needs your location. On the next screen, choose Allow While Using App, so your watch face stays up to date.")
+                            .font(.body)
+                            .foregroundStyle(.secondary)
+                        Button("Continue") {
+                            load = .loading("Finding where you are")
+                            askedForLocation = true
+                            Task { await refresh() }
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(RainPalette.buienradarBlue)
+                        .padding(.top, 4)
+                        Button("Choose a Place") { picking = true }
+                    }
+                    .scenePadding(.horizontal)
+                }
             case let .loading(stage):
                 ProgressView(stage)
             case let .failed(failure):
@@ -148,6 +172,12 @@ struct ContentView: View {
         }
     }
 
+    /// The intro before location has ever been asked; else the saved forecast; else a spinner.
+    private static var firstScreen: Load {
+        if Place.chosen == nil, CLLocationManager().authorizationStatus == .notDetermined { return .intro }
+        return saved ?? .loading("Finding where you are")
+    }
+
     private static var saved: Load? {
         if Place.chosen == nil, [.denied, .restricted].contains(CLLocationManager().authorizationStatus) {
             return .failed(.noLocation)
@@ -192,6 +222,10 @@ struct ContentView: View {
         let status = CLLocationManager().authorizationStatus
         if chosen == nil, status == .denied || status == .restricted {
             load = .failed(.noLocation)
+            return
+        }
+        if chosen == nil, status == .notDetermined, !askedForLocation {
+            load = .intro
             return
         }
         if let chosen {

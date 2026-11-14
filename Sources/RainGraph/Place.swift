@@ -63,10 +63,16 @@ public enum Place {
     static let reuseFor: TimeInterval = 5 * 60
 
     /// The picked place if there is one; else the saved fix if it is recent, else a fresh fix if one
-    /// comes within `timeout`, else the last saved one.
-    public static func current(timeout: Duration = .seconds(8)) async throws -> Found {
+    /// comes within `timeout`, else the last saved one. Only the app may raise the system's location
+    /// question (`mayAsk`): the app explains it first, and a complication asking would raise it with
+    /// no explanation, over whatever the wearer is doing.
+    public static func current(timeout: Duration = .seconds(8), mayAsk: Bool = true) async throws -> Found {
         if let chosen {
             return Found(coordinate: chosen.coordinate, isLive: false, at: .now, chosen: chosen)
+        }
+        if !mayAsk, CLLocationManager().authorizationStatus == .notDetermined {
+            guard let saved, let at = savedAt else { throw Failure.noLocation }
+            return Found(coordinate: saved, isLive: false, at: at)
         }
         if let saved, let at = savedAt, Date.now.timeIntervalSince(at) < reuseFor {
             return Found(coordinate: saved, isLive: false, at: at)
