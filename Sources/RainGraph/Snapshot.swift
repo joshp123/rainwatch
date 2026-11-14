@@ -4,12 +4,14 @@ import Foundation
 /// When a fetch fails, the widget shows this one with its original fetch time, so its age keeps
 /// growing and it turns stale on schedule instead of looking current.
 public struct Snapshot: Codable, Sendable {
-    /// After this long, the countdown is withdrawn. watchOS reloads a complication on the active
-    /// face about every 15 to 20 minutes; Buienradar updates its forecast every 5.
+    /// After this long, the countdown is withdrawn. On Josh's watch the widget was reloaded 30
+    /// minutes apart, so a 30-minute limit blanked the face in normal use. One fetch covers about
+    /// three hours, so an hour-old forecast still has its two hours ahead; from 20 minutes the
+    /// rectangular slot says how old it is.
     #if STALE_TEST
     public static let staleAfter: TimeInterval = 60
     #else
-    public static let staleAfter: TimeInterval = 30 * 60
+    public static let staleAfter: TimeInterval = 60 * 60
     #endif
 
     public let samples: [RainSample]

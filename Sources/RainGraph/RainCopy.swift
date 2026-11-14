@@ -58,13 +58,16 @@ public struct RainCopy: Sendable {
         return "Heaviest around \(Self.clock(peak.date))"
     }
 
-    /// Circular middle, read top to bottom as one phrase: "IN 30 MIN" to the change at the dot, or
-    /// "FOR 2+ HRS" when the weather stays the same for the whole window. The line says what changes.
-    /// Dry says how long under it, "2+ HRS": "FOR 2+ HRS" is wider than the disc at a readable size.
+    /// Circular middle, read top to bottom as one phrase, always about rain, as the blue line is:
+    /// "IN 30 MIN" until rain arrives when it is dry, "FOR 5 MIN" while it lasts when it is raining.
+    /// The same three words can then never mean opposite things. An hour or more reads "1+ HRS",
+    /// so the number never needs three digits. Dry says how long under it, "2+ HRS": "FOR 2+ HRS"
+    /// is wider than the disc at a readable size.
     public var circular: (lead: String?, value: String, unit: String?) {
         guard forecast.hasRain else { return (nil, "Dry", "2+ HRS") }
         guard let minutesLeft else { return ("FOR", "2+", "HRS") }
-        return ("IN", "\(minutesLeft)", "MIN")
+        let lead = isRainingNow ? "FOR" : "IN"
+        return minutesLeft >= 60 ? (lead, "1+", "HRS") : (lead, "\(minutesLeft)", "MIN")
     }
 
     /// Inline and corner: the headline itself, so every family says the same thing.
@@ -83,10 +86,10 @@ public struct RainCopy: Sendable {
         clockFormatter.string(from: date)
     }
 
+    /// The wearer's own time zone and clock format: the feed covers Glasgow and Oslo as well.
     static let clockFormatter: DateFormatter = {
         let formatter = DateFormatter()
-        formatter.dateFormat = "HH:mm"
-        formatter.timeZone = TimeZone(identifier: "Europe/Amsterdam")
+        formatter.setLocalizedDateFormatFromTemplate("jjmm")
         return formatter
     }()
 }

@@ -8,10 +8,18 @@ import WidgetKit
 public struct RectangularRainView: View {
     let forecast: RainForecast
     let palette: RainPalette
+    /// When the forecast was fetched. Once it is 20 minutes old, the second line says so.
+    let fetched: Date?
 
-    public init(forecast: RainForecast, palette: RainPalette) {
+    public init(forecast: RainForecast, palette: RainPalette, fetched: Date? = nil) {
         self.forecast = forecast
         self.palette = palette
+        self.fetched = fetched
+    }
+
+    private var isOld: Bool {
+        guard let fetched else { return false }
+        return forecast.now.timeIntervalSince(fetched) >= 20 * 60
     }
 
     public var body: some View {
@@ -20,20 +28,18 @@ public struct RectangularRainView: View {
             // The line needs about 22 points to show how hard it rains. Slots shorter than the
             // Modular Ultra one can't hold it under two lines of words, so the second line goes,
             // as Apple's Heart Rate complication shows one line over its chart.
-            let detail = proxy.size.height >= 74 ? copy.detail : nil
+            let roomy = proxy.size.height >= 74
             VStack(alignment: .leading, spacing: 1) {
-                Label {
-                    Text(copy.headline)
-                        .foregroundStyle(palette.primary)
-                } icon: {
-                    Image(systemName: "drop.fill")
-                        .foregroundStyle(palette.rain)
-                        .accentable()
-                }
-                .labelStyle(HeadlineLabelStyle())
-                // Matched to Apple's Stocks rows beside it on Josh's face, about 16 points.
-                .font(RainFont.rounded(16, .semibold))
-                if let detail {
+                // No icon before the headline: it pushed the headline right of the lines below.
+                Text(copy.headline)
+                    .foregroundStyle(palette.primary)
+                    // Matched to Apple's Stocks rows beside it on Josh's face, about 16 points.
+                    .font(RainFont.rounded(16, .semibold))
+                if roomy, isOld, let fetched {
+                    Text("Forecast from \(RainCopy.clock(fetched))")
+                        .font(RainFont.rounded(13.5, .medium))
+                        .foregroundStyle(palette.secondary)
+                } else if roomy, let detail = copy.detail {
                     Text(detail)
                         .font(RainFont.rounded(13.5, .medium))
                         .foregroundStyle(palette.rain)
@@ -48,15 +54,6 @@ public struct RectangularRainView: View {
         .lineLimit(1)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(copy.spoken)
-    }
-}
-
-struct HeadlineLabelStyle: LabelStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        HStack(spacing: 3) {
-            configuration.icon
-            configuration.title
-        }
     }
 }
 
@@ -143,8 +140,9 @@ struct TimeAxis: View {
 
 /// Circular family. The arc is Buienradar's graph bent round: a 240° arc open at the bottom, like
 /// Apple's gauges, running clockwise from now at the lower left to two hours at the lower right.
-/// The track is the baseline; rain rises from it towards the rim, so a heavy peak stands well above
-/// a light one. The dot marks the next change. With no rain there is no line, only "Dry".
+/// The track is the baseline; rain rises from it towards the rim on Buienradar's own scale, so a
+/// heavy peak stands well above a light one (Josh: "the one thing i MISS is simulating the height
+/// of the peaks"). The dot marks the next change. With no rain there is no line, only "Dry".
 ///
 /// It sits on the same grey disc as the complications beside it on Josh's face, and its words
 /// match theirs: Sunrise and World Clock set two lines of the same size, about 8 points tall, and
@@ -195,7 +193,7 @@ public struct CircularRainGauge: View {
                         .stroke(palette.baseline, style: StrokeStyle(lineWidth: stroke, lineCap: .round))
                     RadialRainArea(forecast: forecast, startAngle: Self.start, sweep: Self.sweep,
                                    baseline: track - halfStroke, full: Self.rim, floorAtBaseline: track + halfStroke,
-                                   scale: .squareRoot)
+                                   scale: .linear)
                         .fill(palette.rain)
                         .accentable()
                     if let change = copy.change {
@@ -270,8 +268,7 @@ public struct CircularRainGauge: View {
 extension RainForecast {
     /// Whole clock hours inside the window, for ticks and labels.
     var hourMarks: [Date] {
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = TimeZone(identifier: "Europe/Amsterdam")!
+        let calendar = Calendar.current
         guard var hour = calendar.nextDate(after: start, matching: DateComponents(minute: 0), matchingPolicy: .nextTime) else { return [] }
         var marks: [Date] = []
         while hour <= end {

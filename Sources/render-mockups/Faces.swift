@@ -13,48 +13,19 @@ enum Ultra3 {
     static let smartStack = CGSize(width: 198, height: 81.5)
 }
 
-/// Corner family on the Ultra, proven route: the sparkline as block glyphs, which the system
-/// curves along the edge; the words sit inside. The arcs are centred on the screen.
+/// Corner family on the Ultra: the headline curved along the edge, and a drop in the corner,
+/// filled when rain is due. The arcs are centred on the screen.
 struct CornerMock: View {
     let forecast: RainForecast
     let palette: RainPalette
 
     var body: some View {
         let mid = Angle.degrees(231)
-        let levels = RainGlyphs.levels(forecast)
         ZStack {
-            CurvedText(
-                runs: levels.map { .init(string: String(Array("▁▂▃▄▅▆▇█")[$0]), color: $0 == 0 ? palette.baseline : palette.rain) },
-                font: RainFont.rounded(13, .semibold),
-                centre: Ultra3.centre,
-                radius: 112,
-                midAngle: mid,
-                tracking: 0.5,
-                maxSweep: .degrees(34)
-            )
-            CornerLabel(forecast: forecast, palette: palette, midAngle: mid)
-        }
-        .frame(width: Ultra3.screen.width, height: Ultra3.screen.height)
-    }
-}
-
-/// Corner family, untested route: the Buienradar line itself bent along the edge.
-struct CornerLineMock: View {
-    let forecast: RainForecast
-    let palette: RainPalette
-
-    var body: some View {
-        let mid = Angle.degrees(231)
-        let outer: CGFloat = 124
-        ZStack {
-            Group {
-                RadialRainArea(forecast: forecast, startAngle: mid - .degrees(17), sweep: .degrees(34), baseline: 110 / outer, full: 1)
-                    .fill(palette.rain)
-                ArcLine(startAngle: mid - .degrees(17), sweep: .degrees(34), radius: 110 / outer)
-                    .stroke(palette.baseline, style: StrokeStyle(lineWidth: 1.5, lineCap: .round))
-            }
-            .frame(width: outer * 2, height: outer * 2)
-            .position(Ultra3.centre)
+            Image(systemName: forecast.hasRain ? "drop.fill" : "drop")
+                .font(.system(size: 20, weight: .semibold))
+                .foregroundStyle(palette.rain)
+                .position(x: Ultra3.centre.x + 86 * cos(mid.radians), y: Ultra3.centre.y + 86 * sin(mid.radians))
             CornerLabel(forecast: forecast, palette: palette, midAngle: mid)
         }
         .frame(width: Ultra3.screen.width, height: Ultra3.screen.height)
@@ -71,7 +42,7 @@ struct CornerLabel: View {
             runs: [.init(string: RainCopy(forecast).short, color: palette.primary)],
             font: RainFont.rounded(12, .semibold),
             centre: Ultra3.centre,
-            radius: 96,
+            radius: 112,
             midAngle: midAngle,
             maxSweep: .degrees(40)
         )
@@ -119,11 +90,8 @@ struct InlineMock: View {
     let palette: RainPalette
 
     var body: some View {
-        // The inline slot across the top of Siri Modular; the watch drops the bars if they don't fit.
-        ViewThatFits {
-            Text(forecast.hasRain ? "\(RainCopy(forecast).short) \(RainGlyphs.string(forecast))" : RainCopy(forecast).short)
-            Text(RainCopy(forecast).short)
-        }
+        // The inline slot across the top of Siri Modular: the headline alone.
+        Text(RainCopy(forecast).short)
         .font(RainFont.rounded(14, .semibold))
         .foregroundStyle(palette.primary)
         .lineLimit(1)

@@ -11,9 +11,10 @@ How Rain looks and why. Read it before changing any view. The rules come from Ap
 3. **Never cover what matters.** On the radar the map round the yellow dot stays visible: the timeline sits on a solid black band at the bottom edge (map labels showing through read as part of it), and the map centres the dot in the part the band leaves free.
 4. **Every element earns its place.** One label per fact: the radar names its moment once, relative to now ("in 25 min"), so it is never mistaken for the watch's clock. No decoration, no repeated words.
 5. **Nothing touches, nothing shrinks.** Words never touch the line or the edge. Never box text shorter than its line height: watchOS then shrinks it, which made the circle look tiny.
-6. **The line carries the meaning.** Height is how hard it rains, position is time. A layout that squeezes the line flat gives up words first (the rectangular slot drops its second line in short slots).
-7. **Every state is designed.** Dry, drizzle, showers on and off, heavy, rain all window, stale, no location, offline and outside Buienradar's area each have a screen. `RainUITests` renders them all.
-8. **Motion only where it explains.** The radar plays because the point is the time dimension; the crown pauses it and a tap or the play button resumes it.
+6. **Words never contradict.** The circle's words are always about rain: "IN" until it arrives, "FOR" while it lasts. Wording that means opposite things in different states fails the glance.
+7. **The line carries the meaning.** Height is how hard it rains, position is time. A layout that squeezes the line flat gives up words first (the rectangular slot drops its second line in short slots).
+8. **Every state is designed.** Dry, drizzle, showers on and off, heavy, rain all window, stale, no location, offline and outside Buienradar's area each have a screen. `RainUITests` renders them all.
+9. **Motion only where it explains.** The radar plays because the point is the time dimension; the crown pauses it and a tap or the play button resumes it.
 
 ## Check
 

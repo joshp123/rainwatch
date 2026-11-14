@@ -27,9 +27,9 @@ final class RainUITests: XCTestCase {
         radar.tap()
         XCTAssertTrue(app.buttons["Pause"].waitForExistence(timeout: 20), "The radar should open playing")
         sleep(1)
-        keep("radar-near-1")
+        keep("radar-opening-1")
         sleep(2)
-        keep("radar-near-2")
+        keep("radar-opening-2")
         // The crown only steps once the frames have arrived; until then there is nothing to step to.
         let frameLabel = app.staticTexts.matching(NSPredicate(format: "label == 'Now' OR label MATCHES '(in [0-9]+ min|[0-9]+ min ago)'")).firstMatch
         XCTAssertTrue(frameLabel.waitForExistence(timeout: 20), "The radar should name the moment it shows")
@@ -37,9 +37,13 @@ final class RainUITests: XCTestCase {
         XCTAssertTrue(app.buttons["Play"].waitForExistence(timeout: 5), "Turning the crown should pause")
         sleep(1)
         keep("radar-crown")
-        app.buttons["Zoom out"].firstMatch.tap()
+        // It opens close when rain is due here and wide when not; the button switches either way.
+        let zoomOut = app.buttons["Zoom out"].firstMatch
+        let startsClose = zoomOut.exists
+        (startsClose ? zoomOut : app.buttons["Zoom in"].firstMatch).tap()
+        XCTAssertTrue(app.buttons[startsClose ? "Zoom in" : "Zoom out"].firstMatch.waitForExistence(timeout: 5))
         sleep(2)
-        keep("radar-region")
+        keep(startsClose ? "radar-region" : "radar-near")
     }
 
     /// Every kind of forecast on the app's first page, from saved real forecasts, and the failures.

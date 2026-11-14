@@ -6,7 +6,6 @@ import WidgetKit
 struct RainWidgets: WidgetBundle {
     var body: some Widget {
         RainWidget()
-        RainLineCornerWidget()
     }
 }
 
@@ -22,10 +21,15 @@ struct RainEntry: TimelineEntry {
     /// Nil when there is no forecast to show; `problem` then says why.
     let forecast: RainForecast?
     var problem: Problem?
+    /// When the forecast was fetched, so an old one can say so.
+    var fetched: Date?
 
-    /// The Smart Stack raises the widget when rain is forecast within the two hours.
+    /// The Smart Stack raises the widget while it rains, and more the sooner rain arrives.
     var relevance: TimelineEntryRelevance? {
-        TimelineEntryRelevance(score: forecast?.hasRain == true ? 1 : 0)
+        guard let forecast, forecast.hasRain else { return TimelineEntryRelevance(score: 0) }
+        let copy = RainCopy(forecast)
+        guard !copy.isRainingNow, let minutes = copy.minutesLeft else { return TimelineEntryRelevance(score: 1) }
+        return TimelineEntryRelevance(score: Float(max(0.2, 1 - Double(minutes) / 120)))
     }
 }
 
@@ -53,10 +57,14 @@ struct RainProvider: TimelineProvider {
 
     static func timeline(now: Date) async -> Timeline<RainEntry> {
         #if DEBUG
-        // Set by the app's `-scenario` launch option, to check every state on the real face.
-        if let name = UserDefaults(suiteName: Place.appGroup)?.string(forKey: "debugScenario"),
+        // Set by the app's `-scenario` launch option, to check every state on the real face. It
+        // lapses after ten minutes, so a forgotten test never stays on the wrist.
+        let defaults = UserDefaults(suiteName: Place.appGroup)
+        if let name = defaults?.string(forKey: "debugScenario"),
+           let set = defaults?.object(forKey: "debugScenarioSet") as? Date, now.timeIntervalSince(set) < 600,
            let scenario = Scenario.allCases.first(where: { "\($0)" == name }) {
-            return Timeline(entries: [RainEntry(date: now, forecast: scenario.forecast(at: now))], policy: .never)
+            return Timeline(entries: [RainEntry(date: now, forecast: scenario.forecast(at: now))],
+                            policy: .after(set.addingTimeInterval(600)))
         }
         #endif
         let place: Place.Found
@@ -78,7 +86,7 @@ struct RainProvider: TimelineProvider {
     }
 
     static func timeline(_ snapshot: Snapshot, now: Date) -> Timeline<RainEntry> {
-        var entries = snapshot.forecasts(from: now).map { RainEntry(date: $0.now, forecast: $0) }
+        var entries = snapshot.forecasts(from: now).map { RainEntry(date: $0.now, forecast: $0, fetched: snapshot.fetched) }
         entries.append(RainEntry(date: max(snapshot.staleAt, now), forecast: nil, problem: .stale(since: snapshot.fetched)))
         return Timeline(entries: entries, policy: .after(now.addingTimeInterval(reloadAfter)))
     }
@@ -134,22 +142,19 @@ struct RainComplicationView: View {
             }
             .containerBackground(for: .widget) { Color.clear }
         case .accessoryRectangular:
-            RectangularRainView(forecast: forecast, palette: palette)
+            RectangularRainView(forecast: forecast, palette: palette, fetched: entry.fetched)
                 .containerBackground(for: .widget) { forecast.hasRain ? palette.stack : palette.stackDry }
         case .accessoryCorner:
-            RainGlyphs.text(forecast, palette: palette)
-                .font(.system(size: 14, weight: .semibold, design: .rounded))
+            // Words along the edge; a drop in the corner, filled when rain is due.
+            Image(systemName: forecast.hasRain ? "drop.fill" : "drop")
+                .font(.system(size: 20, weight: .semibold))
+                .foregroundStyle(palette.rain)
                 .widgetAccentable()
-                .widgetCurvesContent()
                 .widgetLabel { Text(RainCopy(forecast).short) }
                 .containerBackground(for: .widget) { Color.clear }
         default:
-            ViewThatFits {
-                // Bars only when there is rain; a dry row of bars reads as an underline.
-                Text(forecast.hasRain ? "\(RainCopy(forecast).short) \(RainGlyphs.string(forecast))" : RainCopy(forecast).short)
-                Text(RainCopy(forecast).short)
-            }
-            .containerBackground(for: .widget) { Color.clear }
+            Text(RainCopy(forecast).short)
+                .containerBackground(for: .widget) { Color.clear }
         }
     }
 
@@ -158,19 +163,16 @@ struct RainComplicationView: View {
         let (headline, detail, short) = problemText
         switch family {
         case .accessoryCircular:
-            // Apple's own complications show "--" when they have no value; the line under it says
-            // when the last forecast was, in the same two lines of words as the forecast.
+            // Two lines at the sizes "Dry" uses. A bare clock time here read as a second clock.
             ZStack {
                 AccessoryWidgetBackground()
                 VStack(spacing: 0) {
-                    Text("--")
+                    Text("No")
                         .font(.system(size: 15, weight: .semibold, design: .rounded))
-                    if let short {
-                        Text(short)
-                            .font(.system(size: 13, weight: .semibold, design: .rounded))
-                            .foregroundStyle(palette.rain)
-                            .widgetAccentable()
-                    }
+                    Text(short ?? "DATA")
+                        .font(.system(size: 13, weight: .semibold, design: .rounded))
+                        .foregroundStyle(palette.rain)
+                        .widgetAccentable()
                 }
             }
             .containerBackground(for: .widget) { Color.clear }
@@ -195,65 +197,11 @@ struct RainComplicationView: View {
     private var problemText: (headline: String, detail: String, short: String?) {
         switch entry.problem {
         case let .stale(since):
-            ("Last forecast \(RainCopy.clock(since))", "Open Rain to refresh", RainCopy.clock(since))
+            ("Last forecast \(RainCopy.clock(since))", "Open Rain to refresh", "DATA")
         case .noLocation:
-            ("Location needed", "Open Rain to share it", nil)
+            ("Location needed", "Open Rain to share it", "PLACE")
         case .noForecast, nil:
-            ("No forecast", "Buienradar can't be reached", nil)
-        }
-    }
-}
-
-/// Corner only, an experiment: the Buienradar line itself along the edge. `widgetCurvesContent`
-/// curves text, SF Symbols and images, so the curve goes in as thin image slices inside one
-/// `Text`, in the hope that the system turns each slice to follow the edge.
-struct RainLineCornerWidget: Widget {
-    var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "rain-line", provider: RainProvider()) { entry in
-            RainLineCornerView(entry: entry)
-        }
-        .configurationDisplayName("Rain line")
-        .description("Buienradar's rain line along the edge.")
-        .supportedFamilies([.accessoryCorner])
-    }
-}
-
-struct RainLineCornerView: View {
-    @Environment(\.widgetRenderingMode) private var renderingMode
-    let entry: RainEntry
-
-    var body: some View {
-        let palette: RainPalette = renderingMode == .fullColor ? .fullColour : .tinted(.white)
-        Group {
-            if let forecast = entry.forecast {
-                Self.lineSlices(forecast, palette: palette)
-                    .widgetAccentable()
-                    .widgetCurvesContent()
-                    .widgetLabel { Text(RainCopy(forecast).short) }
-            } else {
-                Text("No forecast")
-            }
-        }
-        .containerBackground(for: .widget) { Color.clear }
-    }
-
-    @MainActor
-    static func lineSlices(_ forecast: RainForecast, palette: RainPalette, slices: Int = 24) -> Text {
-        let slice = CGSize(width: 3, height: 13)
-        return (0..<slices).reduce(Text("")) { text, index in
-            let renderer = ImageRenderer(content:
-                ZStack(alignment: .bottom) {
-                    RainArea(forecast: forecast).fill(palette.rain)
-                    Rectangle().fill(palette.baseline).frame(height: 1.5)
-                }
-                .frame(width: slice.width * CGFloat(slices), height: slice.height)
-                .offset(x: -slice.width * CGFloat(index))
-                .frame(width: slice.width, height: slice.height, alignment: .leading)
-                .clipped()
-            )
-            renderer.scale = 2
-            guard let image = renderer.cgImage else { return text }
-            return text + Text(Image(decorative: image, scale: 2))
+            ("No forecast", "Buienradar can't be reached", "DATA")
         }
     }
 }

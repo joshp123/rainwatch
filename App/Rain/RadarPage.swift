@@ -24,7 +24,7 @@ struct RadarPage: View {
     @State private var index = 0
     @State private var crown = 0.0
     @State private var playing = true
-    @State private var zoom = Zoom.near
+    @State private var zoom: Zoom
     @State private var camera: MapCameraPosition
     @State private var cameraChanges = 0
     @State private var problem = false
@@ -35,7 +35,10 @@ struct RadarPage: View {
     init(place: CLLocationCoordinate2D, forecast: RainForecast) {
         self.place = place
         self.forecast = forecast
-        _camera = State(initialValue: Self.camera(place, .near))
+        // Close when rain is due here, to watch it arrive; wide when not, to show where rain is.
+        let start: Zoom = forecast.hasRain ? .near : .region
+        _zoom = State(initialValue: start)
+        _camera = State(initialValue: Self.camera(place, start))
     }
 
     var body: some View {
@@ -251,8 +254,7 @@ struct RadarStrip: View {
 
     /// "Now" and whole hours, leaving out hours so close to "Now" that the two read as one label.
     private var ticks: [Date] {
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = TimeZone(identifier: "Europe/Amsterdam")!
+        let calendar = Calendar.current
         var hours: [Date] = []
         var hour = calendar.nextDate(after: start, matching: DateComponents(minute: 0), matchingPolicy: .nextTime)
         while let current = hour, current < end {

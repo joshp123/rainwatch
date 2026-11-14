@@ -10,7 +10,9 @@ struct RainApp: App {
     init() {
         // `-scenario showerComing` also puts that saved forecast on the watch face, to check the
         // complications on the real face. It runs at launch, so it works with the screen off.
-        UserDefaults(suiteName: Place.appGroup)?.set(UserDefaults.standard.string(forKey: "scenario"), forKey: "debugScenario")
+        let shared = UserDefaults(suiteName: Place.appGroup)
+        shared?.set(UserDefaults.standard.string(forKey: "scenario"), forKey: "debugScenario")
+        shared?.set(Date.now, forKey: "debugScenarioSet")
         WidgetCenter.shared.reloadAllTimelines()
     }
     #endif
@@ -36,7 +38,10 @@ struct ContentView: View {
         case noLocation, offline, notCovered, noForecast
     }
 
-    @State private var load = Load.loading("Finding where you are")
+    /// Opens on the forecast the face was just showing, if it is still fresh, and refreshes over it.
+    @State private var load = ContentView.saved ?? Load.loading("Finding where you are")
+    /// The last refresh failed while an older forecast is on screen.
+    @State private var couldNotUpdate = false
     @State private var placeName: String?
     @State private var session: CLServiceSession?
     @Environment(\.scenePhase) private var scenePhase
@@ -52,6 +57,10 @@ struct ContentView: View {
                 ScrollView {
                     ForecastDetailView(forecast: forecast, fetched: fetched)
                         .scenePadding(.horizontal)
+                    if couldNotUpdate {
+                        Button("Try Again") { Task { await refresh() } }
+                            .padding(.top, 6)
+                    }
                 }
                 .navigationTitle(placeName ?? "Rain")
                 // Apple's Weather colours its pages by the weather; blue here means rain is due.
@@ -109,6 +118,22 @@ struct ContentView: View {
         }
     }
 
+    private static var saved: Load? {
+        guard let snapshot = Snapshot.saved, Date.now < snapshot.staleAt,
+              let forecast = RainForecast.at(.now, from: snapshot.samples) else { return nil }
+        return .ready(forecast, fetched: snapshot.fetched, place: CLLocationCoordinate2D(latitude: snapshot.latitude, longitude: snapshot.longitude))
+    }
+
+    /// With a forecast on screen, a failed refresh keeps it and offers to try again; without one,
+    /// it shows what went wrong.
+    private func fail(_ failure: Failure) {
+        if case .ready = load {
+            couldNotUpdate = true
+        } else {
+            load = .failed(failure)
+        }
+    }
+
     private func refresh() async {
         #if DEBUG
         // Screenshots of every state: `-scenario showerComing` shows a saved forecast instead of
@@ -132,20 +157,21 @@ struct ContentView: View {
             if case .loading = load { load = .loading("Asking Buienradar") }
             let snapshot = try await Snapshot.fetch(latitude: place.latitude, longitude: place.longitude)
             guard let forecast = RainForecast.at(.now, from: snapshot.samples) else {
-                load = .failed(.noForecast)
+                fail(.noForecast)
                 return
             }
             load = .ready(forecast, fetched: snapshot.fetched, place: place)
+            couldNotUpdate = false
             // Free of the widget budget while the app is in front.
             WidgetCenter.shared.reloadAllTimelines()
             placeName = try? await MKReverseGeocodingRequest(location: CLLocation(latitude: place.latitude, longitude: place.longitude))?
                 .mapItems.first?.addressRepresentations?.cityName
         } catch Place.Failure.noLocation {
-            load = .failed(.noLocation)
+            fail(.noLocation)
         } catch Buienradar.Failure.notCovered {
-            load = .failed(.notCovered)
+            fail(.notCovered)
         } catch {
-            load = .failed(.offline)
+            fail(.offline)
         }
     }
 }
