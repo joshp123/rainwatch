@@ -90,3 +90,12 @@ Fixed costs recomputed: 25,920 writes $0.13 + 51,840 job reads $0.02 + storage $
 
 ## Astra: sign-off on revised final design (14 Nov 2026)
 Read DESIGN.md in full after the post-Opus corrections. Signed: five-minute fair-use-compliant schedule, one publication per issue, retained observations, qualified cost assumptions, metered Cloudflare misses, address continuity and prototype/Swift distinction are now stated. This supersedes the earlier sign-off on the per-minute design. No implementation, deployment or spending is authorised by this review.
+
+## The real job, run end to end (Fable, 14 Nov 2026, about 18:25 to 18:45 UTC)
+- `server/job.py` is the job: one KNMI run's files by name, the pack and `latest` written through a store with `get` and `put`. It has no AWS code; today it writes to a folder. `server/watch_client.py` reads a place back as the watch will: standard library only, own projection arithmetic, `latest`, one byte range, raw DEFLATE.
+- Live run 18:15 UTC, built at 18:23: 5.0 s including downloads over the home line, peak memory 0.53 GB, 9 KNMI calls (7 observed files it did not have, plain, blend). Dry evening: pack 4,849 B, `latest` 1,362 B (330 gzipped), 52 squares with rain, blend present.
+- Second build of the same run: 2 KNMI calls. The 7 observed files came from the folder, so keeping them works. (This asked KNMI for that run's plain and blend files a second time, which the fair-use rules say not to do; one slip, not repeated.)
+- Rainy run 13 Nov 12:30 UTC: 4.9 to 6.6 s with downloads, 2.4 s with the files already on disk, peak 0.54 to 0.56 GB. Pack 277,007 B, `latest` 1,781 B (750 gzipped), 231 squares with rain.
+- `server/check_against_knmi.py`: 600 rainy cells of that run read back with the client, 18,600 values (2,002 wet), each compared with a value worked out straight from KNMI's files with pyproj. 0 mismatches; largest rounding difference 2.32%.
+- That check found a real fault first: 37 values wrong. The job compared `value * 0.01 >= 0.1` in 32-bit floats, where 0.10 mm/h comes out just under 0.1, so blend versions at exactly 0.10 mm/h were counted dry. Fixed by comparing KNMI's whole numbers (`>= 10`). The earlier prototype (`pack_probe.py`) has the same fault; its pack is 1.4% smaller than the fixed job's (273,064 against 277,007 B).
+- Nothing was written in opentofu-infra: where the job runs is being reviewed again at Josh's request.

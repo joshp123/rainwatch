@@ -204,6 +204,8 @@ A new root, `~/code/opentofu-infra/services/buienwatch/`, on the pattern of `web
 ## Proven, and not
 
 **Proven with real data** (scripts in `server/`, full record in `server/council-log.md`):
+- the job itself (`server/job.py`): one live KNMI run built in 5.0 seconds with 0.53 GB, downloads included, and a rainy run in 2.4 seconds once the files were on disk;
+- its output against KNMI's own files: 18,600 values at 600 rainy cells, read back as the watch will (`server/watch_client.py`), with no mismatches (`server/check_against_knmi.py`);
 - the format and the watch's read path, on real KNMI files;
 - the sizes and the build time on a Mac;
 - CloudFront's range caching, as observed on 14 November;
