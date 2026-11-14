@@ -7,10 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0826FF3CD0532276101FE5C6 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = B63D41E8863446BE4D00593B /* PrivacyInfo.xcprivacy */; };
 		0A1D01DAF814D649CBD1A57E /* RainUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCBDA42EF1F0EABADA8F70BF /* RainUITests.swift */; };
 		27573C743B2DCC739921613C /* RainApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76FBC3379322E9F2BB1F03BF /* RainApp.swift */; };
 		6AB72E45888650E454164A94 /* RainGraph in Frameworks */ = {isa = PBXBuildFile; productRef = 7BBE3C71B351E044B65650D4 /* RainGraph */; };
 		7F2F8AFC6DD5CFA9CC2FC9F7 /* RainGraph in Frameworks */ = {isa = PBXBuildFile; productRef = B9CE89E80650D5D474B56FB9 /* RainGraph */; };
+		B22967C882EA0E5BBDBF8E0E /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = B63D41E8863446BE4D00593B /* PrivacyInfo.xcprivacy */; };
 		C515955A92FFF24D64E9D61C /* RadarPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24A5456AC0840FD7A47E7340 /* RadarPage.swift */; };
 		C9165D0FF9414C17A0EFFF46 /* RainWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E5830986D952F71247765B /* RainWidget.swift */; };
 		CCF1C72DB096A5FB96074BE3 /* RainWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 9D596FEADDDC9BDA6C9CE992 /* RainWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -56,6 +58,7 @@
 		76FBC3379322E9F2BB1F03BF /* RainApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RainApp.swift; sourceTree = "<group>"; };
 		8A0DB4767FA1352EE3E8111A /* RainUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RainUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9D596FEADDDC9BDA6C9CE992 /* RainWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = RainWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		B63D41E8863446BE4D00593B /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		D0DFCBBAE96F646AA450D859 /* Rain.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Rain.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DCBDA42EF1F0EABADA8F70BF /* RainUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RainUITests.swift; sourceTree = "<group>"; };
 		F8C4BF18348C0C6C2C270C31 /* buienradar-apple-watch */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "buienradar-apple-watch"; path = ..; sourceTree = SOURCE_ROOT; };
@@ -82,6 +85,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		3C6166FDED9AF98DBFAF027F /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				B63D41E8863446BE4D00593B /* PrivacyInfo.xcprivacy */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
 		529867CDC413DEB51F6DF7C6 /* Packages */ = {
 			isa = PBXGroup;
 			children = (
@@ -116,6 +127,7 @@
 				7FBD4ED217235243AE2EC1DE /* Rain */,
 				5EC6DDBA9092DC1EAAED5513 /* RainUITests */,
 				FEBEAE28E99F468CE69E8722 /* RainWidget */,
+				3C6166FDED9AF98DBFAF027F /* Shared */,
 				D0745836F09411C65FBA4DAB /* Products */,
 			);
 			sourceTree = "<group>";
@@ -148,6 +160,7 @@
 			buildConfigurationList = D0106967CAFE77854D318B08 /* Build configuration list for PBXNativeTarget "RainWidget" */;
 			buildPhases = (
 				28A73D516C01895EA6864233 /* Sources */,
+				33506935DAD2683278EDB3DE /* Resources */,
 				14373CB6272DC943C4BE8C5D /* Frameworks */,
 			);
 			buildRules = (
@@ -167,6 +180,7 @@
 			buildConfigurationList = 1814C617E033E360A335C9B6 /* Build configuration list for PBXNativeTarget "Rain" */;
 			buildPhases = (
 				0D0234017BB0BFC8A062789C /* Sources */,
+				8B88BE65615B0F3F07AC41A6 /* Resources */,
 				8751EACF03F449FFCE87A3F6 /* Frameworks */,
 				08DC620563BE84B4A041540E /* Embed Foundation Extensions */,
 			);
@@ -248,6 +262,25 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		33506935DAD2683278EDB3DE /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B22967C882EA0E5BBDBF8E0E /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8B88BE65615B0F3F07AC41A6 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0826FF3CD0532276101FE5C6 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		0D0234017BB0BFC8A062789C /* Sources */ = {

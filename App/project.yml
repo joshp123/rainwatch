@@ -19,7 +19,10 @@ targets:
   Rain:
     type: application
     platform: watchOS
-    sources: [Rain]
+    sources:
+      - Rain
+      - path: Shared/PrivacyInfo.xcprivacy
+        buildPhase: resources
     dependencies:
       - package: RainGraph
       - target: RainWidget
@@ -31,7 +34,8 @@ targets:
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         WKApplication: true
         WKWatchOnly: true
-        NSLocationWhenInUseUsageDescription: Rain shows Buienradar's forecast for where you are.
+        ITSAppUsesNonExemptEncryption: false
+        NSLocationWhenInUseUsageDescription: "Rain uses your location to show the rain forecast where you are. To fetch it, Rain sends your location rounded to about 1 km. Your last location is kept only on this watch."
     entitlements:
       path: Rain/Rain.entitlements
       properties:
@@ -55,7 +59,10 @@ targets:
   RainWidget:
     type: app-extension
     platform: watchOS
-    sources: [RainWidget]
+    sources:
+      - RainWidget
+      - path: Shared/PrivacyInfo.xcprivacy
+        buildPhase: resources
     dependencies:
       - package: RainGraph
     info:
@@ -65,7 +72,8 @@ targets:
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         NSWidgetWantsLocation: true
-        NSLocationWhenInUseUsageDescription: Rain shows Buienradar's forecast for where you are.
+        ITSAppUsesNonExemptEncryption: false
+        NSLocationWhenInUseUsageDescription: "Rain uses your location to show the rain forecast where you are. To fetch it, Rain sends your location rounded to about 1 km. Your last location is kept only on this watch."
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
     entitlements:
