@@ -1,0 +1,1126 @@
+{
+ "20250411": {
+  "month": "202504",
+  "status": "no qualifying window",
+  "n_candidates": 0
+ },
+ "20250416": {
+  "month": "202504",
+  "status": "scored",
+  "issue": "202504161930",
+  "wet_cells": 331,
+  "place_wet_share": 0.2873263888888889,
+  "box_wet_share": 0.3108239033693579,
+  "box_max_mmh": 9.72,
+  "n_candidates": 44
+ },
+ "20250418": {
+  "month": "202504",
+  "status": "scored",
+  "issue": "202504180930",
+  "wet_cells": 70,
+  "place_wet_share": 0.06076388888888889,
+  "box_wet_share": 0.06711061665607121,
+  "box_max_mmh": 0.72,
+  "n_candidates": 3
+ },
+ "20250419": {
+  "month": "202504",
+  "status": "no qualifying window",
+  "n_candidates": 0
+ },
+ "20250420": {
+  "month": "202504",
+  "status": "scored",
+  "issue": "202504202330",
+  "wet_cells": 324,
+  "place_wet_share": 0.28125,
+  "box_wet_share": 0.2800877304513668,
+  "box_max_mmh": 17.88,
+  "n_candidates": 30
+ },
+ "20250501": {
+  "month": "202505",
+  "status": "no qualifying window",
+  "n_candidates": 0
+ },
+ "20250504": {
+  "month": "202505",
+  "status": "scored",
+  "issue": "202505042200",
+  "wet_cells": 58,
+  "place_wet_share": 0.050347222222222224,
+  "box_wet_share": 0.03370565797838525,
+  "box_max_mmh": 4.4399999999999995,
+  "n_candidates": 1
+ },
+ "20250505": {
+  "month": "202505",
+  "status": "no qualifying window",
+  "n_candidates": 0
+ },
+ "20250506": {
+  "month": "202505",
+  "status": "no qualifying window",
+  "n_candidates": 0
+ },
+ "20250507": {
+  "month": "202505",
+  "status": "no qualifying window",
+  "n_candidates": 0
+ },
+ "20250510": {
+  "month": "202505",
+  "status": "no qualifying window",
+  "n_candidates": 0
+ },
+ "20250515": {
+  "month": "202505",
+  "status": "no qualifying window",
+  "n_candidates": 0
+ },
+ "20250516": {
+  "month": "202505",
+  "status": "no qualifying window",
+  "n_candidates": 0
+ },
+ "20250517": {
+  "month": "202505",
+  "status": "no qualifying window",
+  "n_candidates": 0
+ },
+ "20250525": {
+  "month": "202505",
+  "status": "scored",
+  "issue": "202505251300",
+  "wet_cells": 131,
+  "place_wet_share": 0.11371527777777778,
+  "box_wet_share": 0.10814113159567705,
+  "box_max_mmh": 39.24,
+  "n_candidates": 17
+ },
+ "20250529": {
+  "month": "202505",
+  "status": "scored",
+  "issue": "202505290900",
+  "wet_cells": 586,
+  "place_wet_share": 0.5086805555555556,
+  "box_wet_share": 0.5147329942784488,
+  "box_max_mmh": 3.5999999999999996,
+  "n_candidates": 10
+ },
+ "20250608": {
+  "month": "202506",
+  "status": "scored",
+  "issue": "202506081200",
+  "wet_cells": 316,
+  "place_wet_share": 0.2743055555555556,
+  "box_wet_share": 0.28102288620470434,
+  "box_max_mmh": 60.36,
+  "n_candidates": 32
+ },
+ "20250609": {
+  "month": "202506",
+  "status": "scored",
+  "issue": "202506100130",
+  "wet_cells": 260,
+  "place_wet_share": 0.22569444444444445,
+  "box_wet_share": 0.2200101716465353,
+  "box_max_mmh": 16.560000000000002,
+  "n_candidates": 27
+ },
+ "20250610": {
+  "month": "202506",
+  "status": "scored",
+  "issue": "202506101200",
+  "wet_cells": 68,
+  "place_wet_share": 0.059027777777777776,
+  "box_wet_share": 0.06616656071201525,
+  "box_max_mmh": 17.52,
+  "n_candidates": 9
+ },
+ "20250615": {
+  "month": "202506",
+  "status": "no qualifying window",
+  "n_candidates": 0
+ },
+ "20250618": {
+  "month": "202506",
+  "status": "no qualifying window",
+  "n_candidates": 0
+ },
+ "20250624": {
+  "month": "202506",
+  "status": "scored",
+  "issue": "202506241130",
+  "wet_cells": 72,
+  "place_wet_share": 0.0625,
+  "box_wet_share": 0.07282581055308328,
+  "box_max_mmh": 2.7600000000000002,
+  "n_candidates": 11
+ },
+ "20250704": {
+  "month": "202507",
+  "status": "scored",
+  "issue": "202507050000",
+  "wet_cells": 127,
+  "place_wet_share": 0.11024305555555555,
+  "box_wet_share": 0.09854736172917992,
+  "box_max_mmh": 2.88,
+  "n_candidates": 20
+ },
+ "20250719": {
+  "month": "202507",
+  "status": "scored",
+  "issue": "202507191830",
+  "wet_cells": 233,
+  "place_wet_share": 0.20225694444444445,
+  "box_wet_share": 0.2194831532104259,
+  "box_max_mmh": 58.800000000000004,
+  "n_candidates": 30
+ },
+ "20250720": {
+  "month": "202507",
+  "status": "scored",
+  "issue": "202507201930",
+  "wet_cells": 65,
+  "place_wet_share": 0.05642361111111111,
+  "box_wet_share": 0.06016973935155754,
+  "box_max_mmh": 93.12,
+  "n_candidates": 19
+ },
+ "20250726": {
+  "month": "202507",
+  "status": "scored",
+  "issue": "202507261800",
+  "wet_cells": 138,
+  "place_wet_share": 0.11979166666666667,
+  "box_wet_share": 0.09909345200254291,
+  "box_max_mmh": 9.84,
+  "n_candidates": 35
+ },
+ "20250804": {
+  "month": "202508",
+  "status": "scored",
+  "issue": "202508041400",
+  "wet_cells": 315,
+  "place_wet_share": 0.2734375,
+  "box_wet_share": 0.2733680864589956,
+  "box_max_mmh": 4.800000000000001,
+  "n_candidates": 28
+ },
+ "20250807": {
+  "month": "202508",
+  "status": "scored",
+  "issue": "202508071400",
+  "wet_cells": 64,
+  "place_wet_share": 0.05555555555555555,
+  "box_wet_share": 0.054021614748887475,
+  "box_max_mmh": 4.4399999999999995,
+  "n_candidates": 4
+ },
+ "20250811": {
+  "month": "202508",
+  "status": "scored",
+  "issue": "202508120530",
+  "wet_cells": 88,
+  "place_wet_share": 0.0763888888888889,
+  "box_wet_share": 0.06332867132867133,
+  "box_max_mmh": 33.0,
+  "n_candidates": 4
+ },
+ "20250814": {
+  "month": "202508",
+  "status": "no qualifying window",
+  "n_candidates": 0
+ },
+ "20250822": {
+  "month": "202508",
+  "status": "scored",
+  "issue": "202508221900",
+  "wet_cells": 90,
+  "place_wet_share": 0.078125,
+  "box_wet_share": 0.08022568340750158,
+  "box_max_mmh": 15.0,
+  "n_candidates": 26
+ },
+ "20250826": {
+  "month": "202508",
+  "status": "no qualifying window",
+  "n_candidates": 0
+ },
+ "20250914": {
+  "month": "202509",
+  "status": "scored",
+  "issue": "202509150430",
+  "wet_cells": 80,
+  "place_wet_share": 0.06944444444444445,
+  "box_wet_share": 0.07073235855054037,
+  "box_max_mmh": 60.720000000000006,
+  "n_candidates": 30
+ },
+ "20250919": {
+  "month": "202509",
+  "status": "scored",
+  "issue": "202509200130",
+  "wet_cells": 124,
+  "place_wet_share": 0.1076388888888889,
+  "box_wet_share": 0.09790718372536554,
+  "box_max_mmh": 4.800000000000001,
+  "n_candidates": 9
+ },
+ "20250926": {
+  "month": "202509",
+  "status": "scored",
+  "issue": "202509262330",
+  "wet_cells": 109,
+  "place_wet_share": 0.09461805555555555,
+  "box_wet_share": 0.11515130324221232,
+  "box_max_mmh": 8.879999999999999,
+  "n_candidates": 15
+ },
+ "20251007": {
+  "month": "202510",
+  "status": "no qualifying window",
+  "n_candidates": 0
+ },
+ "20251011": {
+  "month": "202510",
+  "status": "no qualifying window",
+  "n_candidates": 0
+ },
+ "20251014": {
+  "month": "202510",
+  "status": "no qualifying window",
+  "n_candidates": 0
+ },
+ "20251017": {
+  "month": "202510",
+  "status": "scored",
+  "issue": "202510170830",
+  "wet_cells": 65,
+  "place_wet_share": 0.05642361111111111,
+  "box_wet_share": 0.047186268277177375,
+  "box_max_mmh": 14.76,
+  "n_candidates": 1
+ },
+ "20251019": {
+  "month": "202510",
+  "status": "scored",
+  "issue": "202510192230",
+  "wet_cells": 714,
+  "place_wet_share": 0.6197916666666666,
+  "box_wet_share": 0.595163382072473,
+  "box_max_mmh": 6.959999999999999,
+  "n_candidates": 30
+ },
+ "20251031": {
+  "month": "202510",
+  "status": "scored",
+  "issue": "202510311630",
+  "wet_cells": 202,
+  "place_wet_share": 0.1753472222222222,
+  "box_wet_share": 0.17415575333757155,
+  "box_max_mmh": 5.5200000000000005,
+  "n_candidates": 16
+ },
+ "20251108": {
+  "month": "202511",
+  "status": "scored",
+  "issue": "202511090330",
+  "wet_cells": 62,
+  "place_wet_share": 0.05381944444444445,
+  "box_wet_share": 0.056396694214876045,
+  "box_max_mmh": 7.92,
+  "n_candidates": 2
+ },
+ "20251109": {
+  "month": "202511",
+  "status": "no qualifying window",
+  "n_candidates": 0
+ },
+ "20251118": {
+  "month": "202511",
+  "status": "scored",
+  "issue": "202511190200",
+  "wet_cells": 617,
+  "place_wet_share": 0.5355902777777778,
+  "box_wet_share": 0.5047037507946599,
+  "box_max_mmh": 27.240000000000002,
+  "n_candidates": 44
+ },
+ "20251123": {
+  "month": "202511",
+  "status": "scored",
+  "issue": "202511231030",
+  "wet_cells": 322,
+  "place_wet_share": 0.2795138888888889,
+  "box_wet_share": 0.2618239033693579,
+  "box_max_mmh": 8.280000000000001,
+  "n_candidates": 39
+ },
+ "20251205": {
+  "month": "202512",
+  "status": "scored",
+  "issue": "202512060500",
+  "wet_cells": 253,
+  "place_wet_share": 0.21961805555555555,
+  "box_wet_share": 0.23306929434202162,
+  "box_max_mmh": 10.8,
+  "n_candidates": 21
+ },
+ "20251207": {
+  "month": "202512",
+  "status": "scored",
+  "issue": "202512071630",
+  "wet_cells": 1039,
+  "place_wet_share": 0.9019097222222222,
+  "box_wet_share": 0.9000387794024158,
+  "box_max_mmh": 12.84,
+  "n_candidates": 18
+ },
+ "20251218": {
+  "month": "202512",
+  "status": "scored",
+  "issue": "202512182230",
+  "wet_cells": 142,
+  "place_wet_share": 0.1232638888888889,
+  "box_wet_share": 0.10847425301970755,
+  "box_max_mmh": 0.8400000000000001,
+  "n_candidates": 38
+ },
+ "20260105": {
+  "month": "202601",
+  "status": "scored",
+  "issue": "202601051730",
+  "wet_cells": 206,
+  "place_wet_share": 0.17881944444444445,
+  "box_wet_share": 0.18322949777495234,
+  "box_max_mmh": 70.32000000000001,
+  "n_candidates": 40
+ },
+ "20260114": {
+  "month": "202601",
+  "status": "scored",
+  "issue": "202601150400",
+  "wet_cells": 132,
+  "place_wet_share": 0.11458333333333333,
+  "box_wet_share": 0.12202352193261286,
+  "box_max_mmh": 8.879999999999999,
+  "n_candidates": 20
+ },
+ "20260115": {
+  "month": "202601",
+  "status": "scored",
+  "issue": "202601151530",
+  "wet_cells": 283,
+  "place_wet_share": 0.2456597222222222,
+  "box_wet_share": 0.25737952956134774,
+  "box_max_mmh": 5.5200000000000005,
+  "n_candidates": 37
+ },
+ "20260125": {
+  "month": "202601",
+  "status": "no qualifying window",
+  "n_candidates": 0
+ },
+ "20260126": {
+  "month": "202601",
+  "status": "no qualifying window",
+  "n_candidates": 0
+ },
+ "20260203": {
+  "month": "202602",
+  "status": "scored",
+  "issue": "202602040130",
+  "wet_cells": 78,
+  "place_wet_share": 0.06770833333333333,
+  "box_wet_share": 0.07058741258741258,
+  "box_max_mmh": 7.92,
+  "n_candidates": 37
+ },
+ "20260218": {
+  "month": "202602",
+  "status": "scored",
+  "issue": "202602182300",
+  "wet_cells": 177,
+  "place_wet_share": 0.15364583333333334,
+  "box_wet_share": 0.15353146853146854,
+  "box_max_mmh": 4.68,
+  "n_candidates": 18
+ },
+ "20260220": {
+  "month": "202602",
+  "status": "scored",
+  "issue": "202602210600",
+  "wet_cells": 95,
+  "place_wet_share": 0.08246527777777778,
+  "box_wet_share": 0.07741576605212969,
+  "box_max_mmh": 2.04,
+  "n_candidates": 33
+ },
+ "20260304": {
+  "month": "202603",
+  "status": "no qualifying window",
+  "n_candidates": 0
+ },
+ "20260313": {
+  "month": "202603",
+  "status": "scored",
+  "issue": "202603130900",
+  "wet_cells": 820,
+  "place_wet_share": 0.7118055555555556,
+  "box_wet_share": 0.7220718372536552,
+  "box_max_mmh": 26.04,
+  "n_candidates": 44
+ },
+ "20260325": {
+  "month": "202603",
+  "status": "scored",
+  "issue": "202603252030",
+  "wet_cells": 248,
+  "place_wet_share": 0.2152777777777778,
+  "box_wet_share": 0.21568976478067386,
+  "box_max_mmh": 24.0,
+  "n_candidates": 44
+ },
+ "20260329": {
+  "month": "202603",
+  "status": "scored",
+  "issue": "202603291330",
+  "wet_cells": 141,
+  "place_wet_share": 0.12239583333333333,
+  "box_wet_share": 0.12662746344564527,
+  "box_max_mmh": 3.0,
+  "n_candidates": 33
+ },
+ "20260402": {
+  "month": "202604",
+  "status": "scored",
+  "issue": "202604030430",
+  "wet_cells": 192,
+  "place_wet_share": 0.16666666666666666,
+  "box_wet_share": 0.16235791481246026,
+  "box_max_mmh": 1.44,
+  "n_candidates": 15
+ },
+ "20260404": {
+  "month": "202604",
+  "status": "no qualifying window",
+  "n_candidates": 0
+ },
+ "20260413": {
+  "month": "202604",
+  "status": "scored",
+  "issue": "202604131100",
+  "wet_cells": 70,
+  "place_wet_share": 0.06076388888888889,
+  "box_wet_share": 0.059599491417673234,
+  "box_max_mmh": 0.72,
+  "n_candidates": 17
+ },
+ "20260418": {
+  "month": "202604",
+  "status": "scored",
+  "issue": "202604180830",
+  "wet_cells": 136,
+  "place_wet_share": 0.11805555555555555,
+  "box_wet_share": 0.11312142403051494,
+  "box_max_mmh": 10.08,
+  "n_candidates": 16
+ },
+ "20260423": {
+  "month": "202604",
+  "status": "no qualifying window",
+  "n_candidates": 0
+ },
+ "20260425": {
+  "month": "202604",
+  "status": "no qualifying window",
+  "n_candidates": 0
+ },
+ "20260430": {
+  "month": "202604",
+  "status": "no qualifying window",
+  "n_candidates": 0
+ },
+ "20260510": {
+  "month": "202605",
+  "status": "scored",
+  "issue": "202605110400",
+  "wet_cells": 136,
+  "place_wet_share": 0.11805555555555555,
+  "box_wet_share": 0.13540686586141132,
+  "box_max_mmh": 6.12,
+  "n_candidates": 19
+ },
+ "20260516": {
+  "month": "202605",
+  "status": "scored",
+  "issue": "202605162230",
+  "wet_cells": 262,
+  "place_wet_share": 0.22743055555555555,
+  "box_wet_share": 0.21974125874125872,
+  "box_max_mmh": 14.04,
+  "n_candidates": 43
+ },
+ "20260529": {
+  "month": "202605",
+  "status": "scored",
+  "issue": "202605291400",
+  "wet_cells": 245,
+  "place_wet_share": 0.2126736111111111,
+  "box_wet_share": 0.21337507946598855,
+  "box_max_mmh": 191.88,
+  "n_candidates": 15
+ },
+ "20260603": {
+  "month": "202606",
+  "status": "scored",
+  "issue": "202606031300",
+  "wet_cells": 243,
+  "place_wet_share": 0.2109375,
+  "box_wet_share": 0.19979211697393512,
+  "box_max_mmh": 97.68,
+  "n_candidates": 40
+ },
+ "20260607": {
+  "month": "202606",
+  "status": "no qualifying window",
+  "n_candidates": 0
+ },
+ "20260612": {
+  "month": "202606",
+  "status": "scored",
+  "issue": "202606121530",
+  "wet_cells": 81,
+  "place_wet_share": 0.0703125,
+  "box_wet_share": 0.06568277177368087,
+  "box_max_mmh": 53.88,
+  "n_candidates": 11
+ },
+ "20260618": {
+  "month": "202606",
+  "status": "scored",
+  "issue": "202606181600",
+  "wet_cells": 108,
+  "place_wet_share": 0.09375,
+  "box_wet_share": 0.0883515575333757,
+  "box_max_mmh": 11.040000000000001,
+  "n_candidates": 20
+ },
+ "20260622": {
+  "month": "202606",
+  "status": "scored",
+  "issue": "202606230030",
+  "wet_cells": 66,
+  "place_wet_share": 0.057291666666666664,
+  "box_wet_share": 0.05999745708836618,
+  "box_max_mmh": 6.0,
+  "n_candidates": 5
+ },
+ "20260711": {
+  "month": "202607",
+  "status": "no qualifying window",
+  "n_candidates": 0
+ },
+ "20260712": {
+  "month": "202607",
+  "status": "no qualifying window",
+  "n_candidates": 0
+ },
+ "20260715": {
+  "month": "202607",
+  "status": "scored",
+  "issue": "202607160600",
+  "wet_cells": 87,
+  "place_wet_share": 0.07552083333333333,
+  "box_wet_share": 0.08802670057215511,
+  "box_max_mmh": 47.76,
+  "n_candidates": 3
+ },
+ "20260718": {
+  "month": "202607",
+  "status": "no qualifying window",
+  "n_candidates": 0
+ },
+ "20260721": {
+  "month": "202607",
+  "status": "scored",
+  "issue": "202607220500",
+  "wet_cells": 67,
+  "place_wet_share": 0.058159722222222224,
+  "box_wet_share": 0.05875270184361093,
+  "box_max_mmh": 4.08,
+  "n_candidates": 5
+ },
+ "20260724": {
+  "month": "202607",
+  "status": "no qualifying window",
+  "n_candidates": 0
+ },
+ "20260726": {
+  "month": "202607",
+  "status": "scored",
+  "issue": "202607270530",
+  "wet_cells": 107,
+  "place_wet_share": 0.09288194444444445,
+  "box_wet_share": 0.08186458995549904,
+  "box_max_mmh": 40.8,
+  "n_candidates": 29
+ },
+ "20260727": {
+  "month": "202607",
+  "status": "scored",
+  "issue": "202607271030",
+  "wet_cells": 112,
+  "place_wet_share": 0.09722222222222222,
+  "box_wet_share": 0.1014933248569612,
+  "box_max_mmh": 57.96,
+  "n_candidates": 9
+ },
+ "20260729": {
+  "month": "202607",
+  "status": "no qualifying window",
+  "n_candidates": 0
+ },
+ "20260804": {
+  "month": "202608",
+  "status": "scored",
+  "issue": "202608041600",
+  "wet_cells": 162,
+  "place_wet_share": 0.140625,
+  "box_wet_share": 0.12582199618563256,
+  "box_max_mmh": 111.48000000000002,
+  "n_candidates": 16
+ },
+ "20260806": {
+  "month": "202608",
+  "status": "scored",
+  "issue": "202608070600",
+  "wet_cells": 92,
+  "place_wet_share": 0.0798611111111111,
+  "box_wet_share": 0.07174443738080102,
+  "box_max_mmh": 22.32,
+  "n_candidates": 15
+ },
+ "20260815": {
+  "month": "202608",
+  "status": "scored",
+  "issue": "202608150900",
+  "wet_cells": 136,
+  "place_wet_share": 0.11805555555555555,
+  "box_wet_share": 0.1459758423394787,
+  "box_max_mmh": 35.160000000000004,
+  "n_candidates": 16
+ },
+ "20260830": {
+  "month": "202608",
+  "status": "scored",
+  "issue": "202608301200",
+  "wet_cells": 136,
+  "place_wet_share": 0.11805555555555555,
+  "box_wet_share": 0.11745200254291165,
+  "box_max_mmh": 23.88,
+  "n_candidates": 36
+ },
+ "20260831": {
+  "month": "202608",
+  "extra": true,
+  "status": "scored",
+  "issue": "202608311500",
+  "wet_cells": 126,
+  "place_wet_share": 0.109375,
+  "box_wet_share": 0.11886204704386522,
+  "box_max_mmh": 72.36,
+  "n_candidates": 19
+ },
+ "20260901": {
+  "month": "202609",
+  "extra": true,
+  "status": "no qualifying window",
+  "n_candidates": 0
+ },
+ "20260902": {
+  "month": "202609",
+  "extra": true,
+  "status": "scored",
+  "issue": "202609021530",
+  "wet_cells": 79,
+  "place_wet_share": 0.0685763888888889,
+  "box_wet_share": 0.06985759694850605,
+  "box_max_mmh": 17.04,
+  "n_candidates": 39
+ },
+ "20260903": {
+  "month": "202609",
+  "status": "scored",
+  "issue": "202609040300",
+  "wet_cells": 128,
+  "place_wet_share": 0.1111111111111111,
+  "box_wet_share": 0.11472027972027972,
+  "box_max_mmh": 27.240000000000002,
+  "n_candidates": 9
+ },
+ "20260906": {
+  "month": "202609",
+  "extra": true,
+  "status": "scored",
+  "issue": "202609070230",
+  "wet_cells": 82,
+  "place_wet_share": 0.07118055555555555,
+  "box_wet_share": 0.07644437380801017,
+  "box_max_mmh": 395.15999999999997,
+  "n_candidates": 6
+ },
+ "20260908": {
+  "month": "202609",
+  "extra": true,
+  "status": "scored",
+  "issue": "202609090000",
+  "wet_cells": 80,
+  "place_wet_share": 0.06944444444444445,
+  "box_wet_share": 0.060424030514939615,
+  "box_max_mmh": 18.48,
+  "n_candidates": 44
+ },
+ "20260912": {
+  "month": "202609",
+  "extra": true,
+  "status": "scored",
+  "issue": "202609130200",
+  "wet_cells": 164,
+  "place_wet_share": 0.1423611111111111,
+  "box_wet_share": 0.12861665607120154,
+  "box_max_mmh": 16.68,
+  "n_candidates": 32
+ },
+ "20260913": {
+  "month": "202609",
+  "extra": true,
+  "status": "scored",
+  "issue": "202609131500",
+  "wet_cells": 71,
+  "place_wet_share": 0.06163194444444445,
+  "box_wet_share": 0.07398347107438016,
+  "box_max_mmh": 29.04,
+  "n_candidates": 14
+ },
+ "20260914": {
+  "month": "202609",
+  "extra": true,
+  "status": "no qualifying window",
+  "n_candidates": 0
+ },
+ "20260916": {
+  "month": "202609",
+  "extra": true,
+  "status": "scored",
+  "issue": "202609161600",
+  "wet_cells": 124,
+  "place_wet_share": 0.1076388888888889,
+  "box_wet_share": 0.11349777495232041,
+  "box_max_mmh": 69.96000000000001,
+  "n_candidates": 26
+ },
+ "20260921": {
+  "month": "202609",
+  "extra": true,
+  "status": "no qualifying window",
+  "n_candidates": 0
+ },
+ "20260923": {
+  "month": "202609",
+  "status": "scored",
+  "issue": "202609231830",
+  "wet_cells": 81,
+  "place_wet_share": 0.0703125,
+  "box_wet_share": 0.07434138588684043,
+  "box_max_mmh": 27.96,
+  "n_candidates": 12
+ },
+ "20260925": {
+  "month": "202609",
+  "extra": true,
+  "status": "no qualifying window",
+  "n_candidates": 0
+ },
+ "20260926": {
+  "month": "202609",
+  "extra": true,
+  "status": "no qualifying window",
+  "n_candidates": 0
+ },
+ "20260927": {
+  "month": "202609",
+  "extra": true,
+  "status": "scored",
+  "issue": "202609272100",
+  "wet_cells": 165,
+  "place_wet_share": 0.14322916666666666,
+  "box_wet_share": 0.14570184361093452,
+  "box_max_mmh": 16.200000000000003,
+  "n_candidates": 16
+ },
+ "20260928": {
+  "month": "202609",
+  "extra": true,
+  "status": "scored",
+  "issue": "202609281130",
+  "wet_cells": 265,
+  "place_wet_share": 0.2300347222222222,
+  "box_wet_share": 0.2302746344564526,
+  "box_max_mmh": 12.0,
+  "n_candidates": 38
+ },
+ "20260930": {
+  "month": "202609",
+  "status": "scored",
+  "issue": "202609301500",
+  "wet_cells": 342,
+  "place_wet_share": 0.296875,
+  "box_wet_share": 0.2946636999364272,
+  "box_max_mmh": 10.56,
+  "n_candidates": 40
+ },
+ "20261001": {
+  "month": "202610",
+  "extra": true,
+  "status": "scored",
+  "issue": "202610010830",
+  "wet_cells": 87,
+  "place_wet_share": 0.07552083333333333,
+  "box_wet_share": 0.0728963763509218,
+  "box_max_mmh": 51.84,
+  "n_candidates": 1
+ },
+ "20261003": {
+  "month": "202610",
+  "extra": true,
+  "status": "no qualifying window",
+  "n_candidates": 0
+ },
+ "20261004": {
+  "month": "202610",
+  "extra": true,
+  "status": "no qualifying window",
+  "n_candidates": 0
+ },
+ "20261005": {
+  "month": "202610",
+  "extra": true,
+  "status": "no qualifying window",
+  "n_candidates": 0
+ },
+ "20261006": {
+  "month": "202610",
+  "extra": true,
+  "status": "no qualifying window",
+  "n_candidates": 0
+ },
+ "20261011": {
+  "month": "202610",
+  "extra": true,
+  "status": "scored",
+  "issue": "202610110900",
+  "wet_cells": 288,
+  "place_wet_share": 0.25,
+  "box_wet_share": 0.2511659249841068,
+  "box_max_mmh": 68.76,
+  "n_candidates": 24
+ },
+ "20261013": {
+  "month": "202610",
+  "status": "scored",
+  "issue": "202610131300",
+  "wet_cells": 190,
+  "place_wet_share": 0.16493055555555555,
+  "box_wet_share": 0.15786268277177368,
+  "box_max_mmh": 27.240000000000002,
+  "n_candidates": 9
+ },
+ "20261014": {
+  "month": "202610",
+  "status": "no qualifying window",
+  "n_candidates": 0
+ },
+ "20261015": {
+  "month": "202610",
+  "extra": true,
+  "status": "no qualifying window",
+  "n_candidates": 0
+ },
+ "20261016": {
+  "month": "202610",
+  "extra": true,
+  "status": "scored",
+  "issue": "202610170430",
+  "wet_cells": 214,
+  "place_wet_share": 0.1857638888888889,
+  "box_wet_share": 0.19531277813095996,
+  "box_max_mmh": 26.160000000000004,
+  "n_candidates": 44
+ },
+ "20261017": {
+  "month": "202610",
+  "status": "scored",
+  "issue": "202610171700",
+  "wet_cells": 96,
+  "place_wet_share": 0.08333333333333333,
+  "box_wet_share": 0.08555371900826447,
+  "box_max_mmh": 25.799999999999997,
+  "n_candidates": 44
+ },
+ "20261018": {
+  "month": "202610",
+  "extra": true,
+  "status": "scored",
+  "issue": "202610181930",
+  "wet_cells": 504,
+  "place_wet_share": 0.4375,
+  "box_wet_share": 0.4305588048315321,
+  "box_max_mmh": 7.68,
+  "n_candidates": 26
+ },
+ "20261020": {
+  "month": "202610",
+  "extra": true,
+  "status": "scored",
+  "issue": "202610210130",
+  "wet_cells": 239,
+  "place_wet_share": 0.2074652777777778,
+  "box_wet_share": 0.2106681500317864,
+  "box_max_mmh": 21.6,
+  "n_candidates": 27
+ },
+ "20261021": {
+  "month": "202610",
+  "status": "scored",
+  "issue": "202610211500",
+  "wet_cells": 131,
+  "place_wet_share": 0.11371527777777778,
+  "box_wet_share": 0.11357088366179276,
+  "box_max_mmh": 4.5600000000000005,
+  "n_candidates": 32
+ },
+ "20261022": {
+  "month": "202610",
+  "extra": true,
+  "status": "scored",
+  "issue": "202610230000",
+  "wet_cells": 602,
+  "place_wet_share": 0.5225694444444444,
+  "box_wet_share": 0.5058582326764145,
+  "box_max_mmh": 10.68,
+  "n_candidates": 41
+ },
+ "20261023": {
+  "month": "202610",
+  "extra": true,
+  "status": "scored",
+  "issue": "202610231830",
+  "wet_cells": 899,
+  "place_wet_share": 0.7803819444444444,
+  "box_wet_share": 0.7701614748887476,
+  "box_max_mmh": 27.240000000000002,
+  "n_candidates": 44
+ },
+ "20261024": {
+  "month": "202610",
+  "extra": true,
+  "status": "scored",
+  "issue": "202610242030",
+  "wet_cells": 1152,
+  "place_wet_share": 1.0,
+  "box_wet_share": 0.9995448188175462,
+  "box_max_mmh": 7.32,
+  "n_candidates": 33
+ },
+ "20261026": {
+  "month": "202610",
+  "extra": true,
+  "status": "scored",
+  "issue": "202610261530",
+  "wet_cells": 332,
+  "place_wet_share": 0.2881944444444444,
+  "box_wet_share": 0.28434011443102347,
+  "box_max_mmh": 0.96,
+  "n_candidates": 17
+ },
+ "20261027": {
+  "month": "202610",
+  "extra": true,
+  "status": "scored",
+  "issue": "202610271200",
+  "wet_cells": 307,
+  "place_wet_share": 0.2664930555555556,
+  "box_wet_share": 0.2568722186904005,
+  "box_max_mmh": 20.759999999999998,
+  "n_candidates": 20
+ },
+ "20261030": {
+  "month": "202610",
+  "extra": true,
+  "status": "no qualifying window",
+  "n_candidates": 0
+ },
+ "20261031": {
+  "month": "202610",
+  "extra": true,
+  "status": "no qualifying window",
+  "n_candidates": 0
+ },
+ "20261101": {
+  "month": "202611",
+  "extra": true,
+  "status": "scored",
+  "issue": "202611020600",
+  "wet_cells": 141,
+  "place_wet_share": 0.12239583333333333,
+  "box_wet_share": 0.1290457724094088,
+  "box_max_mmh": 7.68,
+  "n_candidates": 19
+ },
+ "20261102": {
+  "month": "202611",
+  "status": "scored",
+  "issue": "202611021730",
+  "wet_cells": 135,
+  "place_wet_share": 0.1171875,
+  "box_wet_share": 0.09710108073744436,
+  "box_max_mmh": 14.16,
+  "n_candidates": 17
+ },
+ "20261105": {
+  "month": "202611",
+  "extra": true,
+  "status": "no qualifying window",
+  "n_candidates": 0
+ },
+ "20261107": {
+  "month": "202611",
+  "status": "scored",
+  "issue": "202611072030",
+  "wet_cells": 82,
+  "place_wet_share": 0.07118055555555555,
+  "box_wet_share": 0.06080928162746344,
+  "box_max_mmh": 10.8,
+  "n_candidates": 27
+ },
+ "20261109": {
+  "month": "202611",
+  "extra": true,
+  "status": "no qualifying window",
+  "n_candidates": 0
+ },
+ "20261112": {
+  "month": "202611",
+  "status": "scored",
+  "issue": "202611121800",
+  "wet_cells": 123,
+  "place_wet_share": 0.10677083333333333,
+  "box_wet_share": 0.09222504767959312,
+  "box_max_mmh": 22.92,
+  "n_candidates": 44
+ }
+}
