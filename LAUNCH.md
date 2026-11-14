@@ -41,7 +41,7 @@ Who does it: Claude (or another agent), unless it says Josh. "Josh" means only w
 | 8 | The app reads the server: 25 bytes for its line, one file for the radar page | Claude | After 7 |
 | 9 | Credit and error messages name the real source ("Source: KNMI"); today they say Buienradar | Claude | With 8 |
 | 10 | Outside KNMI's area: WeatherKit on the watch. Minute by minute for an hour in the UK, Ireland, the US, Australia and Japan, hourly elsewhere. Apple's Weather mark and legal link shown, hourly data fetched at most once an hour | Claude | To do. Needed for "worldwide" |
-| 11 | Germany, the Nordics, Austria: their national two-hour forecasts through the server (`research/global-data.md`) | Claude | First update after launch; WeatherKit covers them at launch |
+| 11 | Europe outside KNMI's area: OPERA's open radar composite and our own pySTEPS forecast, 2 hours in 5-minute steps (`research/radar-sota.md`) | Claude | First update after launch; check OPERA's delay, which countries share, and the computing cost first. WeatherKit covers Europe at launch |
 | 12 | Choose a Place, for anyone who refuses location (Apple Guideline 5.1.1(iv)) | Claude | Done, with a UI test of the reviewer's route |
 | 13 | iPhone wrapper, the only form App Store Connect accepts | Claude | Done; signs, and is accepted for App Store export |
 | 14 | Dutch translation of every word in the app and of the location prompt | Claude writes, Josh reads | To do |
@@ -49,7 +49,7 @@ Who does it: Claude (or another agent), unless it says Josh. "Josh" means only w
 | 16 | Version 1.0.0, build 1 | Claude | With the first upload |
 | 17 | Real-watch pass: every forecast state, Always On, Night Mode, VoiceOver, larger text, offline, and a day's refresh log | Claude, with Josh wearing it | To do |
 | 18 | Josh moves his complication from the old Rain app to BuienWatch; then the old app is removed | Josh, then Claude | BuienWatch is installed next to Rain |
-| 19 | Repeat the KNMI and Buienradar comparison on more rainy days, including showers arriving from the North Sea and summer showers | Claude | When it rains |
+| 19 | Score KNMI's plain forecast against its blended one over a season of its archive, summer showers included; use the blend wherever it wins (it also gives 6 hours and the chance of rain) | Claude | Running |
 
 **C. The store page**
 
@@ -82,33 +82,12 @@ No paid ads. kr0der's ads did not pay; Paul Solt's best result came from Apple f
 
 ## 3. Where the forecast comes from
 
-### Buienradar and KNMI: same radars, different processing
+Detail and sources: `research/radar-sota.md`.
 
-- **The radars are the same.** KNMI owns the Netherlands' two rain radars, in Den Helder and Herwijnen. Every Dutch rain app starts from them.
-- **KNMI** combines its two radars with three Belgian and three German ones. Since February 2023 it has cleaned that picture before using it:
-  - It removes false echoes from ships, wind farms and Wi-Fi.
-  - It corrects for heavy rain blocking the signal behind it.
-  - It corrects for the beam passing over low rain far from the radar.
-  - It then adjusts the picture to its rain gauges.
-  
-  The result is ready 2 minutes after the measurement. KNMI's two-hour forecast moves that cleaned picture forward ([KNMI, 11 May 2026](https://www.knmi.nl/over-het-knmi/nieuws/regenbuien-nu-nog-beter-te-volgen)).
-- **Buienradar** buys KNMI's radar images, adds German, Belgian and British ones, and builds its own picture over a larger area. Its forecast moves its latest picture along ([Buienradar](https://www.buienradar.nl/nederland/weerbericht/blog/hoe-werkt-de-buienradar-precies-motregen-regen-radar-uitleg-radio-golven), [FAQ](https://www.buienradar.nl/overbuienradar/faq)). It does not publish whether it cleans or gauge-adjusts the picture; its FAQ says only that it corrects for rain evaporating "where possible".
-
-### Why Buienradar makes its own
-
-Buienradar doesn't say. The likely reasons, which are my inference:
-- It existed before KNMI published a forecast. RTL bought Buienradar in 2011, and KNMI's published forecast files start in August 2024.
-- It wants a bigger area, using the British radars.
-- It sells products KNMI doesn't make, such as 3-, 8- and 24-hour radars and a drizzle radar.
-
-### "Corrected" means two different things
-
-1. **Correcting the starting picture.** KNMI does this, as above. Buienradar doesn't say. In our test, 78% of the rain Buienradar forecast never fell, against 66% for KNMI. That fits a less-clean starting picture, but one day proves little.
-2. **Correcting for showers that form or die out.** Neither does this. Both only move rain that already exists; Buienradar says modelling new showers takes about 5 hours, too slow for a forecast that is updated every 5 minutes. That is why both get weak after about an hour.
-
-### What this means for BuienWatch
-
-KNMI starts from a cleaner picture. On the one rainy day tested (13 November, 48 Dutch places, scored against the radar rainfall that followed), it was as good as Buienradar and better on when rain starts: 69% of starts within 10 minutes, against 47% (`research/knmi-vs-buienradar.md`). Item 19 repeats the test.
+- **KNMI's picture already has the neighbours' radars:** two Dutch, three Belgian and three German, cleaned and adjusted to rain gauges. It reaches about 300 km west of the Dutch coast, so British radars would change nothing within two hours. Buienradar adds them for its larger map and its longer-range radars.
+- **The method matters more than the radars.** KNMI's operational forecast, like Buienradar's, moves today's rain along and can't see showers form or die. The state of the art blends that with a weather model; Belgium's RMI runs this operationally, and KNMI publishes its own blend free, as a pilot.
+- **Measured on one rainy case** (13 November), the blend beat KNMI's plain forecast in the first hour and lost in the second; both beat Buienradar. A season of KNMI's archive is being scored now (item 19).
+- **Outside KNMI's area,** Europe's radar composite (OPERA) has been open since May 2026; running the same method on it would give a 2-hour forecast across Europe (item 11).
 
 ### Coverage
 
@@ -117,7 +96,7 @@ KNMI starts from a cleaner picture. On the one rainy day tested (13 November, 48
 | Netherlands, Belgium, Luxembourg, western Germany | KNMI, through BuienWatch's server | 2 h, 5-minute steps, 1 km | Real frames, 2 h ahead |
 | UK, Ireland, US, Australia, Japan | Apple WeatherKit, on the watch | 1 h, minute by minute | None at first |
 | Everywhere else | Apple WeatherKit hourly forecast | Hourly, labelled "Hourly only" | None |
-| Germany, the Nordics, Austria (first update) | National two-hour forecasts, through the server | 2 h, 5 or 15 minutes | Real frames |
+| Rest of Europe (first update) | OPERA's radar composite, our own forecast on the server | 2 h, 5-minute steps | Real frames |
 
 WeatherKit is free up to 500,000 calls a month. Apple never bills for more on its own: further calls are refused until the account holder subscribes to a bigger plan. Apple's terms require its Weather mark and legal link on screen, and forbid caching its data on a server.
 
