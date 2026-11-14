@@ -1,102 +1,99 @@
-Written by AI on 2026.11.14 by model claude sonnet 5.5.
+Written by AI on 2026.11.14 by model gpt-6 astra
 
-# Does OPERA see the same rain as KNMI?
+# Why OPERA missed the Dutch rain
 
-## Answer
+OPERA really missed rain reaching the ground. The strongest explanation is loss of Dutch echoes in OPERA's ingestion, quality control or scan selection, before the final composite. The Dutch radar volumes supplied through ORD contain the echoes; the published OPERA composites largely do not. We cannot identify the particular filter or configuration from the public composites alone.
 
-No, not in the Netherlands and Belgium on the rain we had. Over the last 24 hours KNMI's observed radar showed light showers, mostly under 1 mm/h. OPERA's rain-rate product (RATE) agreed with KNMI on 0.3% of the wet cells, and OPERA's reflectivity product (DBZH, converted to mm/h) on 5%. Both are far too low to forecast from in this area. The test covers light rain only (peak 6.6 mm/h), so it says nothing about heavy rain. OPERA is not usable for the Netherlands on this evidence, and it does not tell us how good OPERA is in countries where KNMI is not the reference.
+The failure is not representative of all Europe. In an inland German test, OPERA DBZH detected 94% of DWD's wet cells and RATE detected 69%. **OPERA is worth a German nowcast trial, but is not yet a dependable Europe-wide source for RainWatch.** These are observation comparisons, not evidence that our own two-hour forecast would beat another forecast.
 
-A fair reading is that the OPERA composites are filtered much harder than KNMI's picture over the Netherlands and Belgium, so light showers there never reach them. I did not find the cause. I ruled out timing, the size of the rain areas and missing data.
+## What changed from the first check
 
-## What I compared
+The original 5.2% figure was the fraction of KNMI-wet cell-times also wet in OPERA DBZH, at 0.1 mm/h. It was not the fraction of rainfall volume measured, nor a Europe-wide score. Most of the reference rain was offshore or coastal. Its pooled counts remain in [the original results](verification/opera_check_result.json).
 
-- **Reference.** KNMI `nl_rdr_data_rtcor_5m` 1.0: observed 5-minute radar rainfall, gauge-adjusted. The file's value times 0.01 times 12 gives mm/h.
-- **OPERA files.** The backup store's RATE (2 km, 15 minutes) and DBZH (1 km, 5 minutes). OPERA describes DBZH as the maximum of all radar cell values at each pixel, not rain at the ground ([ORD overview](https://eumetnet.github.io/openradardata-documentation/1-ORD-API-overview/)).
-- **DBZH to rain rate.** Marshall-Palmer, Z = 200 R^1.6, so R = (10^(dBZ/10) / 200)^(1/1.6). Its 0.1 mm/h equals 7.3 dBZ. "Undetect" counts as 0 mm/h. "Nodata" is dropped from every score: it never counts as dry.
-- **Same cells.** Each KNMI 1 km cell is matched to the OPERA cell that contains its centre. I checked the grid on one frame (13 Nov 18:00): the strong cells line up by eye (picture below), a search for a shift of up to 200 km found nothing better than no shift, and the DBZH files 10 or 20 minutes either side share far fewer wet cells with KNMI.
-- **Times.** KNMI's last 24 hours at 15-minute steps (13 Nov 17:45 to 14 Nov 17:45 UTC). 71 of 97 frames had any wet cell, but the wettest frame had only 2.2% of KNMI's cells wet. I scored the 48 frames with at least 0.2% wet cells (13 Nov 17:45 to 14 Nov 06:45) plus four dry frames (14 Nov 11:30, 13:30, 15:30, 17:30) for false alarms. Rain was light all day: of 94,887 wet cell-times within 100 km of a radar, 84% were 0.1 to 0.5 mm/h, 4,420 were 1 mm/h or more, 365 were 2 mm/h or more and 5 were 5 mm/h or more.
-- **Where.** KNMI's picture is a large circle, and far from its radars it sees little. So the main score uses only cells within 100 km of one of KNMI's seven operational radars (Borkum is listed as not operational): 157,485 cells, 7.56 million cell-times. The whole-picture score is in the table too.
-- **CSI** is hits divided by hits, misses and false alarms: the share of wet cells (at least 0.1 mm/h) that both agree on, out of every cell that either calls wet.
+This follow-up adds three checks:
 
-![KNMI, OPERA RATE and OPERA DBZH at 13 Nov 2026 18:00 UTC](verification/opera-vs-knmi-20261113-1800.png)
+1. Surface observations at 25 half-hourly times, 13 November 18:00 to 14 November 06:00 UTC. Each observation reports the preceding ten minutes. KNMI radar is averaged over the same ten minutes; OPERA is sampled at the nominal end time.
+2. The Dutch polar radar volumes supplied through ORD at 13 November 17:55, compared with the 18:00 composites. This traces echoes upstream of OPERA's published output.
+3. DWD's own radar analysis at 15 three-hourly times from 13 November 00:00 to 14 November 18:00. The times and German test rectangle were selected before looking at their rainfall.
 
-## Results
+## Ground instruments confirm genuine misses
 
-| | OPERA RATE | OPERA DBZH, Marshall-Palmer |
-|---|---|---|
-| CSI at 0.1 mm/h, within 100 km | 0.003 | 0.047 |
-| CSI at 0.1 mm/h, whole KNMI picture | 0.004 | 0.017 |
-| CSI at 1 mm/h, within 100 km | 0.000 | 0.003 |
-| Wet cells both call wet (hits) | 299 | 4,928 |
-| KNMI wet, OPERA dry (misses) | 94,588 | 89,959 |
-| OPERA wet, KNMI dry (false alarms) | 2,976 | 9,841 |
-| Share of KNMI's wet cells that OPERA also calls wet | 0.3% | 5.2% |
-| OPERA wet cells as a share of KNMI wet cells | 3% | 16% |
+Among 820 usable Dutch gauge/time observations, 22 report at least 0.1 mm/h. KNMI radar detects 16, OPERA DBZH detects one, and OPERA RATE detects none. Even accepting any wet pixel in a roughly 10 km-wide square around the station only raises DBZH to two detections; RATE stays at zero. A small map displacement cannot explain this.
 
-- **RATE on its own 2 km grid.** KNMI averaged inside each OPERA cell: CSI 0.002 (36 hits, 17,117 misses, 711 false alarms). The 1 km versus 2 km difference is not the reason.
-- **Tuning DBZH.** Trying other wet thresholds on DBZH peaks at CSI 0.053, at 0 to 4 dBZ. Re-tuning the conversion does not rescue it.
-- **Timing.** Comparing OPERA with KNMI 5 minutes earlier or later does not help: RATE 0.002 / 0.003 / 0.005 and DBZH 0.031 / 0.047 / 0.046 (minus 5, 0, plus 5 minutes).
-- **Rain areas.** I counted connected areas of KNMI rain within 100 km (2,859 of them) and asked whether OPERA calls any cell inside wet. DBZH did so for 7%, RATE for 1%. Size hardly matters: of the 430 areas of 64 km² or more, DBZH found 11% and RATE none. So small showers being filtered out does not explain it.
-- **Dry frames.** On the four frames with no KNMI rain, OPERA is clean within 100 km: 8 RATE and 54 DBZH wet cells out of 629,940. Over the whole KNMI picture it shows 2,790 and 4,755 wet cells out of about 1.9 million. That is probably real rain outside KNMI's sight (Denmark, northern Germany), not an error.
+Examples, all in mm/h:
 
-## Intensity bias
+| UTC | Station | Gauge | Present-weather sensor | KNMI radar | OPERA DBZH converted to rain | OPERA RATE |
+|---|---|---:|---:|---:|---:|---:|
+| 13 Nov 18:00 | Woensdrecht | 2.42 | 2.33 | 0.84 | 0 | 0 |
+| 13 Nov 18:30 | Voorschoten | 0.534 | 0.94 | 0.36 | 0 | 0 |
+| 13 Nov 21:30 | Leeuwarden | 1.53 | 1.20 | 1.74 | 0 | 0 |
+| 14 Nov 00:30 | Schiphol | 1.10 | 0.807 | 0.12 | 0 | 0 |
 
-- **RATE** has only 299 shared wet cells; there it reads 4.4 times KNMI. Too few to trust. Over all cells within 100 km, OPERA RATE adds up to 21% of KNMI's rain.
-- **DBZH (Marshall-Palmer)** reads 0.98 times KNMI on the 4,928 shared wet cells. By KNMI's own intensity it falls steeply: 1.95 times at 0.1 to 0.5 mm/h, 0.48 at 0.5 to 1, 0.27 at 1 to 2 and 0.12 at 2 to 5 mm/h. Part of this is the way the cells are chosen (grouping by KNMI's value makes the other product look low when it is noisy), so it shows that OPERA is noisy and gives no fixed correction factor.
-- **Inside OPERA.** At 18:00 on 13 Nov, where DBZH shows 20 to 25 dBZ, RATE averages 0.14 mm/h while Marshall-Palmer gives 0.84 and KNMI 0.22. RATE is the lowest of the three.
-- **Marshall-Palmer on a maximum-reflectivity product** is a convenience conversion, not a rain-rate measurement. Each of the three DBZH files I opened covers a 10-minute window (for example 17:05:01 to 17:15:00 UTC), and the file header says some inputs are advected from earlier scans by Météo-France.
+These gauges are a separate physical measurement, but they are not a statistically independent validation set for KNMI's gauge-adjusted radar. The separate present-weather sensors also support real precipitation. On their available matched observations, KNMI detects 21 of 38 wet observations, RATE zero of 38, and DBZH two of 37; one wet observation has no DBZH coverage. This sensor sample includes offshore installations as well as land stations.
 
-## What is systematic
+The instantaneous-versus-ten-minute mismatch affects exact scores. Sparse gauges also cannot establish what fraction of the original offshore radar echoes was real. They do establish that the discrepancy is not simply KNMI inventing sea rain.
 
-- **Netherlands and Belgium are close to blank in RATE.** Across the 48 rainy frames, OPERA RATE calls only 5 cell-times wet in the whole area nearest Den Helder, Herwijnen, Jabbeke, Helchteren and Wideumont, and none of those 5 coincide with KNMI rain. Hits come only from the German side (Essen 258, Neuheilenbach 41). OPERA lists those Dutch and Belgian radars in every file (`nldhl`, `nlhrw`, `behel`, `bejab`, `bewid`), and on the one frame I checked (13 Nov 18:00) the RATE quality index there is about 0.9 or higher, so OPERA is confident there is no rain, not unsure. The node list says which radars went into the composite; it does not prove each one delivered rain echoes.
-- **DBZH sees some of it, unevenly.** Within 100 km, by nearest KNMI radar: Wideumont CSI 0.27, Herwijnen 0.15, Helchteren 0.14, Essen 0.09, Neuheilenbach 0.05, Den Helder 0.001, Jabbeke 0.000.
-- **Sea and coast.** Most KNMI rain on the day was offshore in a north-westerly shower flow. Of KNMI's wet cells, DBZH matched none of 42,452 at sea more than 10 km from land, 41 of 18,964 at sea within 10 km of land, 462 of 17,185 on land within 10 km of water (2.7%), and 4,425 of 16,286 further inland (27%, CSI 0.17). RATE matched none of the sea or coast cells. Land and sea come from the `global-land-mask` package at about 1 km, which is crude, and the IJsselmeer may count as sea.
-- **Germany and the edge.** Near Essen and Neuheilenbach, DBZH calls 11 and 20 times as many cells wet as KNMI. KNMI is the reference, so I cannot say which is right. Outside 100 km of KNMI's radars OPERA sees rain that KNMI cannot, so there is nothing to score against.
-- **Missing radars and nodata.** No KNMI-area radar dropped out of any of the 52 frames' node lists. Over the frames I scored, 5 Danish radars were absent from 3 or 4 files each. Nodata cells are rare in KNMI's area. Over the whole KNMI picture they cover 0.05 to 0.12% of cells in RATE and 2.6% in DBZH, rising to 4.4 to 5.6% in DBZH from 22:45 to 23:45 UTC on 13 Nov. None are within 100 km of the radars. One day is too little to say anything firmer about outages.
-- **Not obviously a grid error.** The same code matches 27% of KNMI's wet cells inland with DBZH, the strong cells line up by eye, and the shift search found no better offset. I cannot rule out a small mapping error with certainty, but it would not explain RATE finding nothing.
+KNMI's published gauge-adjustment field spans −4.88 to +1.84 dB across the 50 radar frames used here. It is not a huge positive correction manufacturing the discrepancy. Its [product paper](https://essd.copernicus.org/articles/17/4715/2025/essd-17-4715-2025.html) describes polarimetric clutter removal and vertical-profile correction, but also documents residual interference over the sea. KNMI remains an imperfect reference.
 
-## Files missing or late (backup store, listing only)
+## Where the echoes disappear
 
-The store lists object write times, so "delay" here means data time to upload. Late means DBZH more than 7 minutes (nominal about 4) or RATE more than 12 minutes (nominal 10).
+I decoded the **filtered DBZH**, not unfiltered TH, in the Dutch volumes delivered through ORD. I mapped the low scans, at elevations up to 2.8°, onto KNMI cell centres using the radar location, actual ray azimuths and range-bin metadata. Wet means at least 7.01 dBZ, equivalent to 0.1 mm/h under Marshall–Palmer.
 
-| | Expected | Present | Missing | Late | Median / max delay |
-|---|---|---|---|---|---|
-| DBZH, 14 Nov 00:00 to 17:35 UTC | 212 | 210 | 2 (02:40, 14:55) | 1 (7.15 min) | 4.2 / 7.2 min |
-| RATE, 14 Nov 00:00 to 17:30 UTC | 70 | 70 | 0 | 0 | 10.05 / 10.08 min |
-| DBZH, 13 Nov, whole day | 288 | 288 | 0 | 1 (7.05 min) | 4.2 / 7.1 min |
-| RATE, 13 Nov, whole day | 96 | 96 | 0 | 0 | 10.05 / 10.1 min |
+At 13 November 18:00:
 
-Both missing 14 Nov files give a 404. No file was unusually small. At 17:47 UTC the store still listed files back to 13 Nov 00:00, so today it keeps more than 24 hours, but do not count on that.
+| Cells within 100 km of radar | KNMI wet | Wet in at least one low input scan | Wet in OPERA DBZH |
+|---|---:|---:|---:|
+| Den Helder | 3,277 | 2,627 | 186 |
+| Herwijnen | 2,367 | 2,063 | 391 |
 
-## Who hosts OPERA
+These overlapping areas must not be added together. The input scans run from approximately 17:55 to 17:59, within CIRRUS's recorded 17:50:01–18:00 window. Even the individual 0.3° scans contain far more matching echoes than the composite. At 1,483 Den Helder-area cells and 1,053 Herwijnen-area cells, an input low scan reaches **20 dBZ or more**, while OPERA DBZH remains below 7.01 dBZ. This is not just rounding away marginal drizzle.
 
-I read each page below on 14 Nov 2026. For some I only saw the passages my search returned, and I say so.
+The original checker’s unit conversions are correct. KNMI's calibration is `0.01 * stored value` mm per five minutes. OPERA's gain is 1 and offset 0. Its grid's upper-left projected corner is effectively (0, 0), confirming the original mapping. Missing values and undetect values are distinct. At Woensdrecht, both OPERA products explicitly store **undetect**, not missing data.
 
-| Who | What they do | Evidence |
-|---|---|---|
-| **EUMETNET** (OPERA programme, led by the Finnish Met Institute) | Produces the OPERA composites and publishes them under CC BY 4.0. Runs MeteoGate, the public front door. | [OPERA programme page](https://www.eumetnet.eu/observations/weather-radar-network); [MeteoGate overview](https://eumetnet.github.io/meteogate-documentation/1-overview) |
-| **Open Radar Data (ORD) API** | The API and message service over the OPERA data. Built in the RODEO project, operational since 20 May 2026. Anonymous use 60 requests an hour, registered 600 (the gateway also answered with an `X-RateLimit-Limit` of 200; I did not find what window that covers). | [ORD documentation](https://eumetnet.github.io/openradardata-documentation/), [ORD overview](https://eumetnet.github.io/openradardata-documentation/1-ORD-API-overview/), [20 May 2026 newsletter](https://raw.githubusercontent.com/EUMETNET/openradardata-documentation/main/docs/attachments/ORD_API_newsletter_20052026_vs2.pdf) |
-| **RODEO** | EU-funded project (Digital Europe Programme plus EUMETNET members) that built ORD and MeteoGate. It ended at the end of 2025. EUMETNET says the results moved into its operational activities. | [EUMETNET RODEO page](https://www.eumetnet.eu/external-projects/rodeo-2/) |
-| **European Weather Cloud (EWC)** | A cloud run jointly by ECMWF and EUMETSAT, operational since 26 September 2023, aimed at national met services and researchers. The ORD API and ingest software run on it, and so does the MeteoGate API gateway. | [ECMWF newsletter 180](https://www.ecmwf.int/en/newsletter/180/computing/european-weather-cloud-now-operational), [EWC home](https://www.europeanweather.cloud/), [ORD overview](https://eumetnet.github.io/openradardata-documentation/1-ORD-API-overview/), [MeteoGate overview](https://eumetnet.github.io/meteogate-documentation/1-overview) |
-| **CloudFerro** | A commercial cloud company focused on Earth observation. Its Warsaw region WAW3-1 hosts the S3 bucket `openradar-24h`, which the ORD docs name as the 24-hour cache. | [CloudFerro public clouds](https://cloudferro.com/cloud/our-public-clouds), [ORD overview](https://eumetnet.github.io/openradardata-documentation/1-ORD-API-overview/) |
-| **ECMWF backup bucket** | The bucket we actually download from today. | [ORD overview, "ORD Backup" notice](https://eumetnet.github.io/openradardata-documentation/1-ORD-API-overview/) |
+This locates a substantial discrepancy between the input volume available through ORD and the composite. It does **not** prove which volume the production system actually selected: the composite lists radar nodes, not each selected source file or the rejected gates. A source-selection or ingestion problem remains possible alongside excessive filtering.
 
-What I found on stability, in order from the data to the bucket:
+### Best-supported mechanism, and the remaining uncertainty
 
-- **EUMETNET and OPERA production: most stable.** The OPERA programme manager's slides (May 2026) say CIRRUS (DBZH) and NIMBUS (RATE) meet their service level, with average timeliness 4.6 and 8.8 minutes. NIMBUS availability in 2025 was 99.0 to 99.7% after some significant disruptions. Data availability from the radars is 95%, and the programme lists about 170 radars in the composite ([slides](https://gebrada.upc.es/resources/docs/inline/2.1-vonlerber.pdf)). My own listing agrees: DBZH 4.2 minutes late, RATE 10.05. I found no public financial commitment beyond RODEO's end.
-- **ORD API and MeteoGate: young, no published promise to users.** Operational for under six months, about 100 users or entities at the start of June ([slides](https://gebrada.upc.es/resources/docs/inline/2.1-vonlerber.pdf)). MeteoGate says it targets a quality of service that is higher for operational data than for non-operational, but I found no numbers a user can hold it to ([MeteoGate publishing guide](https://eumetnet.github.io/meteogate-documentation/3-publishing-data)). Disruptions are announced through an OPERA mailing list ([newsletter](https://raw.githubusercontent.com/EUMETNET/openradardata-documentation/main/docs/attachments/ORD_API_newsletter_20052026_vs2.pdf)). Its API metadata answered today (HTTP 200, 24-hour extent to 17:57 UTC), and so did the backup API at `radar-backup.meteogate.eu/api`.
-- **European Weather Cloud: well run, but not a service for us.** The EWC is built "for national meteorological and hydrological services" and researchers ([EWC home](https://www.europeanweather.cloud/)). The radar service rides on it as a RODEO component. We would not have a relationship with it.
-- **CloudFerro primary bucket: broken now.** The ORD overview says OPERA's primary 24-hour cache is `s3.waw3-1.cloudferro.com/openradar-24h`. I listed the bucket: it holds two stray objects (a German radar scan from 9 Oct and a Polish radar volume from 27 Oct) and no composites. The page's notice about "an issue with our cloud provider" was added to the documentation in the commit titled "Backup" on 12 Nov 2026 09:03 UTC ([documentation history](https://github.com/EUMETNET/openradardata-documentation/commits/main/docs/1-ORD-API-overview.md)). It gives no cause and no end date. I cannot tell from here when composites stopped landing in the primary bucket.
-- **ECMWF backup bucket: temporary by its own description.** The notice says services were "temporarily moved" to the backup domain until the issue is resolved. The hostname (`cci1`) matches ECMWF's Common Cloud Infrastructure, which is my inference ([ECMWF CCI page](https://www.ecmwf.int/en/computing/our-facilities/common-cloud-infrastructure)). Everything we measured today came from here.
+[EUMETNET's production description](https://www.eumetnet.eu/wp-content/uploads/2024/06/NIMBUS_composite_vs_ODYSSEY_1.0_19062024.pdf) explains that NIMBUS selects the lowest scan and then the radar beam closest to sea level; it does not average all available echoes. Its processing includes clutter, beam-blockage and satellite filters, configurable by radar provider. The satellite filter can explicitly replace echoes with undetect. CIRRUS takes a vertical maximum, so rain retained in higher scans can survive there while RATE remains dry.
 
-We would rely on EUMETNET's OPERA data, reached through its documented front door (the ORD API, or its message service), not on any one bucket. Today the files are only in a bucket its owner calls temporary. The ingest in our server should read the source from configuration and try the documented locations in turn.
+That combination fits the observed loss and the difference between RATE and DBZH. It does not establish that the satellite filter caused this event. The public files expose only the total quality field, without the individual filter results. Woensdrecht's RATE quality is 0.9 despite measured rain and an undetect output. **That is not 90% confidence in dry weather.** NIMBUS's documented quality index combines filter indicators and can even default to 1 when none were applied.
 
-## What this means for the plan
+To settle the exact cause, the production trace must identify the selected Dutch volumes/scans at 17:45–18:15 on 13 November and compare DBZH before and after each filter, including its radar-specific configuration and satellite input. Replaying those selected inputs with each filter disabled would distinguish suppression from ingestion or selection. Nothing in this investigation contacted the operators. Public incoming volumes alone cannot recover that trace.
 
-- **Netherlands.** Keep KNMI. OPERA cannot replace it, and RATE is nearly blank there.
-- **Rest of Europe.** This check does not show OPERA is good or bad outside KNMI's area. It does show OPERA misses light showers in at least NL and BE, and that RATE reads low even next to DBZH. Both are worth knowing before we promise "rain in 10 minutes" in other countries.
-- **Missing evidence.** One light-rain day is a poor test. The store keeps one or two days, so a heavier event has to be collected as it happens, and a second reference for a country other than the Netherlands is needed to judge OPERA there. I have not done either.
+## Independent national comparison outside the Netherlands
 
-## Reproduce
+The reference is [DWD's public RV product](https://opendata.dwd.de/weather/radar/composite/rv/), **lead time 000 only**, not its extrapolated forecast. The actual HDF5 metadata identifies a five-minute `ACRR` accumulation, converted to mm/h with its stored gain and offset, then multiplied by 12. Geolocation uses DWD's own projection and upper-left corner, including its half-pixel offset.
 
-`research/verification/opera_check.py` does the scan, the comparison, the figure and the store audit; its header gives the commands. Needs numpy, h5py, pyproj, scipy and global-land-mask (matplotlib for the figure), the KNMI key in `KNMI_API_KEY`, and the OPERA backup store is anonymous. `research/verification/opera_check_result.json` keeps the pooled numbers behind this page. Downloaded files were deleted; the store only keeps recent files, so a rerun later scores a different day.
+The test covers the inland German rectangle **9–13°E, 51–54°N**, around 98,212 valid DWD cells per time. This is outside the useful Dutch reference area. DWD and OPERA process some of the same radar measurements, so this is an independent national **processing chain**, not independent radar hardware or ground truth.
+
+All scores exclude missing data. A hit is a cell both products call wet; a false alarm here means OPERA wet and DWD dry, not proven absence of rain. CSI is hits divided by hits + misses + false alarms.
+
+| Pooled threshold | Product | DWD wet cells detected | OPERA wet cells dry in DWD | CSI |
+|---|---|---:|---:|---:|
+| 0.1 mm/h | RATE | 68.8% | 21.2% | 0.581 |
+| 0.1 mm/h | DBZH, Marshall–Palmer | 94.2% | 33.8% | 0.636 |
+| 1 mm/h | RATE | 68.4% | 43.2% | 0.450 |
+| 1 mm/h | DBZH, Marshall–Palmer | 95.6% | 53.5% | 0.455 |
+
+At 0.1 mm/h, the reference contains 26,348 wet cell-times. RATE has 18,128 hits, 8,220 misses and 4,869 false alarms; DBZH has 24,819 hits, 1,529 misses and 12,698 false alarms. Averaging DWD inside RATE's 2 km cells gives virtually the same result: 68.2% detection and CSI 0.588.
+
+There is real variation: RATE detects 45–80% of wet cells in the substantial rainy samples on 13 November. Both products perform worse as the region becomes nearly dry on 14 November. A few isolated strong DWD pixels then dominate the intensity statistics. Only 282 reference cell-times reach 5 mm/h across the whole sample; neither that count nor the isolated maximum of about 64 mm/h makes this a convincing heavy-rain test.
+
+DBZH's high detection comes with an expanded wet footprint and unreliable surface intensity. A vertical maximum converted through a fixed Z–R relation is not a calibrated ground rain rate. The German result disproves a Europe-wide “OPERA sees only 5%” conclusion. It does not resolve the original disagreement specifically around Essen and Neuheilenbach, nor validate Belgium, France, mountains or coastlines.
+
+## Reproduction and what remains to test
+
+The scripts and numeric results are in `research/verification/`:
+
+- `opera_cause.py WORKDIR OUT.json`: DWD comparison, surface observations, Dutch gauge-adjustment ranges. Dependencies: numpy, h5py, pyproj, xarray, netcdf4; also imports the original `opera_check.py`.
+- `opera_polar.py WORKDIR OUT.json`: Dutch volume tracing and exact composite metadata. Also needs scipy. Run after the first script.
+- `opera_summary.py RESULT.json`: pooled counts used above.
+- `opera_cause_result.json` and `opera_polar_result.json`: retained public observations, per-time scores and metadata. The earlier check's results remain separately available.
+
+Supply `KNMI_API_KEY` by decrypting the existing age file into an environment variable; do not print it. This investigation used fewer than 100 KNMI API requests. Downloads were cached through every rerun and deleted afterwards. No paid service or registration was used. Fixed dates make the experiment explicit; once the rolling stores expire, it needs archived files rather than a blind rerun.
+
+Before shipping, collect several independent rain episodes per intended country, including shallow coastal rain, widespread frontal rain and sustained heavy showers. Save simultaneous national observations and gauges while the rolling files remain available. Then run the actual nowcast retrospectively at 5–120-minute leads, measuring onset/cessation error, missed rain and false alerts against persistence and the relevant national service. The current 42-hour, three-hourly German sample establishes input plausibility; it cannot test motion tracking or forecast skill.
+
+## Verdict for RainWatch
+
+Keep KNMI in its home area. Do not deploy OPERA as an unqualified European fallback: genuine Dutch rain is lost, and the exact production cause remains unresolved. Outside that area, **DBZH is credible enough for a German nowcast experiment**, with RATE as an additional input to evaluate. Neither is yet validated for a trustworthy two-hour rain line across Europe. The next useful work is a forecast trial against national observations, not rejecting OPERA on the Dutch 5% figure or assuming good German detection proves a good forecast.
