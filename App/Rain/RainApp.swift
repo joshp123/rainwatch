@@ -134,6 +134,11 @@ struct ContentView: View {
         }
     }
 
+    private static func town(at place: CLLocationCoordinate2D) async -> String? {
+        try? await MKReverseGeocodingRequest(location: CLLocation(latitude: place.latitude, longitude: place.longitude))?
+            .mapItems.first?.addressRepresentations?.cityName
+    }
+
     private func refresh() async {
         #if DEBUG
         // Screenshots of every state: `-scenario showerComing` shows a saved forecast instead of
@@ -149,6 +154,10 @@ struct ContentView: View {
             return
         }
         #endif
+        // Opened on the saved forecast: name its town at once rather than after the fetch.
+        if placeName == nil, case let .ready(_, _, saved) = load {
+            Task { if placeName == nil { placeName = await Self.town(at: saved) } }
+        }
         session = CLServiceSession(authorization: .whenInUse)
         do {
             // The first time, Core Location waits for an answer to its permission question.
@@ -164,8 +173,7 @@ struct ContentView: View {
             couldNotUpdate = false
             // Free of the widget budget while the app is in front.
             WidgetCenter.shared.reloadAllTimelines()
-            placeName = try? await MKReverseGeocodingRequest(location: CLLocation(latitude: place.latitude, longitude: place.longitude))?
-                .mapItems.first?.addressRepresentations?.cityName
+            placeName = await Self.town(at: place) ?? placeName
         } catch Place.Failure.noLocation {
             fail(.noLocation)
         } catch Buienradar.Failure.notCovered {

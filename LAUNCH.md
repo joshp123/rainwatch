@@ -9,7 +9,7 @@ Josh's goal: "we know exactly what we want to use to sell or market the app, and
 These come first because the rest depends on them.
 
 1. **The data.** Buienradar's terms, verified on its page: its free data is for non-commercial use with credit, and "het gebruik voor mobiele toepassingen of commerciële doeleinden vereist toestemming van Buienradar" (use in mobile apps or for commercial purposes needs Buienradar's permission). That covers a free app too, and the radar key Rain uses was copied from Buienradar's website. Options:
-   - **Ask Buienradar for written permission** (info@buienradar.nl; the brand belongs to RTL and DPG Media). It keeps today's data and quality. The answer may be no, slow, or free-only. A draft is in section 5; nothing is sent until Josh approves the text and the recipient.
+   - **Ask Buienradar for written permission** (info@buienradar.nl; the brand belongs to RTL and DPG Media). It keeps today's data and quality. The answer may be no, slow, or free-only.
    - **Move to KNMI open data** (CC BY 4.0, free with a registered key): five-minute radar and a two-hour radar nowcast. It needs work: download and decode KNMI's files, read the forecast at your location and draw the radar, probably on a small server rather than the watch. Quality, latency and running cost are unknown until a prototype measures them.
    - Recommendation: send the request now, and in parallel build a one-day KNMI prototype that answers whether it can run on the watch or needs a server, and how its forecast compares with Buienradar's at the same places. A "no" then costs days, not the launch.
 2. **Price.** Free, or a one-off price. The playbook's evidence is against subscriptions for a utility like this (kr0der's subscription apps lost money); its recommendation is a one-off €2 to €4. If Buienradar allows free use only, that decides it. Paid apps need Apple's Paid Apps Agreement, tax and bank details, and should join the Small Business Program (Apple's cut 15% instead of 30%).
@@ -69,21 +69,3 @@ The playbook's evidence points away from paid marketing for a small utility (kr0
 - One launch post on X and a Dutch page; Dutch communities such as Tweakers and r/thenetherlands. Every post waits for Josh to approve its text and where it goes.
 - Ask for ratings only with Apple's own prompt (`requestReview`), after several useful forecasts, never from a custom prompt (Guideline 5.6.1); add a "Rate Rain" link.
 - Turn on review notifications and reply to written reviews in the first month.
-
-### Draft request to Buienradar
-
-For Josh to approve or change; not sent.
-
-> To: info@buienradar.nl
-> Subject: Permission to use Buienradar data in an Apple Watch app
->
-> Hello,
->
-> I'm an independent developer in the Netherlands and have built an Apple Watch app that shows the rain forecast for the next two hours where you are: a complication on the watch face, a Smart Stack card, and a page with the rain graph and the radar. It uses Buienradar's rain graph for the wearer's location (RainNL3Hour) and the five-minute radar frames, and credits Buienradar.
->
-> Your free data page says that mobile apps need your permission. I'd like to ask for it, to publish the app on the App Store. Could you tell me whether that's possible and on what terms: which data I may use, how you'd like Buienradar credited, whether a paid app is allowed, and whether there is a proper API or key I should use instead of the website's?
->
-> I'm happy to send screenshots or a test version.
->
-> Kind regards,
-> Josh Palmer
