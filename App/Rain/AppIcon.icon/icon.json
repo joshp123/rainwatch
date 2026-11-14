@@ -1,0 +1,57 @@
+{
+  "fill": {
+    "linear-gradient": [
+      "extended-srgb:0.42353,0.68235,0.88235,1.00000",
+      "extended-srgb:0.13725,0.36078,0.61961,1.00000"
+    ],
+    "orientation": {
+      "start": {
+        "x": 0.5,
+        "y": 0.0
+      },
+      "stop": {
+        "x": 0.5,
+        "y": 1.0
+      }
+    }
+  },
+  "groups": [
+    {
+      "name": "Base",
+      "specular": false,
+      "layers": [
+        {
+          "image-name": "baseline.svg",
+          "name": "baseline",
+          "opacity": 0.6
+        }
+      ]
+    },
+    {
+      "name": "Rain",
+      "specular": true,
+      "layers": [
+        {
+          "image-name": "fill.svg",
+          "name": "fill",
+          "opacity": 0.7
+        },
+        {
+          "image-name": "edge.svg",
+          "name": "edge",
+          "opacity": 1.0
+        },
+        {
+          "image-name": "dot.svg",
+          "name": "dot",
+          "opacity": 1.0
+        }
+      ]
+    }
+  ],
+  "supported-platforms": {
+    "circles": [
+      "watchOS"
+    ]
+  }
+}

@@ -17,6 +17,7 @@
 		C515955A92FFF24D64E9D61C /* RadarPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24A5456AC0840FD7A47E7340 /* RadarPage.swift */; };
 		C61DC05755C10F88133FF3FB /* PlacePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDE443DA153B758F14C90BBE /* PlacePicker.swift */; };
 		C9165D0FF9414C17A0EFFF46 /* RainWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E5830986D952F71247765B /* RainWidget.swift */; };
+		C9F58103C88666020C5E3BD5 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 46B7917EA7465055193A0A13 /* AppIcon.icon */; };
 		CCF1C72DB096A5FB96074BE3 /* RainWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 9D596FEADDDC9BDA6C9CE992 /* RainWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
@@ -74,6 +75,7 @@
 		1F9A00C4F9B89E5A7D762A86 /* RainWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = RainWidget.entitlements; sourceTree = "<group>"; };
 		24A5456AC0840FD7A47E7340 /* RadarPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadarPage.swift; sourceTree = "<group>"; };
 		3E3D2F253DB2162EA5C37245 /* RainContainer.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = RainContainer.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		46B7917EA7465055193A0A13 /* AppIcon.icon */ = {isa = PBXFileReference; path = AppIcon.icon; sourceTree = "<group>"; };
 		5EA8CD1D830406319B28510E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		62D213F8CBF45908BD07AE5C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		76FBC3379322E9F2BB1F03BF /* RainApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RainApp.swift; sourceTree = "<group>"; };
@@ -134,6 +136,7 @@
 		7FBD4ED217235243AE2EC1DE /* Rain */ = {
 			isa = PBXGroup;
 			children = (
+				46B7917EA7465055193A0A13 /* AppIcon.icon */,
 				62D213F8CBF45908BD07AE5C /* Info.plist */,
 				BDE443DA153B758F14C90BBE /* PlacePicker.swift */,
 				24A5456AC0840FD7A47E7340 /* RadarPage.swift */,
@@ -324,6 +327,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C9F58103C88666020C5E3BD5 /* AppIcon.icon in Resources */,
 				0826FF3CD0532276101FE5C6 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
