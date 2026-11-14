@@ -15,7 +15,7 @@ def cell(lat, lon):
     x, y = proj(lon, lat); return int(round(-y - ro)), int(round(x - co))
 leads = list(range(5, 125, 5))
 def knmi_mmh(a): a = a.astype(float); a[a >= 65534] = np.nan; return a * 0.01 * 12
-obs = {L: knmi_mmh(h5py.File(f"obs/202611131{2 + (30 + L)//60}{(30 + L) % 60:02d}.h5" if False else f"obs/20261113{12 + (30 + L)//60:02d}{(30 + L) % 60:02d}.h5")["image1/image_data"][()]) for L in leads}
+obs = {L: knmi_mmh(h5py.File(f"obs/20261113{12 + (30 + L)//60:02d}{(30 + L) % 60:02d}.h5")["image1/image_data"][()]) for L in leads}
 detf = {L: knmi_mmh(det[f"image{L//5 + 1}/image_data"][()]) for L in leads}
 b = netCDF4.Dataset("blend.nc"); bt = list(b["time"][:]); blat = b["lat"][:]; blon = b["lon"][:]
 bp = b["precip_intensity"]
