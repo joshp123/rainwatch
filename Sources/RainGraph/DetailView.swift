@@ -25,7 +25,7 @@ public struct ForecastDetailView: View {
                     .foregroundStyle(RainPalette.buienradarBlue)
             }
             ForecastChart(forecast: forecast)
-                .frame(height: 100)
+                .frame(height: forecast.hasRain ? 100 : 40)
                 .padding(.top, 8)
             Text("Updated \(RainCopy.clock(fetched))")
                 .font(.footnote)
@@ -36,8 +36,9 @@ public struct ForecastDetailView: View {
     }
 }
 
-/// Buienradar's graph in Swift Charts: height on its own 0–100 scale, with its Light and Heavy
-/// lines labelled inside the plot so the chart keeps the full width; "Now" and whole hours below.
+/// Buienradar's graph in Swift Charts: a line with a fading fill over its wet stretches only, on
+/// the complications' square-root height, with the Light and Heavy lines labelled inside the plot
+/// so the chart keeps the full width; "Now" and whole hours below.
 /// The labels sit at the far end, two hours out, where rain matters least if they cover it.
 public struct ForecastChart: View {
     let forecast: RainForecast
@@ -47,16 +48,24 @@ public struct ForecastChart: View {
     }
 
     public var body: some View {
-        let points = RainCurve.points(forecast, scale: .linear)
+        // The same square-root height as the complications, so one shower has one shape; the
+        // Light and Heavy lines then sit at half and seven-eighths of the height.
+        let runs = RainCurve.wetRuns(forecast, scale: .squareRoot)
         Chart {
-            ForEach(points.indices, id: \.self) { index in
-                let point = points[index]
-                AreaMark(x: .value("Time", date(point.t)), y: .value("Rain", point.v * 100))
-                    .foregroundStyle(RainPalette.buienradarBlue.gradient)
+            ForEach(runs.indices, id: \.self) { run in
+                ForEach(runs[run].indices, id: \.self) { index in
+                    let point = runs[run][index]
+                    AreaMark(x: .value("Time", date(point.t)), y: .value("Rain", point.v * 100), series: .value("Spell", run))
+                        .foregroundStyle(LinearGradient(colors: [RainPalette.buienradarBlue.opacity(0.8), RainPalette.buienradarBlue.opacity(0.25)],
+                                                        startPoint: .top, endPoint: .bottom))
+                    LineMark(x: .value("Time", date(point.t)), y: .value("Rain", point.v * 100), series: .value("Spell", run))
+                        .foregroundStyle(RainPalette.buienradarBlue)
+                        .lineStyle(StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
+                }
             }
             if let change = RainCopy(forecast).change {
                 PointMark(x: .value("Change", change), y: .value("Rain", 0))
-                    .symbol { ChangeDot(palette: .fullColour, diameter: 9) }
+                    .symbol { ChangeDot(palette: .fullColour, diameter: 11) }
             }
         }
         .chartXScale(domain: forecast.start...forecast.end)
@@ -72,11 +81,13 @@ public struct ForecastChart: View {
             }
         }
         .chartYAxis {
-            AxisMarks(preset: .inset, position: .trailing, values: [25, 75]) { value in
+            // With no rain there is nothing to measure, so no scale: Josh's rule for the circle, "if
+            // there's no rain we should just have no line".
+            AxisMarks(preset: .inset, position: .trailing, values: forecast.hasRain ? Self.scaleLines : []) { value in
                 AxisGridLine(stroke: StrokeStyle(lineWidth: 1, dash: [2, 3]))
                 AxisValueLabel {
                     // A backing keeps the label readable where rain fills behind it.
-                    Text(value.as(Double.self) == 25 ? "Light" : "Heavy")
+                    Text(value.as(Double.self) == Self.scaleLines[0] ? "Light" : "Heavy")
                         .padding(.horizontal, 3)
                         .background(.black.opacity(0.6), in: Capsule())
                 }
@@ -84,11 +95,15 @@ public struct ForecastChart: View {
         }
         .chartPlotStyle { plot in
             plot.overlay(alignment: .bottom) {
-                Rectangle().fill(.secondary).frame(height: 1)
+                // Grey, not the accent: blue means rain.
+                Rectangle().fill(Color.white.opacity(0.35)).frame(height: 1)
             }
         }
         .accessibilityLabel(RainCopy(forecast).spoken)
     }
+
+    /// Buienradar's Light and Heavy lines (25 and 75) on the square-root height.
+    static let scaleLines = [RainCurve.display(25) * 100, RainCurve.display(75) * 100]
 
     private func date(_ t: Double) -> Date {
         forecast.start.addingTimeInterval(t * RainForecast.window)

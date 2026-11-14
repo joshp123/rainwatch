@@ -33,7 +33,11 @@ final class RainUITests: XCTestCase {
         // The crown only steps once the frames have arrived; until then there is nothing to step to.
         let frameLabel = app.staticTexts.matching(NSPredicate(format: "label == 'Now' OR label MATCHES '(in [0-9]+ min|[0-9]+ min ago)'")).firstMatch
         XCTAssertTrue(frameLabel.waitForExistence(timeout: 20), "The radar should name the moment it shows")
-        XCUIDevice.shared.rotateDigitalCrown(delta: 0.25)
+        // A small turn may not cross a detent, as on the real crown; a person turns again.
+        XCUIDevice.shared.rotateDigitalCrown(delta: 0.5)
+        if !app.buttons["Play"].waitForExistence(timeout: 3) {
+            XCUIDevice.shared.rotateDigitalCrown(delta: 0.5)
+        }
         XCTAssertTrue(app.buttons["Play"].waitForExistence(timeout: 5), "Turning the crown should pause")
         sleep(1)
         keep("radar-crown")
@@ -62,6 +66,19 @@ final class RainUITests: XCTestCase {
             sleep(2)
             keep("page-\(failure)")
         }
+    }
+
+    /// The radar's strip with rain in it, from a saved forecast (the radar frames are live).
+    func testRadarWithRain() {
+        app.terminate()
+        app.launchArguments = ["-scenario", "rainComing"]
+        app.launch()
+        let radar = app.buttons["Radar"].firstMatch
+        XCTAssertTrue(radar.waitForExistence(timeout: 15))
+        radar.tap()
+        XCTAssertTrue(app.buttons["Pause"].waitForExistence(timeout: 20))
+        sleep(3)
+        keep("radar-rain")
     }
 
     /// Location permission is asked by the system, outside the app.

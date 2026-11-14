@@ -77,12 +77,22 @@ struct RainChart: View {
                     }
                     .stroke(palette.grid, style: StrokeStyle(lineWidth: 1, dash: [1, 3]))
                 }
-                RainArea(forecast: forecast, scale: scale)
-                    .fill(palette.rain)
+                let changeT = RainCopy(forecast).change.map { forecast.position(of: $0) }
+                // Nothing is drawn within 4.5 points of the dot: on tinted faces WidgetKit keeps
+                // only alpha, so a dark ring or a cut-out would fuse the dot to the rain.
+                let gap = changeT.map { ($0 - 4.5 / size.width)...($0 + 4.5 / size.width) }
+                RainArea(forecast: forecast, scale: scale, gap: gap)
+                    .fill(palette.rain.opacity(0.55))
+                    .accentable()
+                RainEdge(forecast: forecast, scale: scale, gap: gap)
+                    .stroke(palette.rain, style: StrokeStyle(lineWidth: 1.5, lineCap: .round, lineJoin: .round))
                     .accentable()
                 Path { path in
-                    path.move(to: CGPoint(x: 0, y: size.height))
-                    path.addLine(to: CGPoint(x: size.width, y: size.height))
+                    let segments: [ClosedRange<Double>] = gap.map { [0...max(0, $0.lowerBound), min(1, $0.upperBound)...1] } ?? [0...1]
+                    for segment in segments where segment.upperBound > segment.lowerBound {
+                        path.move(to: CGPoint(x: size.width * segment.lowerBound, y: size.height))
+                        path.addLine(to: CGPoint(x: size.width * segment.upperBound, y: size.height))
+                    }
                     for hour in forecast.hourMarks {
                         let x = size.width * forecast.position(of: hour)
                         path.move(to: CGPoint(x: x, y: size.height))
@@ -90,16 +100,15 @@ struct RainChart: View {
                     }
                 }
                 .stroke(palette.baseline, lineWidth: 1.5)
-                if let change = RainCopy(forecast).change {
-                    ChangeDot(palette: palette)
-                        .position(x: size.width * forecast.position(of: change), y: size.height)
+                if let changeT {
+                    ChangeDot(palette: palette).position(x: size.width * changeT, y: size.height)
                 }
             }
         }
     }
 }
 
-/// Apple's gauge indicator: a white dot with a dark ring, so it reads on any colour.
+/// Apple's gauge indicator: a white dot, with nothing drawn close round it.
 struct ChangeDot: View {
     let palette: RainPalette
     var diameter: CGFloat = 8
@@ -107,8 +116,7 @@ struct ChangeDot: View {
     var body: some View {
         Circle()
             .fill(palette.primary)
-            .padding(diameter * 0.19)
-            .background(Circle().fill(.black))
+            .frame(width: diameter * 0.62, height: diameter * 0.62)
             .frame(width: diameter, height: diameter)
     }
 }
@@ -128,6 +136,11 @@ struct TimeAxis: View {
                         Text(RainCopy.clock(hour))
                             .fixedSize()
                             .position(x: x, y: proxy.size.height / 2)
+                    } else if x > 50 {
+                        // Too near the edge to centre: right-align it, so there are always two anchors.
+                        Text(RainCopy.clock(hour))
+                            .fixedSize()
+                            .frame(width: proxy.size.width, alignment: .trailing)
                     }
                 }
             }
@@ -140,9 +153,10 @@ struct TimeAxis: View {
 
 /// Circular family. The arc is Buienradar's graph bent round: a 240° arc open at the bottom, like
 /// Apple's gauges, running clockwise from now at the lower left to two hours at the lower right.
-/// The track is the baseline; rain rises from it towards the rim on Buienradar's own scale, so a
-/// heavy peak stands well above a light one (Josh: "the one thing i MISS is simulating the height
-/// of the peaks"). The dot marks the next change. With no rain there is no line, only "Dry".
+/// The track is the baseline; rain rises from it to the rim on the square root of Buienradar's
+/// height, so peaks show (Josh: "the one thing i MISS is simulating the height of the peaks"). In
+/// the 94 saved forecasts the typical wet peak is 12 of 100: on a linear scale that stood 0.4
+/// points high, on the square root 2.2. The dot marks the next change. With no rain there is no line, only "Dry".
 ///
 /// It sits on the same grey disc as the complications beside it on Josh's face, and its words
 /// match theirs: Sunrise and World Clock set two lines of the same size, about 8 points tall, and
@@ -166,8 +180,8 @@ public struct CircularRainGauge: View {
     static let start = Angle.degrees(150)
     static let sweep = Angle.degrees(240)
     /// Radii as fractions of the slot's radius; the disc behind fills the slot.
-    static let rim = 0.88
-    static let track = 0.68
+    static let rim = 0.98
+    static let track = 0.66
 
     public init(forecast: RainForecast, palette: RainPalette, middle: Middle = .minutes, plate: Bool = false) {
         self.forecast = forecast
@@ -180,7 +194,8 @@ public struct CircularRainGauge: View {
         GeometryReader { proxy in
             let side = min(proxy.size.width, proxy.size.height)
             let half = side / 2
-            let stroke = side * 0.04
+            // Apple's minimum line weight is 2 points.
+            let stroke = max(2, side * 0.045)
             let halfStroke = stroke / side
             let track = middle == .minutes ? Self.track : 0.42
             let copy = RainCopy(forecast)
@@ -189,17 +204,26 @@ public struct CircularRainGauge: View {
                     Circle().fill(palette.plate)
                 }
                 if forecast.hasRain {
-                    ArcLine(startAngle: Self.start, sweep: Self.sweep, radius: track)
+                    let dot = copy.change.map { change -> CGPoint in
+                        let angle = Self.start.radians + forecast.position(of: change) * Self.sweep.radians
+                        return CGPoint(x: half + half * track * cos(angle), y: half + half * track * sin(angle))
+                    }
+                    // Nothing is drawn within a dot's width either side of it, so it stays apart from
+                    // the rain on tinted faces too.
+                    let gap = copy.change.map { change -> ClosedRange<Double> in
+                        let t = forecast.position(of: change)
+                        let width = (side * 0.075) / (half * track) / Self.sweep.radians
+                        return (t - width)...(t + width)
+                    }
+                    ArcLine(startAngle: Self.start, sweep: Self.sweep, radius: track, gap: gap)
                         .stroke(palette.baseline, style: StrokeStyle(lineWidth: stroke, lineCap: .round))
                     RadialRainArea(forecast: forecast, startAngle: Self.start, sweep: Self.sweep,
                                    baseline: track - halfStroke, full: Self.rim, floorAtBaseline: track + halfStroke,
-                                   scale: .linear)
+                                   scale: .squareRoot, gap: gap)
                         .fill(palette.rain)
                         .accentable()
-                    if let change = copy.change {
-                        let angle = Self.start.radians + forecast.position(of: change) * Self.sweep.radians
-                        ChangeDot(palette: palette, diameter: side * 0.085)
-                            .position(x: half + half * track * cos(angle), y: half + half * track * sin(angle))
+                    if let dot {
+                        ChangeDot(palette: palette, diameter: side * 0.1).position(dot)
                     }
                 }
                 if middle == .minutes || !forecast.hasRain {
