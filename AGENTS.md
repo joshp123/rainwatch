@@ -10,6 +10,8 @@ The goal is a glance he can trust: whether it is dry now and for how long, drawn
 
 `DESIGN.md` has the rules every view follows and where they come from. Read it before changing a view.
 
+`LAUNCH.md` is the plan for the App Store: Josh's open decisions first, then every task with its owner and status. Keep its status columns current when a task moves.
+
 ## Look at every image before anyone else does
 
 Josh, 13 November 2026: "look at those images? some look weird? lots is clipped? you need to set this up properly in a repo ... with a rule to always look at images and critique it". Mock-ups and screenshots from this project have gone to him clipped, overlapping and inconsistent because the agent showed them without looking.
