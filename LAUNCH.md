@@ -33,7 +33,7 @@ Later, in order of users: the backend extrapolates open radar where there is no 
 
 What gets worse outside the Netherlands, said plainly in the app: a shorter horizon, coarser steps, or hourly only. WeatherKit is free up to 500,000 calls a month on Josh's membership; past that Apple charges from $49.99 a month. Its terms require the Apple Weather mark and legal link on screen, and forbid caching it on a server. Rejected after checking: RainViewer (no forecast since January 2026, personal use only), Open-Meteo (free tier non-commercial), the Bureau of Meteorology (paid licence), Rainbow.ai (paid; its global coverage is "coming soon").
 
-Still to prove before launch: a rainy-day comparison of KNMI against Buienradar at 20 or more places, to know KNMI is as good.
+Compared on one rainy day (13 November, 48 Dutch places, scored against the radar rainfall that followed): KNMI was as good as Buienradar, and slightly better, especially on when rain starts (`research/knmi-vs-buienradar.md`). One day of mostly light rain proves little; repeat it on more rainy days before launch, including summer showers.
 
 ## 3. Product: what must change to ship
 
