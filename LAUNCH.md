@@ -11,7 +11,7 @@ The evidence is in `research/`. Every App Store step and its command is in `laun
 Decided by Josh on 14 November:
 - **Name:** RainWatch in English, BuienWatch in Dutch. On the watch the name under the icon follows the wearer's language (`App/Shared/InfoPlist.xcstrings`). On the App Store, Apple refused the bare "RainWatch" for the English listing ("already being used"), although the other app is listed as "RainWatch – Cute Cloud Weather"; it accepted "RainWatch: Rain Forecast", which the record carries for now. The Dutch listing is BuienWatch.
 - **Price:** free, with no ads or in-app purchases. The account is declared "not a trader" in the EU (done 14 November), so no address shows. No postbox for now.
-- **Countries:** worldwide, with the quality stated honestly for each area (section 3).
+- **Countries:** worldwide, with the quality stated honestly for each area (section 3). Outside KNMI's area the app launches on Apple's WeatherKit (Josh, 14 November: "Let's launch with WeatherKit, but keep on in parallel figuring out a better way to do it"); `research/europe-sources.md` is the search for that better way.
 - **Languages:** the listing's main language is English (U.K.), with Dutch. The Dutch store indexes both.
 
 Open:
