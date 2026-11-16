@@ -58,7 +58,7 @@ struct ContentView: View {
             case "noLocation": self = .noLocation
             case "offline": self = .offline(.knmi)
             case "noForecast": self = .noForecast
-            case "stale": self = .stale(since: .now.addingTimeInterval(-75 * 60))
+            case "stale": self = .stale(since: Date(timeIntervalSince1970: ((Date.now.timeIntervalSince1970 - 75 * 60) / 300).rounded(.down) * 300))
             default: return nil
             }
         }
@@ -239,7 +239,9 @@ struct ContentView: View {
         }
         if let name = UserDefaults.standard.string(forKey: "scenario"),
            let scenario = Scenario.allCases.first(where: { "\($0)" == name }) {
-            load = .ready(scenario.forecast(at: .now), issued: .now.addingTimeInterval(-Scenario.age), source: .knmi,
+            // A KNMI run time: on a five-minute mark, at least ten minutes ago.
+            let run = Date(timeIntervalSince1970: ((Date.now.timeIntervalSince1970 - Scenario.age) / 300).rounded(.down) * 300)
+            load = .ready(scenario.forecast(at: .now), issued: run, source: .knmi,
                           place: CLLocationCoordinate2D(latitude: scenario.coordinate.latitude, longitude: scenario.coordinate.longitude))
             placeName = scenario.place
             return
