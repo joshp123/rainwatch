@@ -46,20 +46,41 @@ struct FamilySheet: View {
                 Caption(title: "Inline", detail: "Top line")
             }
             ForEach(Scenario.allCases, id: \.self) { scenario in
-                let forecast = scenario.forecast
-                GridRow(alignment: .center) {
-                    Caption(title: scenario.rawValue)
-                        .frame(width: 120, alignment: .leading)
-                    CircularMock(forecast: forecast, palette: palette)
-                    RectangularMock(forecast: forecast, palette: palette)
-                    SmartStackMock(forecast: forecast, palette: palette)
-                    CornerTile { CornerMock(forecast: forecast, palette: palette) }
-                    InlineMock(forecast: forecast, palette: palette)
-                }
+                row(scenario.rawValue, scenario.forecast)
             }
+            // The same KNMI run 45 minutes old: the line and the arc stop 75 minutes ahead.
+            if let aged = RainForecast.at(Scenario.start.addingTimeInterval(35 * 60), from: Scenario.rainComing.forecast.samples) {
+                row("Rain in 25 min, 45 min old", aged)
+            }
+            // Layout examples for Apple's data, not real forecasts: the minute forecast reaches an
+            // hour, the hourly one rain by clock hour.
+            row("Apple, next hour (example)", RainForecast(samples: Array(Scenario.rainComing.forecast.samples.prefix(12))), apple: true)
+            row("Apple, hourly (example)", Self.hourly, apple: true)
         }
         .padding(28)
         .background(.black)
+    }
+}
+
+extension FamilySheet {
+    @ViewBuilder func row(_ title: String, _ forecast: RainForecast, apple: Bool = false) -> some View {
+        GridRow(alignment: .center) {
+            Caption(title: title)
+                .frame(width: 120, alignment: .leading)
+            CircularMock(forecast: forecast, palette: palette)
+            RectangularMock(forecast: forecast, palette: palette, appleWeather: apple)
+            SmartStackMock(forecast: forecast, palette: palette, appleWeather: apple)
+            CornerTile { CornerMock(forecast: forecast, palette: palette) }
+            InlineMock(forecast: forecast, palette: palette)
+        }
+    }
+
+    /// Dry until the next hour, then an hour of light rain, from 13:45.
+    static var hourly: RainForecast {
+        let hour = Calendar.current.dateInterval(of: .hour, for: Scenario.start)!.start
+        let rates: [Double] = [0, 0.8, 0]
+        let samples = (0..<36).map { RainSample(date: hour.addingTimeInterval(Double($0) * RainForecast.step), rate: rates[$0 / 12]) }
+        return RainForecast.at(Scenario.start, from: samples, resolution: .hourly)!
     }
 }
 
@@ -161,7 +182,7 @@ struct MiddleComparison: View {
                         .multilineTextAlignment(.center)
                         .frame(width: 100)
                 }
-                Text("True size on your face (Oslo)")
+                Text("True size on your face (Alkmaar)")
                     .font(RainFont.rounded(10, .medium))
                     .foregroundStyle(.white.opacity(0.55))
                     .frame(width: Ultra3.screen.width)

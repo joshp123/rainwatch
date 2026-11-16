@@ -62,9 +62,10 @@ struct CircularMock: View {
 struct RectangularMock: View {
     let forecast: RainForecast
     let palette: RainPalette
+    var appleWeather = false
 
     var body: some View {
-        RectangularRainView(forecast: forecast, palette: palette)
+        RectangularRainView(forecast: forecast, palette: palette, appleWeather: appleWeather)
             .padding(.bottom, 1)
             .frame(width: Ultra3.rectangular.width, height: Ultra3.rectangular.height)
     }
@@ -73,9 +74,10 @@ struct RectangularMock: View {
 struct SmartStackMock: View {
     let forecast: RainForecast
     let palette: RainPalette
+    var appleWeather = false
 
     var body: some View {
-        RectangularRainView(forecast: forecast, palette: palette)
+        RectangularRainView(forecast: forecast, palette: palette, appleWeather: appleWeather)
             .padding(.horizontal, 10)
             .padding(.top, 6)
             .padding(.bottom, 4)

@@ -7,7 +7,12 @@ import SwiftUI
 /// from the screenshot.
 struct JoshFace: View {
     /// The screenshot shows 14:13 on Friday 13 November.
-    static let clock: Date = Scenario.start.addingTimeInterval(43 * 60)
+    /// The time on the face in the photo, so the forecast's times agree with it.
+    static let clock: Date = {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "Europe/Amsterdam")!
+        return calendar.date(from: DateComponents(year: 2026, month: 11, day: 16, hour: 14, minute: 13))!
+    }()
 
     let screenshot: NSImage
     let forecast: RainForecast

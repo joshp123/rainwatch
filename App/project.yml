@@ -81,7 +81,9 @@ targets:
   RainUITests:
     type: bundle.ui-testing
     platform: watchOS
-    sources: [RainUITests]
+    sources:
+      - path: RainUITests
+        excludes: [Server]
     dependencies:
       - target: Rain
     settings:

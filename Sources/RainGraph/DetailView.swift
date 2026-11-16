@@ -103,7 +103,7 @@ public struct ForecastChart: View {
                 GeometryReader { proxy in
                     let known = proxy.size.width * min(1, forecast.position(of: forecast.forecastEnd))
                     Rectangle().fill(Color.white.opacity(0.35)).frame(width: known, height: 1)
-                    if known < proxy.size.width - 8 {
+                    if forecast.end.timeIntervalSince(forecast.forecastEnd) > 10 * 60 {
                         Path { path in
                             path.move(to: CGPoint(x: known + 3, y: 0.5))
                             path.addLine(to: CGPoint(x: proxy.size.width, y: 0.5))
