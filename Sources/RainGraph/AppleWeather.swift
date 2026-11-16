@@ -53,10 +53,11 @@ public enum AppleWeather {
     /// Apple's minutes in the app's five-minute steps: a step is wet when most of its minutes are,
     /// at their average intensity.
     static func fiveMinuteSteps(_ minutes: [(date: Date, chance: Double, rate: Double)]) -> [RainSample] {
-        stride(from: 0, to: minutes.count - 4, by: 5).map { first in
-            let block = minutes[first..<(first + 5)]
+        stride(from: 0, to: minutes.count, by: 5).map { first in
+            // The last step may be short: Apple's hour ends on its 61st minute.
+            let block = minutes[first..<min(first + 5, minutes.count)]
             let wet = block.filter { $0.chance >= wetChance && $0.rate > 0 }
-            let rate = wet.count >= 3 ? max(lightest, wet.map(\.rate).reduce(0, +) / Double(wet.count)) : 0
+            let rate = wet.count * 2 > block.count ? max(lightest, wet.map(\.rate).reduce(0, +) / Double(wet.count)) : 0
             return RainSample(date: block.first!.date, rate: rate)
         }
     }

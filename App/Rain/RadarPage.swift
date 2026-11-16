@@ -56,20 +56,6 @@ struct RadarPage: View {
                 .onMapCameraChange(frequency: .continuous) { cameraChanges += 1 }
                 .overlay { RainPicture(proxy: proxy, image: image, place: place, cameraChanges: changes) }
         }
-        .overlay(alignment: .bottomTrailing) {
-            // KNMI's licence (CC BY 4.0) asks for its name with its data; it sits where maps keep
-            // their credits, across from Apple's legal link.
-            Text("Source: KNMI")
-                .font(.system(size: 10, weight: .medium))
-                .foregroundStyle(.white.opacity(0.75))
-                // Its own dark backing, so map labels behind it don't read as part of it.
-                .padding(.horizontal, 4)
-                .padding(.vertical, 1)
-                .background(.black.opacity(0.7), in: RoundedRectangle(cornerRadius: 3))
-                .padding(.trailing, 18)
-                .padding(.bottom, Self.timelineHeight + 2)
-                .allowsHitTesting(false)
-        }
         .overlay(alignment: .bottom) { timeline }
         .ignoresSafeArea()
         .contentShape(Rectangle())
@@ -122,6 +108,15 @@ struct RadarPage: View {
                 Text(timeLabel)
                     .font(.headline.monospacedDigit())
                     .contentTransition(.identity)
+                    .fixedSize()
+                Spacer(minLength: 4)
+                // KNMI's licence (CC BY 4.0) asks for its name with its data. It sits on the black
+                // band, where no map label can run under it.
+                Text("Source: KNMI")
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .fixedSize()
             }
             if problem {
                 Text("Radar unavailable")
@@ -434,9 +429,13 @@ private struct Painter {
     let points: [(x: Double, y: Double)]
     /// The cells round those points: top row, left column, and how many.
     let top: Int, left: Int, cellWidth: Int, cellHeight: Int
+    /// Close up, the cells keep a soft but visible edge, so drizzle reads as rain rather than haze;
+    /// wide out they are blended into each other, where a shower is only a few cells across.
+    let close: Bool
 
     init(radar: Radar, place: CLLocationCoordinate2D, view: Double) {
         self.radar = radar
+        close = view < 60_000
         let box = Radar.bounds(around: place, view: view)
         // Eight pixels per cell close up and two wide out, so the blend between cells is smooth.
         let kmPerPixel = view / 1000 / 240
@@ -467,23 +466,27 @@ private struct Painter {
         cellWidth = last.column - first.column + 1
     }
 
-    /// Dry counts as well below the lightest rain, so that between a wet and a dry cell the rain
-    /// fades out about half way, as on Buienradar's picture.
+    /// Wide out, dry counts as far below the lightest rain (1), so rain fades out gradually between
+    /// a wet and a dry cell.
     static let dry: Float = -10
 
     func image(frame: Int) -> Radar.Image? {
         // The cells this picture needs, as rain level (dry far below 0) and no-data share.
-        var level = [Float](repeating: Self.dry, count: cellWidth * cellHeight)
+        var level = [Float](repeating: close ? 0 : Self.dry, count: cellWidth * cellHeight)
         var missing = [Float](repeating: 0, count: cellWidth * cellHeight)
+        var wet = [Float](repeating: 0, count: cellWidth * cellHeight)
         for row in 0..<cellHeight {
             for column in 0..<cellWidth {
                 let value = Radar.value(latest: radar.latest, squares: radar.squares, row: top + row, column: left + column, frame: frame)
-                if value == 255 { missing[row * cellWidth + column] = 1 } else if value > 0 { level[row * cellWidth + column] = Float(value) }
+                let i = row * cellWidth + column
+                if value == 255 { missing[i] = 1 } else if value > 0 { level[i] = Float(value); wet[i] = 1 }
             }
         }
-        // A light blur first rounds the corners of the 1 km cells, as Buienradar's picture is round.
-        level = Self.soften(level, width: cellWidth, height: cellHeight)
-        missing = Self.soften(missing, width: cellWidth, height: cellHeight)
+        // Wide out, a light blur first rounds the corners of the 1 km cells.
+        if !close {
+            level = Self.soften(level, width: cellWidth, height: cellHeight)
+            missing = Self.soften(missing, width: cellWidth, height: cellHeight)
+        }
         var pixels = [UInt8](repeating: 0, count: width * height * 4)
         for (pixel, point) in points.enumerated() {
             // Cell centres sit at half-cell positions.
@@ -497,7 +500,18 @@ private struct Painter {
                 let lower = grid[i + cellWidth] * (1 - tx) + grid[i + cellWidth + 1] * tx
                 return upper * (1 - ty) + lower * ty
             }
-            let (r, g, b, a) = Self.colour(level: blend(level), missing: blend(missing))
+            let presence: Float, rain: Float
+            if close {
+                // The edge comes from where cells are wet, half way between a wet and a dry cell
+                // whatever the rain's strength; the strength from the wet cells alone.
+                let share = blend(wet)
+                presence = Self.smoothstep(0.38, 0.62, share)
+                rain = share > 0 ? blend(level) / share : 0
+            } else {
+                rain = blend(level)
+                presence = Self.smoothstep(-4, 3, rain)
+            }
+            let (r, g, b, a) = Self.colour(level: rain, presence: presence, missing: blend(missing))
             pixels[pixel * 4] = UInt8(r * a * 255)
             pixels[pixel * 4 + 1] = UInt8(g * a * 255)
             pixels[pixel * 4 + 2] = UInt8(b * a * 255)
@@ -533,9 +547,8 @@ private struct Painter {
     /// Light rain in Buienradar's blue, heavier rain brighter and more opaque, towards white, with
     /// red kept for downpours from 10 mm/h (DESIGN.md, rule 2). Where the radar has no data, a grey
     /// veil, so it never reads as dry. `level` is KNMI's byte scale: 1 is 0.1 mm/h, 51 is 1, 101 is 10.
-    static func colour(level: Float, missing: Float) -> (Float, Float, Float, Float) {
+    static func colour(level: Float, presence: Float, missing: Float) -> (Float, Float, Float, Float) {
         let veil = (r: Float(0.55), g: Float(0.55), b: Float(0.6), a: 0.4 * missing)
-        let presence = smoothstep(-4, 3, level)
         guard presence > 0 else { return (veil.r, veil.g, veil.b, veil.a) }
         let blue: (Float, Float, Float) = (0.35, 0.61, 0.83)
         let light: (Float, Float, Float) = (0.62, 0.82, 1)
@@ -545,8 +558,8 @@ private struct Painter {
         let opacity: Float
         switch level {
         case ..<51:
-            // Drizzle stays see-through, so heavier rain stands out from it.
-            colour = mix(blue, light, smoothstep(1, 51, level)); opacity = 0.35 + 0.4 * smoothstep(1, 51, level)
+            // Drizzle stays see-through, so heavier rain and the map's labels stand out from it.
+            colour = mix(blue, light, smoothstep(1, 51, level)); opacity = 0.5 + 0.25 * smoothstep(1, 51, level)
         case ..<86:
             colour = mix(light, white, smoothstep(51, 86, level)); opacity = 0.75 + 0.2 * smoothstep(51, 86, level)
         default:
@@ -560,7 +573,7 @@ private struct Painter {
         return (over(colour.0, veil.r), over(colour.1, veil.g), over(colour.2, veil.b), total)
     }
 
-    private static func smoothstep(_ low: Float, _ high: Float, _ x: Float) -> Float {
+    static func smoothstep(_ low: Float, _ high: Float, _ x: Float) -> Float {
         let t = min(max((x - low) / (high - low), 0), 1)
         return t * t * (3 - 2 * t)
     }

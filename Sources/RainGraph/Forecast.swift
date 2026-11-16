@@ -106,9 +106,10 @@ public struct RainForecast: Sendable {
     public var start: Date { samples.first?.date ?? now }
     /// The end of the time axis.
     public var end: Date { start.addingTimeInterval(span) }
-    /// Where the forecast stops: the end of the axis, or sooner when the data runs out.
+    /// Where the forecast stops: the end of the axis, or the last step's time when the data runs out
+    /// sooner. A KNMI run's last frame is at 120 minutes, so its forecast ends there.
     public var forecastEnd: Date {
-        min(end, (samples.last?.date ?? start).addingTimeInterval(Self.step))
+        min(end, samples.last?.date ?? start)
     }
 
     /// Position of `date` along the axis, 0 at its start and 1 at its end.
@@ -123,7 +124,8 @@ public struct RainForecast: Sendable {
     /// words treat them as wet. The line still shows them.
     public static let shortestUsefulGap: TimeInterval = 10 * 60
 
-    /// The forecast cut into dry and wet stretches. Each sample covers the five minutes after it.
+    /// The forecast cut into dry and wet stretches. Each sample covers the five minutes after it, up
+    /// to where the forecast stops.
     public var spells: [RainSpell] {
         var spells = rawSpells
         var index = 1
@@ -181,7 +183,7 @@ extension RainForecast {
         let stop = samples[first].date.addingTimeInterval(window)
         var picked: [RainSample] = []
         for sample in samples[first...] {
-            guard sample.date < stop, sample.rate != nil else { break }
+            guard sample.date <= stop, sample.rate != nil else { break }
             picked.append(sample)
         }
         let forecast = RainForecast(samples: picked, now: moment, resolution: resolution)

@@ -239,9 +239,11 @@ struct ContentView: View {
         }
         if let name = UserDefaults.standard.string(forKey: "scenario"),
            let scenario = Scenario.allCases.first(where: { "\($0)" == name }) {
-            // A KNMI run time: on a five-minute mark, at least ten minutes ago.
+            // As a watch sees a KNMI run: the run on a five-minute mark at least ten minutes ago,
+            // its data from ten minutes after it, and what is left of that from now.
             let run = Date(timeIntervalSince1970: ((Date.now.timeIntervalSince1970 - Scenario.age) / 300).rounded(.down) * 300)
-            load = .ready(scenario.forecast(at: .now), issued: run, source: .knmi,
+            guard let forecast = RainForecast.at(.now, from: scenario.forecast(at: run.addingTimeInterval(Scenario.age)).samples) else { return }
+            load = .ready(forecast, issued: run, source: .knmi,
                           place: CLLocationCoordinate2D(latitude: scenario.coordinate.latitude, longitude: scenario.coordinate.longitude))
             placeName = scenario.place
             return

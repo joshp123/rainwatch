@@ -62,7 +62,9 @@ public struct RainCopy: Sendable {
         }
         let ends = next.end < forecast.forecastEnd ? "–\(Self.clock(next.end))" : ""
         if next.isRain {
-            return "\(next.intensity.phrase) \(Self.clock(next.start))\(ends)"
+            // Rain that lasts as far as the forecast reaches has no end to give.
+            return ends.isEmpty ? "\(next.intensity.phrase) from \(Self.clock(next.start))"
+                : "\(next.intensity.phrase) \(Self.clock(next.start))\(ends)"
         }
         // "Rain until 15:10" already says when it turns dry; say how hard it rains instead.
         if ends.isEmpty, (minutesLeft ?? 0) >= 60 { return peakPhrase }

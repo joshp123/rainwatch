@@ -28,8 +28,10 @@ public enum RainCurve {
     static func points(_ forecast: RainForecast, scale: Scale = .squareRoot, subdivisions: Int = 10) -> [(t: Double, v: Double)] {
         // Each sample covers the five minutes after it, so it is drawn at the middle of them: the
         // line then rises around the moment rain starts, where the dot is, not before it.
-        let values = forecast.samples.map { display($0.height, scale) }
-        let times = forecast.samples.map { forecast.position(of: $0.date.addingTimeInterval(RainForecast.step / 2)) }
+        // Only the steps before the forecast stops: the last one marks where it ends.
+        let steps = forecast.samples.filter { $0.date < forecast.forecastEnd }
+        let values = steps.map { display($0.height, scale) }
+        let times = steps.map { forecast.position(of: $0.date.addingTimeInterval(RainForecast.step / 2)) }
         guard values.count > 1 else {
             return values.isEmpty ? [] : [(0, values[0]), (min(1, forecast.position(of: forecast.forecastEnd)), values[0])]
         }
