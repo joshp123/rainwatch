@@ -12,6 +12,10 @@ The goal is a glance he can trust: whether it is dry now and for how long, drawn
 
 `LAUNCH.md` is the plan for the App Store: Josh's open decisions first, then every task with its owner and status. Keep its status columns current when a task moves.
 
+## The server
+
+The forecast job is `server/job.py`. It runs every 5 minutes on the gohome VPS (`~/code/nix/nixos-config/hosts/nixos/gohome-hub/rainwatch.nix`), which uploads its two files to S3; CloudFront serves them at `rain.jjpcodes.com` (`~/code/opentofu-infra/services/rainwatch`). Why it is built this way: `server/FIRST-PRINCIPLES.md`. KNMI's fair-use rules bind every change: one fetch per run, never the same file twice (https://developer.dataplatform.knmi.nl/fair-use).
+
 ## App Store Connect and Apple's developer account: command line only
 
 Josh, 14 November 2026: "No, I'm not gonna use touch ID. You're gonna figure out how to drive this via the CLI instead of computer use. This is a hard rule ... You need to be using command line tools and finding the appropriate first party command line tools instead of just doing random computer use shit."
