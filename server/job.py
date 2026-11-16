@@ -179,7 +179,12 @@ if __name__ == "__main__":
     folder = sys.argv[1]
     run = (datetime.strptime(sys.argv[2], "%Y%m%d%H%M").replace(tzinfo=timezone.utc) if len(sys.argv) > 2
            else run_to_build(datetime.now(timezone.utc)))
+    store = Folder(folder)
+    published = store.get("latest")
+    if published and json.loads(published)["run"] == run.strftime("%Y-%m-%dT%H:%MZ"):
+        print(f"{run:%Y-%m-%dT%H:%MZ} is already built; KNMI's rules say not to fetch it again")
+        sys.exit(0)
     started = time.perf_counter()
-    build(run, os.environ["KNMI_KEY"], Folder(folder))
+    build(run, os.environ["KNMI_KEY"], store)
     peak = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / (2 ** 30 if sys.platform == "darwin" else 2 ** 20)
     print(f"{time.perf_counter() - started:.1f} s, peak memory {peak:.2f} GB")
