@@ -44,20 +44,31 @@ struct RadarPage: View {
     }
 
     var body: some View {
+        // Read here, not inside MapReader's closure: SwiftUI does not run that closure again when
+        // state it reads changes, so the picture would stay on its first frame.
+        let image = frames[safe: index]?.image
+        let changes = cameraChanges
         MapReader { proxy in
-            Map(position: $camera, interactionModes: []) {
-                Annotation("", coordinate: place) {
-                    Circle()
-                        .fill(.yellow)
-                        .frame(width: 10, height: 10)
-                        .overlay(Circle().stroke(.black.opacity(0.7), lineWidth: 2))
-                }
-            }
-            .mapStyle(.standard(emphasis: .muted, pointsOfInterest: .excludingAll))
-            // MapKit centres the region, and keeps Apple's legal link, above the timeline.
-            .safeAreaPadding(.bottom, Self.timelineHeight)
-            .onMapCameraChange(frequency: .continuous) { cameraChanges += 1 }
-            .overlay { rain(proxy) }
+            Map(position: $camera, interactionModes: [])
+                .mapStyle(.standard(emphasis: .muted, pointsOfInterest: .excludingAll))
+                // MapKit centres the region, and keeps Apple's legal link, above the timeline.
+                .safeAreaPadding(.bottom, Self.timelineHeight)
+                .onMapCameraChange(frequency: .continuous) { cameraChanges += 1 }
+                .overlay { RainPicture(proxy: proxy, image: image, place: place, cameraChanges: changes) }
+        }
+        .overlay(alignment: .bottomTrailing) {
+            // KNMI's licence (CC BY 4.0) asks for its name with its data; it sits where maps keep
+            // their credits, across from Apple's legal link.
+            Text("Source: KNMI")
+                .font(.system(size: 10, weight: .medium))
+                .foregroundStyle(.white.opacity(0.75))
+                // Its own dark backing, so map labels behind it don't read as part of it.
+                .padding(.horizontal, 4)
+                .padding(.vertical, 1)
+                .background(.black.opacity(0.7), in: RoundedRectangle(cornerRadius: 3))
+                .padding(.trailing, 18)
+                .padding(.bottom, Self.timelineHeight + 2)
+                .allowsHitTesting(false)
         }
         .overlay(alignment: .bottom) { timeline }
         .ignoresSafeArea()
@@ -111,12 +122,6 @@ struct RadarPage: View {
                 Text(timeLabel)
                     .font(.headline.monospacedDigit())
                     .contentTransition(.identity)
-                Spacer(minLength: 4)
-                // KNMI's licence (CC BY 4.0) asks for its name with its data.
-                Text("Source: KNMI")
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundStyle(.secondary)
-                    .fixedSize()
             }
             if problem {
                 Text("Radar unavailable")
@@ -143,23 +148,6 @@ struct RadarPage: View {
                 Color.black.frame(height: Self.timelineHeight)
             }
             .allowsHitTesting(false)
-        }
-    }
-
-    /// The frame placed by its corners, which keeps it aligned however the map moves: the picture
-    /// is drawn in Web Mercator, as Apple's map is.
-    @ViewBuilder private func rain(_ proxy: MapProxy) -> some View {
-        let _ = cameraChanges
-        if let frame = frames[safe: index], let image = frame.image,
-           let northWest = proxy.convert(image.northWest, to: .local),
-           let southEast = proxy.convert(image.southEast, to: .local) {
-            Image(decorative: image.cgImage, scale: 1)
-                .resizable()
-                .interpolation(.high)
-                .antialiased(true)
-                .frame(width: southEast.x - northWest.x, height: southEast.y - northWest.y)
-                .position(x: (northWest.x + southEast.x) / 2, y: (northWest.y + southEast.y) / 2)
-                .allowsHitTesting(false)
         }
     }
 
@@ -210,6 +198,39 @@ struct RadarPage: View {
             index = next
             crown = Double(next)
         }
+    }
+}
+
+/// The frame placed by its corners, which keeps it aligned however the map moves: the picture is
+/// drawn in Web Mercator, as Apple's map is. The yellow dot for where you are goes on top, so rain
+/// never hides it.
+struct RainPicture: View {
+    let proxy: MapProxy
+    let image: Radar.Image?
+    let place: CLLocationCoordinate2D
+    /// Changes whenever the map moves, so the picture follows it.
+    let cameraChanges: Int
+
+    var body: some View {
+        ZStack {
+            if let image, let northWest = proxy.convert(image.northWest, to: .local),
+               let southEast = proxy.convert(image.southEast, to: .local) {
+                Image(decorative: image.cgImage, scale: 1)
+                    .resizable()
+                    .interpolation(.high)
+                    .antialiased(true)
+                    .frame(width: southEast.x - northWest.x, height: southEast.y - northWest.y)
+                    .position(x: (northWest.x + southEast.x) / 2, y: (northWest.y + southEast.y) / 2)
+            }
+            if let point = proxy.convert(place, to: .local) {
+                Circle()
+                    .fill(.yellow)
+                    .frame(width: 10, height: 10)
+                    .overlay(Circle().stroke(.black.opacity(0.7), lineWidth: 2))
+                    .position(point)
+            }
+        }
+        .allowsHitTesting(false)
     }
 }
 
@@ -460,6 +481,9 @@ private struct Painter {
                 if value == 255 { missing[row * cellWidth + column] = 1 } else if value > 0 { level[row * cellWidth + column] = Float(value) }
             }
         }
+        // A light blur first rounds the corners of the 1 km cells, as Buienradar's picture is round.
+        level = Self.soften(level, width: cellWidth, height: cellHeight)
+        missing = Self.soften(missing, width: cellWidth, height: cellHeight)
         var pixels = [UInt8](repeating: 0, count: width * height * 4)
         for (pixel, point) in points.enumerated() {
             // Cell centres sit at half-cell positions.
@@ -487,6 +511,25 @@ private struct Painter {
         return Radar.Image(cgImage: image, northWest: northWest, southEast: southEast)
     }
 
+    /// A 1-2-1 blur across and down.
+    static func soften(_ grid: [Float], width: Int, height: Int) -> [Float] {
+        var across = grid
+        for row in 0..<height {
+            for column in 1..<max(1, width - 1) {
+                let i = row * width + column
+                across[i] = (grid[i - 1] + 2 * grid[i] + grid[i + 1]) / 4
+            }
+        }
+        var down = across
+        for row in 1..<max(1, height - 1) {
+            for column in 0..<width {
+                let i = row * width + column
+                down[i] = (across[i - width] + 2 * across[i] + across[i + width]) / 4
+            }
+        }
+        return down
+    }
+
     /// Light rain in Buienradar's blue, heavier rain brighter and more opaque, towards white, with
     /// red kept for downpours from 10 mm/h (DESIGN.md, rule 2). Where the radar has no data, a grey
     /// veil, so it never reads as dry. `level` is KNMI's byte scale: 1 is 0.1 mm/h, 51 is 1, 101 is 10.
@@ -502,9 +545,10 @@ private struct Painter {
         let opacity: Float
         switch level {
         case ..<51:
-            colour = mix(blue, light, smoothstep(1, 51, level)); opacity = 0.55 + 0.25 * smoothstep(1, 51, level)
+            // Drizzle stays see-through, so heavier rain stands out from it.
+            colour = mix(blue, light, smoothstep(1, 51, level)); opacity = 0.35 + 0.4 * smoothstep(1, 51, level)
         case ..<86:
-            colour = mix(light, white, smoothstep(51, 86, level)); opacity = 0.8 + 0.15 * smoothstep(51, 86, level)
+            colour = mix(light, white, smoothstep(51, 86, level)); opacity = 0.75 + 0.2 * smoothstep(51, 86, level)
         default:
             colour = mix(white, red, smoothstep(91, 101, level)); opacity = 0.95 + 0.05 * smoothstep(91, 101, level)
         }

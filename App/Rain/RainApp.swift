@@ -49,6 +49,8 @@ struct ContentView: View {
         case offline(Snapshot.Source)
         /// Apple refused the call or had no forecast: never shown as dry.
         case noForecast
+        /// KNMI's newest forecast is over an hour old: the server or KNMI has stopped.
+        case stale(since: Date)
 
         #if DEBUG
         init?(debugName: String) {
@@ -56,6 +58,7 @@ struct ContentView: View {
             case "noLocation": self = .noLocation
             case "offline": self = .offline(.knmi)
             case "noForecast": self = .noForecast
+            case "stale": self = .stale(since: .now.addingTimeInterval(-75 * 60))
             default: return nil
             }
         }
@@ -176,6 +179,14 @@ struct ContentView: View {
             } actions: {
                 Button("Try Again") { Task { await refresh() } }
             }
+        case let .stale(since):
+            ContentUnavailableView {
+                Label("No Recent Forecast", systemImage: "clock.badge.exclamationmark")
+            } description: {
+                Text("KNMI's newest forecast is from \(RainCopy.clock(since)).")
+            } actions: {
+                Button("Try Again") { Task { await refresh() } }
+            }
         case .noForecast:
             ContentUnavailableView {
                 Label("No Forecast", systemImage: "cloud.rain")
@@ -229,7 +240,7 @@ struct ContentView: View {
         if let name = UserDefaults.standard.string(forKey: "scenario"),
            let scenario = Scenario.allCases.first(where: { "\($0)" == name }) {
             load = .ready(scenario.forecast(at: .now), issued: .now.addingTimeInterval(-Scenario.age), source: .knmi,
-                          place: CLLocationCoordinate2D(latitude: 51.92, longitude: 4.48))
+                          place: CLLocationCoordinate2D(latitude: scenario.coordinate.latitude, longitude: scenario.coordinate.longitude))
             placeName = scenario.place
             return
         }
@@ -262,7 +273,7 @@ struct ContentView: View {
             if case .loading = load { load = .loading("Getting the forecast") }
             let snapshot = try await Snapshot.fetch(latitude: place.latitude, longitude: place.longitude)
             guard let forecast = snapshot.forecast(at: .now) else {
-                fail(.noForecast)
+                fail(snapshot.source == .knmi ? .stale(since: snapshot.issued) : .noForecast)
                 return
             }
             load = .ready(forecast, issued: snapshot.issued, source: snapshot.source, place: place)

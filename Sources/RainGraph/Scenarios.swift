@@ -19,6 +19,20 @@ public enum Scenario: String, CaseIterable, Sendable {
         rawValue.components(separatedBy: ", ").last ?? "Rotterdam"
     }
 
+    /// The town's latitude and longitude, where the radar page opens.
+    public var coordinate: (latitude: Double, longitude: Double) {
+        switch self {
+        case .dry: (53.22, 6.57)
+        case .showerComing: (51.44, 5.48)
+        case .onAndOff: (52.64, 5.06)
+        case .drizzleStops: (51.44, 3.57)
+        case .rainingEasing: (52.96, 4.76)
+        case .rainComing: (52.63, 4.75)
+        case .rainAllWindow: (51.23, 6.78)
+        case .heavy: (52.28, 8.05)
+        }
+    }
+
     public static let start: Date = {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(identifier: "Europe/Amsterdam")!

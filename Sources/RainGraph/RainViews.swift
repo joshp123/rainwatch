@@ -104,7 +104,7 @@ struct RainChart: View {
                     .accentable()
                 // Past where the forecast stops, the baseline is dotted: no forecast yet, not dry.
                 let known = size.width * min(1, forecast.position(of: forecast.forecastEnd))
-                if known < size.width {
+                if known < size.width - 8 {
                     Path { path in
                         path.move(to: CGPoint(x: known + 3, y: size.height))
                         path.addLine(to: CGPoint(x: size.width, y: size.height))
