@@ -12,6 +12,7 @@ set -e
 cd "$(dirname "$0")"
 U="$1"; R="${2:-build/tests}"; PORT=8765
 
+if curl -s -o /dev/null "http://127.0.0.1:$PORT/"; then echo "Port $PORT is already in use" >&2; exit 1; fi
 SERVE=$(mktemp -d)
 mkdir -p "$SERVE/runs"
 cp RainUITests/Server/runs/* "$SERVE/runs/"
