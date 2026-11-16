@@ -70,6 +70,7 @@ targets:
       path: Rain/Rain.entitlements
       properties:
         com.apple.security.application-groups: [group.nl.jjp.rain]
+        com.apple.developer.weatherkit: true
     settings:
       base:
         # Apple requires the container's bundle ID as the prefix of the watch app's.
@@ -114,6 +115,7 @@ targets:
       path: RainWidget/RainWidget.entitlements
       properties:
         com.apple.security.application-groups: [group.nl.jjp.rain]
+        com.apple.developer.weatherkit: true
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: nl.jjp.rain.watchkitapp.widget
