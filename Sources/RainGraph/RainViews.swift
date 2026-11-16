@@ -8,18 +8,28 @@ import WidgetKit
 public struct RectangularRainView: View {
     let forecast: RainForecast
     let palette: RainPalette
-    /// When the forecast was fetched. Once it is 20 minutes old, the second line says so.
-    let fetched: Date?
+    /// When the data was made. Once it is 20 minutes old, the second line says so.
+    let issued: Date?
+    /// Set for Apple's data, whose terms want its mark wherever it is shown.
+    let appleWeather: Bool
 
-    public init(forecast: RainForecast, palette: RainPalette, fetched: Date? = nil) {
+    public init(forecast: RainForecast, palette: RainPalette, issued: Date? = nil, appleWeather: Bool = false) {
         self.forecast = forecast
         self.palette = palette
-        self.fetched = fetched
+        self.issued = issued
+        self.appleWeather = appleWeather
     }
 
     private var isOld: Bool {
-        guard let fetched else { return false }
-        return forecast.now.timeIntervalSince(fetched) >= 20 * 60
+        guard let issued else { return false }
+        return forecast.now.timeIntervalSince(issued) >= 20 * 60
+    }
+
+    /// Apple's data names its source on the second line, in place of what follows: the line below
+    /// still shows it.
+    private var credit: String? {
+        guard appleWeather else { return nil }
+        return forecast.resolution == .hourly ? "\u{F8FF}Weather, hourly" : "\u{F8FF}Weather"
     }
 
     public var body: some View {
@@ -35,8 +45,12 @@ public struct RectangularRainView: View {
                     .foregroundStyle(palette.primary)
                     // Matched to Apple's Stocks rows beside it on Josh's face, about 16 points.
                     .font(RainFont.rounded(16, .semibold))
-                if roomy, isOld, let fetched {
-                    Text("Forecast from \(RainCopy.clock(fetched))")
+                if roomy, isOld, let issued {
+                    Text("Forecast from \(RainCopy.clock(issued))")
+                        .font(RainFont.rounded(13.5, .medium))
+                        .foregroundStyle(palette.secondary)
+                } else if roomy, let credit {
+                    Text(credit)
                         .font(RainFont.rounded(13.5, .medium))
                         .foregroundStyle(palette.secondary)
                 } else if roomy, let detail = copy.detail {
@@ -57,7 +71,7 @@ public struct RectangularRainView: View {
     }
 }
 
-/// Height is intensity on Buienradar's own scale; left to right is now to two hours.
+/// Height is intensity on Buienradar's graph scale; left to right is now to two hours.
 /// The dot marks when the weather changes, the moment the headline counts down to.
 struct RainChart: View {
     let forecast: RainForecast
@@ -88,9 +102,18 @@ struct RainChart: View {
                     .cut(hole, stroke: StrokeStyle(lineWidth: 1.5, lineCap: .round, lineJoin: .round))
                     .fill(palette.rain)
                     .accentable()
+                // Past where the forecast stops, the baseline is dotted: no forecast yet, not dry.
+                let known = size.width * min(1, forecast.position(of: forecast.forecastEnd))
+                if known < size.width {
+                    Path { path in
+                        path.move(to: CGPoint(x: known + 3, y: size.height))
+                        path.addLine(to: CGPoint(x: size.width, y: size.height))
+                    }
+                    .stroke(palette.baseline, style: StrokeStyle(lineWidth: 1.5, lineCap: .round, dash: [0.1, 4]))
+                }
                 Path { path in
                     path.move(to: CGPoint(x: 0, y: size.height))
-                    path.addLine(to: CGPoint(x: size.width, y: size.height))
+                    path.addLine(to: CGPoint(x: known, y: size.height))
                     for hour in forecast.hourMarks {
                         let x = size.width * forecast.position(of: hour)
                         path.move(to: CGPoint(x: x, y: size.height))
@@ -150,10 +173,10 @@ struct TimeAxis: View {
     }
 }
 
-/// Circular family. The arc is Buienradar's graph bent round: a 240° arc open at the bottom, like
+/// Circular family. The arc is the rain graph bent round: a 240° arc open at the bottom, like
 /// Apple's gauges, running clockwise from now at the lower left to two hours at the lower right.
-/// The track is the baseline; rain rises from it to the rim on the square root of Buienradar's
-/// height, so peaks show (Josh: "the one thing i MISS is simulating the height of the peaks"). In
+/// The track is the baseline, drawn as far as the forecast reaches; rain rises from it to the rim on
+/// the square root of the graph height, so peaks show (Josh: "the one thing i MISS is simulating the height of the peaks"). In
 /// the 94 saved forecasts the typical wet peak is 12 of 100: on a linear scale that stood 0.4
 /// points high, on the square root 2.2. The dot marks the next change. With no rain there is no line, only "Dry".
 ///
@@ -220,7 +243,9 @@ public struct CircularRainGauge: View {
                             path.closeSubpath()
                         }
                     }
-                    GaugeTrack(startAngle: Self.start, sweep: Self.sweep, radius: track, lineWidth: stroke,
+                    // The track runs as far as the forecast does: an older forecast has a shorter arc.
+                    GaugeTrack(startAngle: Self.start, sweep: Self.sweep * min(1, forecast.position(of: forecast.forecastEnd)),
+                               radius: track, lineWidth: stroke,
                                roundStart: (forecast.samples.first?.height ?? 0) == 0,
                                roundEnd: (forecast.samples.last?.height ?? 0) == 0)
                         .cut(dot.map { Path.disc($0, radius: hole) })

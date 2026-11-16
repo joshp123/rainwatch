@@ -1,16 +1,17 @@
 import Charts
 import SwiftUI
 
-/// The app's first page: what the complications say, with room to read it, and Buienradar's own
-/// graph for the two hours drawn the way Apple draws charts on the watch. App text uses the
-/// system's text styles, so it matches Apple's apps and follows the wearer's text size.
+/// The app's first page: what the complications say, with room to read it, and the rain graph for
+/// the two hours drawn the way Apple draws charts on the watch. App text uses the system's text
+/// styles, so it matches Apple's apps and follows the wearer's text size.
 public struct ForecastDetailView: View {
     let forecast: RainForecast
-    let fetched: Date
+    /// When the data was made: its age, which the page states.
+    let issued: Date
 
-    public init(forecast: RainForecast, fetched: Date) {
+    public init(forecast: RainForecast, issued: Date) {
         self.forecast = forecast
-        self.fetched = fetched
+        self.issued = issued
     }
 
     public var body: some View {
@@ -27,7 +28,7 @@ public struct ForecastDetailView: View {
             ForecastChart(forecast: forecast)
                 .frame(height: forecast.hasRain ? 100 : 40)
                 .padding(.top, 8)
-            Text("Updated \(RainCopy.clock(fetched))")
+            Text("Forecast from \(RainCopy.clock(issued))")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
                 .padding(.top, 6)
@@ -36,7 +37,7 @@ public struct ForecastDetailView: View {
     }
 }
 
-/// Buienradar's graph in Swift Charts: a line with a fading fill over its wet stretches only, on
+/// The rain graph in Swift Charts: a line with a fading fill over its wet stretches only, on
 /// the complications' square-root height, with the Light and Heavy lines labelled inside the plot
 /// so the chart keeps the full width; "Now" and whole hours below.
 /// The labels sit at the far end, two hours out, where rain matters least if they cover it.
@@ -98,18 +99,29 @@ public struct ForecastChart: View {
         }
         .chartPlotStyle { plot in
             plot.overlay(alignment: .bottom) {
-                // Grey, not the accent: blue means rain.
-                Rectangle().fill(Color.white.opacity(0.35)).frame(height: 1)
+                // Grey, not the accent: blue means rain. Dotted past where the forecast stops.
+                GeometryReader { proxy in
+                    let known = proxy.size.width * min(1, forecast.position(of: forecast.forecastEnd))
+                    Rectangle().fill(Color.white.opacity(0.35)).frame(width: known, height: 1)
+                    if known < proxy.size.width {
+                        Path { path in
+                            path.move(to: CGPoint(x: known + 3, y: 0.5))
+                            path.addLine(to: CGPoint(x: proxy.size.width, y: 0.5))
+                        }
+                        .stroke(Color.white.opacity(0.35), style: StrokeStyle(lineWidth: 1.5, lineCap: .round, dash: [0.1, 4]))
+                    }
+                }
+                .frame(height: 1)
             }
         }
         .accessibilityLabel(RainCopy(forecast).spoken)
     }
 
-    /// Buienradar's Light and Heavy lines (25 and 75) on the square-root height.
+    /// The Light and Heavy lines (25 and 75 on Buienradar's graph scale) on the square-root height.
     static let scaleLines = [RainCurve.display(25) * 100, RainCurve.display(75) * 100]
 
     private func date(_ t: Double) -> Date {
-        forecast.start.addingTimeInterval(t * RainForecast.window)
+        forecast.start.addingTimeInterval(t * forecast.span)
     }
 
     /// Hours far enough from "Now" not to read as one label with it.

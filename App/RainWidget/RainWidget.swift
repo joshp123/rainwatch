@@ -21,8 +21,9 @@ struct RainEntry: TimelineEntry {
     /// Nil when there is no forecast to show; `problem` then says why.
     let forecast: RainForecast?
     var problem: Problem?
-    /// When the forecast was fetched, so an old one can say so.
-    var fetched: Date?
+    /// When the data was made, so an old forecast can say so.
+    var issued: Date?
+    var source: Snapshot.Source?
 
     /// The Smart Stack raises the widget while it rains, and more the sooner rain arrives.
     var relevance: TimelineEntryRelevance? {
@@ -33,10 +34,11 @@ struct RainEntry: TimelineEntry {
     }
 }
 
-/// Each reload fetches Buienradar once and writes an entry for every minute until the forecast is
-/// 30 minutes old, then a stale entry that withdraws the countdown. It asks to be reloaded after
-/// 15 minutes; watchOS reloads complications on the active face about every 15 to 20. If a reload
-/// is late or fails, the stale entry still appears on time, because entries show at their own dates.
+/// Each reload fetches once (KNMI's square from our server, or Apple's forecast outside KNMI's area)
+/// and writes an entry for every minute until the data is an hour old, then a stale entry that
+/// withdraws the countdown. It asks to be reloaded after 15 minutes; watchOS reloads complications
+/// on the active face about every 15 to 20. If a reload is late or fails, the stale entry still
+/// appears on time, because entries show at their own dates.
 struct RainProvider: TimelineProvider {
     static let reloadAfter: TimeInterval = 15 * 60
 
@@ -77,7 +79,7 @@ struct RainProvider: TimelineProvider {
         let source = place.chosen.map { "chosen \($0.name)" } ?? (place.isLive ? "live" : "saved \(RainCopy.clock(place.at))")
         do {
             let snapshot = try await Snapshot.fetch(latitude: place.coordinate.latitude, longitude: place.coordinate.longitude, now: now)
-            ReloadLog.record("fetched, location \(source)")
+            ReloadLog.record("fetched \(snapshot.source.rawValue), \(snapshot.requests) requests, data from \(RainCopy.clock(snapshot.issued)), location \(source)")
             return timeline(snapshot, now: now)
         } catch {
             ReloadLog.record("fetch failed, location \(source): \(error.localizedDescription)")
@@ -86,8 +88,12 @@ struct RainProvider: TimelineProvider {
     }
 
     static func timeline(_ snapshot: Snapshot, now: Date) -> Timeline<RainEntry> {
-        var entries = snapshot.forecasts(from: now).map { RainEntry(date: $0.now, forecast: $0, fetched: snapshot.fetched) }
-        entries.append(RainEntry(date: max(snapshot.staleAt, now), forecast: nil, problem: .stale(since: snapshot.fetched)))
+        var entries = snapshot.forecasts(from: now).map {
+            RainEntry(date: $0.now, forecast: $0, issued: snapshot.issued, source: snapshot.source)
+        }
+        // When the data runs out or turns stale, the countdown is withdrawn.
+        let staleFrom = entries.last.map { $0.date.addingTimeInterval(60) } ?? now
+        entries.append(RainEntry(date: max(min(snapshot.staleAt, staleFrom), now), forecast: nil, problem: .stale(since: snapshot.issued)))
         return Timeline(entries: entries, policy: .after(now.addingTimeInterval(reloadAfter)))
     }
 
@@ -142,7 +148,7 @@ struct RainComplicationView: View {
             }
             .containerBackground(for: .widget) { Color.clear }
         case .accessoryRectangular:
-            RectangularRainView(forecast: forecast, palette: palette, fetched: entry.fetched)
+            RectangularRainView(forecast: forecast, palette: palette, issued: entry.issued, appleWeather: entry.source?.isApple ?? false)
                 .containerBackground(for: .widget) { forecast.hasRain ? palette.stack : palette.stackDry }
         case .accessoryCorner:
             // Words along the edge; a drop in the corner, filled when rain is due.
@@ -197,11 +203,11 @@ struct RainComplicationView: View {
     private var problemText: (headline: String, detail: String, short: String?) {
         switch entry.problem {
         case let .stale(since):
-            ("Last forecast \(RainCopy.clock(since))", "Open Rain to refresh", "DATA")
+            ("Last forecast \(RainCopy.clock(since))", "Open \(Bundle.main.displayName) to refresh", "DATA")
         case .noLocation:
-            ("Location needed", "Open Rain to share it", "PLACE")
+            ("Location needed", "Open \(Bundle.main.displayName) to share it", "PLACE")
         case .noForecast, nil:
-            ("No forecast", "Buienradar can't be reached", "DATA")
+            ("No forecast", "Open \(Bundle.main.displayName) to try again", "DATA")
         }
     }
 }

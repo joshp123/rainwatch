@@ -1,21 +1,40 @@
 import Foundation
 
-/// One five-minute step of Buienradar's nowcast.
-/// `height` is Buienradar's own graph height (`percentageValue`, 0–100), the value its website plots.
+/// One five-minute step of a rain forecast.
 public struct RainSample: Hashable, Sendable, Codable {
     public var date: Date
-    public var height: Double
+    /// Rain in mm/h: 0 is dry, nil is no data. No data is never drawn or worded as dry.
+    public var rate: Double?
 
-    public init(date: Date, height: Double) {
+    public init(date: Date, rate: Double?) {
         self.date = date
-        self.height = height
+        self.rate = rate
     }
 
+    /// Height on the graph, 0–100, on Buienradar's scale (`RainScale`).
+    public var height: Double { RainScale.height(rate ?? 0) }
+
     /// Any measurable rain counts: Josh wants to know if he gets wet at all.
-    public var isRain: Bool { height > 0 }
+    public var isRain: Bool { (rate ?? 0) > 0 }
 }
 
-/// How hard it rains, on Buienradar's own graph lines (Light 25, Moderate 50, Heavy 75).
+/// Buienradar's graph scale, which the app's lines, words and scale marks were designed on. Its
+/// graph feed gives the height as 20 per mm/h up to 2 mm/h, then 3.75 per mm/h: every one of the
+/// 34 distinct pairs of `dataValue` and `percentageValue` in `research/live-data` fits
+/// floor(height). Full height is 18 mm/h; Light 25 is 1.25 mm/h, Moderate 50 is 4.7, Heavy 75 is 11.3.
+public enum RainScale {
+    public static func height(_ rate: Double) -> Double {
+        guard rate > 0 else { return 0 }
+        return rate <= 2 ? 20 * rate : min(100, 40 + (rate - 2) * 3.75)
+    }
+
+    public static func rate(height: Double) -> Double {
+        guard height > 0 else { return 0 }
+        return height <= 40 ? height / 20 : 2 + (height - 40) / 3.75
+    }
+}
+
+/// How hard it rains, on Buienradar's graph lines (Light 25, Moderate 50, Heavy 75).
 public enum Intensity: Int, Comparable, Sendable {
     case drizzle, light, moderate, heavy
 
@@ -51,8 +70,19 @@ public struct RainSpell: Equatable, Sendable {
     public var intensity: Intensity { Intensity(height: peak) }
 }
 
-/// The next two hours of rain at one place. The first sample is now.
+/// The rain at one place from now, for up to two hours. The first sample holds now. The forecast
+/// may stop before the two hours are up: a KNMI run covers two hours from its radar time, so it has
+/// less left the older it is, and Apple's minute forecast covers one hour. Views draw it to where it
+/// stops and the words claim nothing beyond it.
 public struct RainForecast: Sendable {
+    /// How finely the forecast knows when rain starts and stops.
+    public enum Resolution: String, Codable, Sendable {
+        /// KNMI's forecast, or Apple's minute forecast in five-minute steps.
+        case fiveMinutes
+        /// Apple's hourly forecast: rain is known per clock hour, not to the minute.
+        case hourly
+    }
+
     public static let step: TimeInterval = 5 * 60
     public static let window: TimeInterval = 2 * 60 * 60
     /// Buienradar's own scale lines (`borders`): Light, Moderate, Heavy.
@@ -60,34 +90,40 @@ public struct RainForecast: Sendable {
 
     public var samples: [RainSample]
     /// The moment the forecast is shown. Durations count from here, not from the first sample,
-    /// because Buienradar's feed starts at the next five-minute step.
+    /// which is the five-minute step that holds now.
     public var now: Date
+    public var resolution: Resolution
+    /// The length of the time axis: two hours, or longer for the radar's strip.
+    public var span: TimeInterval
 
-    public init(samples: [RainSample], now: Date? = nil) {
+    public init(samples: [RainSample], now: Date? = nil, resolution: Resolution = .fiveMinutes, span: TimeInterval = window) {
         self.samples = samples
         self.now = now ?? samples.first?.date ?? .now
+        self.resolution = resolution
+        self.span = span
     }
 
-    public init(start: Date, heights: [Double]) {
-        samples = heights.enumerated().map { index, height in
-            RainSample(date: start.addingTimeInterval(Double(index) * Self.step), height: height)
-        }
-        now = start
+    public var start: Date { samples.first?.date ?? now }
+    /// The end of the time axis.
+    public var end: Date { start.addingTimeInterval(span) }
+    /// Where the forecast stops: the end of the axis, or sooner when the data runs out.
+    public var forecastEnd: Date {
+        min(end, (samples.last?.date ?? start).addingTimeInterval(Self.step))
     }
 
-    public var start: Date { samples.first?.date ?? .now }
-    public var end: Date { start.addingTimeInterval(Self.window) }
-
-    /// Position of `date` along the window, 0 at now and 1 at two hours.
+    /// Position of `date` along the axis, 0 at its start and 1 at its end.
     public func position(of date: Date) -> Double {
-        date.timeIntervalSince(start) / Self.window
+        date.timeIntervalSince(start) / span
     }
+
+    /// Whole minutes the forecast reaches beyond now.
+    public var minutesKnown: Int { max(0, Int(forecastEnd.timeIntervalSince(now) / 60)) }
 
     /// Dry gaps shorter than this between two wet stretches can't be used to go out, so the
     /// words treat them as wet. The line still shows them.
     public static let shortestUsefulGap: TimeInterval = 10 * 60
 
-    /// The window cut into dry and wet stretches. Each sample covers the five minutes after it.
+    /// The forecast cut into dry and wet stretches. Each sample covers the five minutes after it.
     public var spells: [RainSpell] {
         var spells = rawSpells
         var index = 1
@@ -106,10 +142,10 @@ public struct RainForecast: Sendable {
     }
 
     private var rawSpells: [RainSpell] {
-        let inWindow = samples.filter { $0.date < end }
+        let stop = forecastEnd
         var spells: [RainSpell] = []
-        for sample in inWindow {
-            let sampleEnd = min(sample.date.addingTimeInterval(Self.step), end)
+        for sample in samples where sample.date < stop {
+            let sampleEnd = min(sample.date.addingTimeInterval(Self.step), stop)
             if var last = spells.last, last.isRain == sample.isRain {
                 last.end = sampleEnd
                 last.peak = max(last.peak, sample.height)
@@ -121,7 +157,7 @@ public struct RainForecast: Sendable {
         return spells
     }
 
-    public var hasRain: Bool { samples.contains { $0.isRain && $0.date < end } }
+    public var hasRain: Bool { samples.contains { $0.isRain && $0.date < forecastEnd } }
 
     public func minutes(until date: Date) -> Int {
         max(1, Int((date.timeIntervalSince(now) / 60).rounded()))
@@ -129,20 +165,27 @@ public struct RainForecast: Sendable {
 }
 
 extension RainForecast {
-    /// One forecast per minute from `now`, each showing the two hours from that minute, while the
-    /// samples cover them. One fetch of Buienradar's three-hour feed gives about 45 minutes, so a
-    /// widget counts down exactly between the system's reloads.
-    public static func timeline(from samples: [RainSample], now: Date, minutes: Int = 60) -> [RainForecast] {
+    /// One forecast per minute from `now`, each showing what is left of the samples from that
+    /// minute, so a widget counts down exactly between the system's reloads.
+    public static func timeline(from samples: [RainSample], now: Date, minutes: Int = 60,
+                                resolution: Resolution = .fiveMinutes) -> [RainForecast] {
         (0..<minutes).compactMap { minute in
-            at(now.addingTimeInterval(Double(minute) * 60), from: samples)
+            at(now.addingTimeInterval(Double(minute) * 60), from: samples, resolution: resolution)
         }
     }
 
-    /// The two hours from `moment`, or nil when the samples no longer cover them.
-    public static func at(_ moment: Date, from samples: [RainSample]) -> RainForecast? {
-        let perWindow = Int(window / step) + 1
-        let first = samples.lastIndex { $0.date <= moment } ?? 0
-        guard first + perWindow <= samples.count else { return nil }
-        return RainForecast(samples: Array(samples[first..<(first + perWindow)]), now: moment)
+    /// Up to two hours from `moment`: the samples from the step that holds it, stopping at the
+    /// first step without data. Nil when there is no data for `moment` itself.
+    public static func at(_ moment: Date, from samples: [RainSample], resolution: Resolution = .fiveMinutes) -> RainForecast? {
+        guard let first = samples.lastIndex(where: { $0.date <= moment }) else { return nil }
+        let stop = samples[first].date.addingTimeInterval(window)
+        var picked: [RainSample] = []
+        for sample in samples[first...] {
+            guard sample.date < stop, sample.rate != nil else { break }
+            picked.append(sample)
+        }
+        let forecast = RainForecast(samples: picked, now: moment, resolution: resolution)
+        guard !picked.isEmpty, forecast.forecastEnd > moment else { return nil }
+        return forecast
     }
 }

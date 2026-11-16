@@ -1,7 +1,8 @@
 import Foundation
 
 /// The words. One rule everywhere: say what the weather is doing now and how long that lasts,
-/// because people open Buienradar as they are about to leave, to know whether they will get wet.
+/// because people look as they are about to leave, to know whether they will get wet. Nothing is
+/// claimed beyond where the forecast stops.
 public struct RainCopy: Sendable {
     let forecast: RainForecast
 
@@ -11,40 +12,55 @@ public struct RainCopy: Sendable {
 
     private var spells: [RainSpell] { forecast.spells }
     private var now: RainSpell? { spells.first }
-    private var lastsWholeWindow: Bool { spells.count == 1 }
+    private var lastsWholeForecast: Bool { spells.count == 1 }
+    private var hourly: Bool { forecast.resolution == .hourly }
 
-    /// Minutes the current state lasts, nil if it lasts the whole window.
+    /// How far the forecast reaches, said no further than it does: "2+ hours" only when it covers
+    /// two hours. A KNMI run covers two hours from its radar time, so a forecast a few minutes old
+    /// says "1+ hours".
+    private var reach: (words: String, value: String, unit: String) {
+        let minutes = forecast.minutesKnown
+        if minutes >= 120 { return ("2+ hours", "2+", "HRS") }
+        if minutes >= 60 { return ("1+ hours", "1+", "HRS") }
+        let five = max(5, minutes / 5 * 5)
+        return ("\(five)+ min", "\(five)+", "MIN")
+    }
+
+    /// Minutes the current state lasts, nil if it lasts as far as the forecast reaches.
     public var minutesLeft: Int? {
-        guard let now, !lastsWholeWindow else { return nil }
+        guard let now, !lastsWholeForecast else { return nil }
         return forecast.minutes(until: now.end)
     }
 
     /// When the current state ends, for the marker on the line.
     public var change: Date? {
-        guard let now, !lastsWholeWindow else { return nil }
+        guard let now, !lastsWholeForecast else { return nil }
         return now.end
     }
 
     public var isRainingNow: Bool { now?.isRain ?? false }
 
     /// Rectangular and Smart Stack headline. Minutes under an hour, the clock time beyond, so it
-    /// always fits on one line.
+    /// always fits on one line. An hourly forecast knows only which hour rain falls in, so it
+    /// always names the hour.
     public var headline: String {
-        guard forecast.hasRain else { return "Dry for 2+ hours" }
-        guard let minutes = minutesLeft, let change else { return "\(now?.intensity.phrase ?? "Rain") for 2+ hours" }
+        guard forecast.hasRain else { return "Dry for \(reach.words)" }
+        guard let minutes = minutesLeft, let change else { return "\(now?.intensity.phrase ?? "Rain") for \(reach.words)" }
         let state = isRainingNow ? "Rain" : "Dry"
-        if minutes >= 60 { return "\(state) until \(Self.clock(change))" }
+        if minutes >= 60 || hourly { return "\(state) until \(Self.clock(change))" }
         return isRainingNow ? "Rain stops in \(minutes) min" : "Dry for \(minutes) min"
     }
 
-    /// The line under the headline: what follows, with clock times.
+    /// The line under the headline: what follows, with clock times. For an hourly forecast it says
+    /// so instead, because its times are whole hours, not when rain starts.
     public var detail: String? {
+        if hourly { return Self.hourlyLabel }
         guard forecast.hasRain else { return nil }
         let following = Array(spells.dropFirst())
         guard let next = following.first else {
             return isRainingNow ? peakPhrase : nil
         }
-        let ends = next.end < forecast.end ? "–\(Self.clock(next.end))" : ""
+        let ends = next.end < forecast.forecastEnd ? "–\(Self.clock(next.end))" : ""
         if next.isRain {
             return "\(next.intensity.phrase) \(Self.clock(next.start))\(ends)"
         }
@@ -53,8 +69,10 @@ public struct RainCopy: Sendable {
         return ends.isEmpty ? "Dry from \(Self.clock(next.start))" : "Dry \(Self.clock(next.start))\(ends)"
     }
 
+    public static let hourlyLabel = "Hourly forecast"
+
     private var peakPhrase: String? {
-        guard let peak = forecast.samples.filter({ $0.date < forecast.end }).max(by: { $0.height < $1.height }) else { return nil }
+        guard let peak = forecast.samples.filter({ $0.date < forecast.forecastEnd }).max(by: { $0.height < $1.height }) else { return nil }
         return "Heaviest around \(Self.clock(peak.date))"
     }
 
@@ -62,12 +80,14 @@ public struct RainCopy: Sendable {
     /// "IN 30 MIN" until rain arrives when it is dry, "FOR 5 MIN" while it lasts when it is raining.
     /// The same three words can then never mean opposite things. An hour or more reads "1+ HRS",
     /// so the number never needs three digits. Dry says how long under it, "2+ HRS": "FOR 2+ HRS"
-    /// is wider than the disc at a readable size.
+    /// is wider than the disc at a readable size. An hourly forecast's change is at the next whole
+    /// hour, so it reads "<1 HR" rather than a count of minutes it doesn't know.
     public var circular: (lead: String?, value: String, unit: String?) {
-        guard forecast.hasRain else { return (nil, "Dry", "2+ HRS") }
-        guard let minutesLeft else { return ("FOR", "2+", "HRS") }
+        guard forecast.hasRain else { return (nil, "Dry", "\(reach.value) \(reach.unit)") }
+        guard let minutesLeft else { return ("FOR", reach.value, reach.unit) }
         let lead = isRainingNow ? "FOR" : "IN"
-        return minutesLeft >= 60 ? (lead, "1+", "HRS") : (lead, "\(minutesLeft)", "MIN")
+        if minutesLeft >= 60 { return (lead, "1+", "HRS") }
+        return hourly ? (lead, "<1", "HR") : (lead, "\(minutesLeft)", "MIN")
     }
 
     /// Inline and corner: the headline itself, so every family says the same thing.
@@ -86,7 +106,7 @@ public struct RainCopy: Sendable {
         clockFormatter.string(from: date)
     }
 
-    /// The wearer's own time zone and clock format: the feed covers Glasgow and Oslo as well.
+    /// The wearer's own time zone and clock format.
     static let clockFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.setLocalizedDateFormatFromTemplate("jjmm")

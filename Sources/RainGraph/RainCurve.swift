@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// The Buienradar line: a monotone cubic through each five-minute height (Fritsch and Carlson), so
+/// The rain line: a monotone cubic through each five-minute height (Fritsch and Carlson), so
 /// the curve is smooth without steps at each sample, and still never dips below zero or rises
 /// above a real peak.
 public enum RainCurve {
@@ -11,7 +11,7 @@ public enum RainCurve {
         /// Lifts drizzle and light rain, which is most Dutch rain, off the baseline of a flat graph
         /// only 20 to 40 points tall, keeping Buienradar's order and scale lines.
         case squareRoot
-        /// Buienradar's own height, so a heavy peak stands clearly above a light one.
+        /// The graph height itself, so a heavy peak stands clearly above a light one.
         case linear
     }
 
@@ -30,7 +30,9 @@ public enum RainCurve {
         // line then rises around the moment rain starts, where the dot is, not before it.
         let values = forecast.samples.map { display($0.height, scale) }
         let times = forecast.samples.map { forecast.position(of: $0.date.addingTimeInterval(RainForecast.step / 2)) }
-        guard values.count > 1 else { return values.isEmpty ? [] : [(0, values[0])] }
+        guard values.count > 1 else {
+            return values.isEmpty ? [] : [(0, values[0]), (min(1, forecast.position(of: forecast.forecastEnd)), values[0])]
+        }
 
         // Tangents: the mean of the neighbouring slopes, flat at peaks, troughs and dry samples, then
         // limited so no segment overshoots or dips below zero.
@@ -63,7 +65,10 @@ public enum RainCurve {
                 result.append((min(t0 + s * h, 1), max(0, v)))
             }
         }
-        return result.filter { $0.t <= 1 }
+        // The last sample holds until the forecast stops, which may be before the end of the axis.
+        let stop = min(1, forecast.position(of: forecast.forecastEnd))
+        if let last = result.last, last.t < stop { result.append((stop, values[n - 1])) }
+        return result.filter { $0.t <= stop }
     }
 }
 

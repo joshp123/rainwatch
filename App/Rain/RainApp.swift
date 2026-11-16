@@ -13,6 +13,9 @@ struct RainApp: App {
         let shared = UserDefaults(suiteName: Place.appGroup)
         shared?.set(UserDefaults.standard.string(forKey: "scenario"), forKey: "debugScenario")
         shared?.set(Date.now, forKey: "debugScenarioSet")
+        // `-server http://127.0.0.1:8765` reads the forecast from a local copy of the server's
+        // files; the widget reads it from the app group.
+        shared?.set(UserDefaults.standard.string(forKey: "server"), forKey: "debugServer")
         // `-freshInstall YES` starts as a new install would, for the path Apple's reviewer takes.
         if UserDefaults.standard.bool(forKey: "freshInstall") {
             Place.forget()
@@ -36,13 +39,27 @@ struct ContentView: View {
         /// Before the first location question: says which answer keeps the face up to date.
         case intro
         case loading(String)
-        case ready(RainForecast, fetched: Date, place: CLLocationCoordinate2D)
+        case ready(RainForecast, issued: Date, source: Snapshot.Source, place: CLLocationCoordinate2D)
         case failed(Failure)
     }
 
     /// What went wrong, in Apple's empty-state layout, with the way out.
-    enum Failure: String {
-        case noLocation, offline, notCovered, noForecast
+    enum Failure: Equatable {
+        case noLocation
+        case offline(Snapshot.Source)
+        /// Apple refused the call or had no forecast: never shown as dry.
+        case noForecast
+
+        #if DEBUG
+        init?(debugName: String) {
+            switch debugName {
+            case "noLocation": self = .noLocation
+            case "offline": self = .offline(.knmi)
+            case "noForecast": self = .noForecast
+            default: return nil
+            }
+        }
+        #endif
     }
 
     /// Opens on the forecast the face was just showing, if it is still fresh, and refreshes over it.
@@ -83,10 +100,13 @@ struct ContentView: View {
                 ProgressView(stage)
             case let .failed(failure):
                 failed(failure)
-            case let .ready(forecast, fetched, place):
+            case let .ready(forecast, issued, source, place):
                 ScrollView {
-                    ForecastDetailView(forecast: forecast, fetched: fetched)
+                    ForecastDetailView(forecast: forecast, issued: issued)
                         .scenePadding(.horizontal)
+                    Credit(source: source)
+                        .scenePadding(.horizontal)
+                        .padding(.top, 2)
                     if couldNotUpdate {
                         Button("Try Again") { Task { await refresh() } }
                             .padding(.top, 6)
@@ -102,11 +122,14 @@ struct ContentView: View {
                                      for: .navigation)
                 .toolbar {
                     // The radar gets its own screen so the Digital Crown can move it through time.
-                    ToolbarItem(placement: .topBarLeading) {
-                        NavigationLink {
-                            RadarPage(place: place, forecast: forecast)
-                        } label: {
-                            Label("Radar", systemImage: "map")
+                    // It draws KNMI's radar, so it is there only where KNMI's forecast is used.
+                    if source == .knmi {
+                        ToolbarItem(placement: .topBarLeading) {
+                            NavigationLink {
+                                RadarPage(place: place, forecast: forecast)
+                            } label: {
+                                Label("Radar", systemImage: "map")
+                            }
                         }
                     }
                 }
@@ -117,7 +140,7 @@ struct ContentView: View {
                 Place.choose(place)
                 picking = false
                 placeName = place?.name
-                load = .loading(place == nil ? "Finding where you are" : "Asking Buienradar")
+                load = .loading(place == nil ? "Finding where you are" : "Getting the forecast")
                 couldNotUpdate = false
                 Task { await refresh() }
             }
@@ -145,29 +168,22 @@ struct ContentView: View {
             } actions: {
                 Button("Choose a Place") { picking = true }
             }
-        case .offline:
+        case let .offline(source):
             ContentUnavailableView {
                 Label("No Connection", systemImage: "wifi.slash")
             } description: {
-                Text("Buienradar can't be reached.")
+                Text(source == .knmi ? "KNMI's forecast can't be reached." : "Apple Weather can't be reached.")
             } actions: {
                 Button("Try Again") { Task { await refresh() } }
-            }
-        case .notCovered:
-            ContentUnavailableView {
-                Label("No Forecast Here", systemImage: "mappin.slash")
-            } description: {
-                Text("Buienradar covers the Netherlands and nearby countries.")
-            } actions: {
-                Button("Choose a Place") { picking = true }
             }
         case .noForecast:
             ContentUnavailableView {
                 Label("No Forecast", systemImage: "cloud.rain")
             } description: {
-                Text("Buienradar sent an empty forecast.")
+                Text("Apple Weather has no forecast for this place right now.")
             } actions: {
                 Button("Try Again") { Task { await refresh() } }
+                Button("Choose a Place") { picking = true }
             }
         }
     }
@@ -182,9 +198,9 @@ struct ContentView: View {
         if Place.chosen == nil, [.denied, .restricted].contains(CLLocationManager().authorizationStatus) {
             return .failed(.noLocation)
         }
-        guard let snapshot = Snapshot.saved, Date.now < snapshot.staleAt,
-              let forecast = RainForecast.at(.now, from: snapshot.samples) else { return nil }
-        return .ready(forecast, fetched: snapshot.fetched, place: CLLocationCoordinate2D(latitude: snapshot.latitude, longitude: snapshot.longitude))
+        guard let snapshot = Snapshot.saved, let forecast = snapshot.forecast(at: .now) else { return nil }
+        return .ready(forecast, issued: snapshot.issued, source: snapshot.source,
+                      place: CLLocationCoordinate2D(latitude: snapshot.latitude, longitude: snapshot.longitude))
     }
 
     /// With a forecast on screen, a failed refresh keeps it and offers to try again; without one,
@@ -206,13 +222,14 @@ struct ContentView: View {
         #if DEBUG
         // Screenshots of every state: `-scenario showerComing` shows a saved forecast instead of
         // fetching one, and `-failure offline` shows a failure.
-        if let name = UserDefaults.standard.string(forKey: "failure"), let failure = Failure(rawValue: name) {
+        if let name = UserDefaults.standard.string(forKey: "failure"), let failure = Failure(debugName: name) {
             load = .failed(failure)
             return
         }
         if let name = UserDefaults.standard.string(forKey: "scenario"),
            let scenario = Scenario.allCases.first(where: { "\($0)" == name }) {
-            load = .ready(scenario.forecast(at: .now), fetched: .now, place: CLLocationCoordinate2D(latitude: 51.92, longitude: 4.48))
+            load = .ready(scenario.forecast(at: .now), issued: .now.addingTimeInterval(-Scenario.age), source: .knmi,
+                          place: CLLocationCoordinate2D(latitude: 51.92, longitude: 4.48))
             placeName = scenario.place
             return
         }
@@ -233,7 +250,7 @@ struct ContentView: View {
             session = nil
         } else {
             // Opened on the saved forecast: name its town at once rather than after the fetch.
-            if placeName == nil, case let .ready(_, _, saved) = load {
+            if placeName == nil, case let .ready(_, _, _, saved) = load {
                 Task { if placeName == nil { placeName = await Self.town(at: saved) } }
             }
             session = CLServiceSession(authorization: .whenInUse)
@@ -242,23 +259,58 @@ struct ContentView: View {
             // The first time, Core Location waits for an answer to its permission question.
             let asking = chosen == nil && CLLocationManager().authorizationStatus == .notDetermined
             let place = try await Place.current(timeout: .seconds(asking ? 120 : 8)).coordinate
-            if case .loading = load { load = .loading("Asking Buienradar") }
+            if case .loading = load { load = .loading("Getting the forecast") }
             let snapshot = try await Snapshot.fetch(latitude: place.latitude, longitude: place.longitude)
-            guard let forecast = RainForecast.at(.now, from: snapshot.samples) else {
+            guard let forecast = snapshot.forecast(at: .now) else {
                 fail(.noForecast)
                 return
             }
-            load = .ready(forecast, fetched: snapshot.fetched, place: place)
+            load = .ready(forecast, issued: snapshot.issued, source: snapshot.source, place: place)
             couldNotUpdate = false
             // Free of the widget budget while the app is in front.
             WidgetCenter.shared.reloadAllTimelines()
             if chosen == nil { placeName = await Self.town(at: place) ?? placeName }
         } catch Place.Failure.noLocation {
             fail(.noLocation)
-        } catch Buienradar.Failure.notCovered {
-            fail(.notCovered)
+        } catch let Snapshot.Failure.offline(source) {
+            fail(.offline(source))
         } catch {
-            fail(.offline)
+            fail(.noForecast)
+        }
+    }
+}
+
+/// Who made the forecast on screen. KNMI's licence (CC BY 4.0) asks for its name; Apple's terms ask
+/// for its Weather mark and a link to its legal page wherever its data is shown.
+struct Credit: View {
+    let source: Snapshot.Source
+    @State private var apple = AppleWeatherCredit.saved
+
+    var body: some View {
+        if source.isApple {
+            HStack(spacing: 6) {
+                if let apple, let mark = UIImage(contentsOfFile: apple.markFile.path) {
+                    Image(uiImage: mark)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(height: 12)
+                        .accessibilityLabel("Apple Weather")
+                } else {
+                    Text("\u{F8FF}Weather")
+                }
+                if let apple {
+                    Link("Legal", destination: apple.legalPage)
+                        .foregroundStyle(RainPalette.buienradarBlue)
+                }
+            }
+            .font(.footnote)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .task { if apple == nil { apple = await AppleWeatherCredit.load() } }
+        } else {
+            Text("Source: KNMI")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 }

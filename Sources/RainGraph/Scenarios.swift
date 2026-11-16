@@ -1,43 +1,52 @@
 import Foundation
 
-/// Real Buienradar nowcasts fetched on 13 November 2026 at 13:30 (graph heights, 0–100, every five
-/// minutes), from `graphdata.buienradar.nl` RainNL3Hour and RainEU3Hour. Places are the nearest town.
+/// Real KNMI forecasts from BuienWatch's server, read on 16 November 2026 from the run of 00:35 UTC
+/// (`server/job.py`, read back with `server/watch_client.py`): rain in mm/h every five minutes from
+/// 10 minutes after the run, as a watch sees it after a normal refresh, to where the run stops.
+/// Places are the town the cell lies in.
 public enum Scenario: String, CaseIterable, Sendable {
-    case dry = "Dry"
-    case showerComing = "Shower coming, Boxtel"
-    case onAndOff = "Showers on and off, Doetinchem"
-    case drizzleStops = "Drizzle stops, returns, Tholen"
-    case rainingEasing = "Raining, easing off, Glasgow"
-    case rainComing = "Rain in 10 min, Oslo"
-    case rainAllWindow = "Rain all two hours, Madrid"
+    case dry = "Dry, Groningen"
+    case showerComing = "Shower coming, Eindhoven"
+    case onAndOff = "Rain stops, returns, Hoorn"
+    case drizzleStops = "Drizzle stops, returns, Vlissingen"
+    case rainingEasing = "Raining, easing off, Den Helder"
+    case rainComing = "Rain in 25 min, Alkmaar"
+    case rainAllWindow = "Rain all along, Düsseldorf"
+    case heavy = "Heavy rain, Osnabrück"
 
     /// The town in the scenario's name.
     public var place: String {
-        rawValue.components(separatedBy: ", ").last.map { $0 == "Dry" ? "Rotterdam" : $0 } ?? "Rotterdam"
+        rawValue.components(separatedBy: ", ").last ?? "Rotterdam"
     }
 
     public static let start: Date = {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(identifier: "Europe/Amsterdam")!
-        return calendar.date(from: DateComponents(year: 2026, month: 11, day: 13, hour: 13, minute: 30))!
+        return calendar.date(from: DateComponents(year: 2026, month: 11, day: 16, hour: 1, minute: 45))!
     }()
+
+    /// The run's radar time, 10 minutes before the forecast's start.
+    public static let age: TimeInterval = 10 * 60
 
     public var forecast: RainForecast { forecast(at: Self.start) }
 
     /// The same forecast moved to start at `start`, to sit under another clock.
     public func forecast(at start: Date) -> RainForecast {
-        RainForecast(start: start, heights: heights + Array(repeating: 0, count: max(0, 25 - heights.count)))
+        RainForecast(samples: rates.enumerated().map { index, rate in
+            RainSample(date: start.addingTimeInterval(Double(index) * RainForecast.step), rate: rate)
+        }, now: start)
     }
 
-    private var heights: [Double] {
+    private var rates: [Double] {
         switch self {
-        case .dry: []
-        case .showerComing: [0, 0, 0, 0, 0, 0, 6, 26, 20, 14, 4]
-        case .onAndOff: [0, 0, 0, 0, 0, 2, 10, 26, 32, 40, 12, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2]
-        case .drizzleStops: [6, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 0, 0, 0, 2, 10, 8, 6, 2]
-        case .rainingEasing: [22, 22, 6, 2, 6, 30, 24, 14, 14, 16, 10, 10, 2, 2, 4, 2, 0, 2, 0, 2]
-        case .rainComing: [0, 0, 16, 40, 41, 42, 38, 32, 36, 20, 12, 4, 2]
-        case .rainAllWindow: [43, 50, 44, 28, 22, 38, 40, 47, 49, 59, 49, 2, 6, 18, 46, 43, 2, 6, 4, 0, 2, 2, 4, 2, 2]
+        case .dry: Array(repeating: 0, count: 23)
+        case .showerComing: [0, 0, 0, 0, 0, 0, 0, 0, 0.13, 0.17, 0.22, 0.14, 0.12, 0.12, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        case .onAndOff: [0.12, 0.95, 0.36, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.10, 0.12, 0.16, 0.21, 0.17, 0.18, 0.21, 0.18, 0.13]
+        case .drizzleStops: [0.12, 0, 0, 0.36, 0.60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        case .rainingEasing: [3.02, 1.58, 3.16, 5.50, 1.32, 0.40, 0.55, 0.60, 0.48, 0.40, 0.32, 0.29, 0.19, 0.13, 0.13, 0, 0, 0, 0, 0, 0, 0, 0]
+        case .rainComing: [0, 0, 0, 0, 0, 0.12, 0.12, 0.24, 0.36, 0.55, 0.66, 0.60, 0.58, 0.42, 0.25, 0.24, 0.20, 0.12, 0.18, 0.12, 0.13, 0.11, 0]
+        case .rainAllWindow: [0.36, 0.36, 0.24, 3.31, 1.82, 0.48, 0.79, 0.72, 0.87, 1.20, 1.15, 1.10, 1.05, 1.00, 0.95, 0.72, 0.55, 0.38, 0.24, 0.16, 0.12, 0.14, 0.22]
+        case .heavy: [2.40, 5.01, 6.92, 7.24, 2.88, 0.29, 0.24, 0.32, 0.21, 0.28, 0.30, 0.29, 0.19, 0.16, 0, 0, 0.16, 0.12, 0, 0, 0, 0, 0]
         }
     }
 }

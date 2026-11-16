@@ -190,7 +190,7 @@ struct AppScreen: View {
             .font(RainFont.rounded(16, .semibold))
             .padding(.horizontal, 14)
             .padding(.top, 10)
-            ForecastDetailView(forecast: scenario.forecast, fetched: Scenario.start)
+            ForecastDetailView(forecast: scenario.forecast, issued: Scenario.start)
                 .padding(.horizontal, 10)
                 .padding(.top, 38)
                 .padding(.bottom, 12)

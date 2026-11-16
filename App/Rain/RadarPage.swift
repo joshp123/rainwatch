@@ -2,25 +2,27 @@ import MapKit
 import RainGraph
 import SwiftUI
 
-/// Buienradar's radar over an Apple Map, played as a loop from half an hour ago to two hours
-/// ahead, like Buienradar's own watch app. The strip at the bottom is the rain line for where you
-/// are, with a marker at the frame on the map, so a shower reaching the yellow dot shows as the
-/// line rising under the marker. The map keeps the dot in the middle of what the strip leaves free. Turning the Digital Crown pauses and steps five minutes a click;
-/// tapping plays again. The map starts close, at the radar's own precision, and zooms out to see
-/// what is coming.
+/// KNMI's radar over an Apple Map, played as a loop from half an hour ago to two hours ahead: six
+/// frames of observed radar, then the forecast. The frames are drawn on the watch from the same
+/// squares of KNMI's 1 km grid that the rain line comes from, smoothed as Buienradar smooths its
+/// picture. The strip at the bottom is the rain line for where you are, with a marker at the frame
+/// on the map, so a shower reaching the yellow dot shows as the line rising under the marker. The
+/// map keeps the dot in the middle of what the strip leaves free. Turning the Digital Crown pauses
+/// and steps five minutes a click; tapping plays again. The map starts close, at the radar's own
+/// precision, and zooms out to see what is coming.
 struct RadarPage: View {
     let place: CLLocationCoordinate2D
     let forecast: RainForecast
 
     enum Zoom: Double {
-        /// About 30 km across: the radar's pixels are 650 m, so closer only shows bigger pixels.
+        /// About 30 km across: the radar's cells are 1 km, so closer only shows bigger cells.
         case near = 30_000
         /// About 120 km across: showers move 30 to 60 km an hour, so this shows two hours' worth.
         case region = 120_000
     }
 
+    @State private var radar: Radar?
     @State private var frames: [Radar.Frame] = []
-    @State private var images: [Date: Radar.Image] = [:]
     @State private var index = 0
     @State private var crown = 0.0
     @State private var playing = true
@@ -86,15 +88,15 @@ struct RadarPage: View {
             playing = false
             index = turned
         }
-        .task { await load() }
+        .task(id: zoom) { await load(zoom) }
         .task(id: playing && !dimmed && scenePhase == .active && !frames.isEmpty) { await play() }
     }
 
     /// The timeline sits on the bottom edge; its padding clears the screen's rounded corners.
     static let timelineHeight: CGFloat = 70
 
-    /// The moment on the map and where it sits in the rain line for your spot. No plate: a dark
-    /// fade under it keeps it legible and leaves the map round you uncovered.
+    /// The moment on the map and where it sits in the rain line for your spot. Solid black under
+    /// it keeps it legible and leaves the map round you uncovered.
     private var timeline: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack(spacing: 5) {
@@ -109,13 +111,19 @@ struct RadarPage: View {
                 Text(timeLabel)
                     .font(.headline.monospacedDigit())
                     .contentTransition(.identity)
+                Spacer(minLength: 4)
+                // KNMI's licence (CC BY 4.0) asks for its name with its data.
+                Text("Source: KNMI")
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(.secondary)
+                    .fixedSize()
             }
             if problem {
                 Text("Radar unavailable")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
-            } else if let first = frames.first?.date, let last = frames.last?.date {
-                RadarStrip(forecast: forecast, start: first, end: last, now: nowFrameDate ?? first,
+            } else if let radar, let first = frames.first?.date {
+                RadarStrip(series: radar.series, now: nowFrameDate ?? first,
                            selected: frames[safe: index]?.date ?? first)
                     .frame(height: 30)
             } else {
@@ -138,11 +146,11 @@ struct RadarPage: View {
         }
     }
 
-    /// The frame placed by its corners, which keeps it aligned however the map moves: Buienradar's
-    /// frames and Apple's map both use Web Mercator.
+    /// The frame placed by its corners, which keeps it aligned however the map moves: the picture
+    /// is drawn in Web Mercator, as Apple's map is.
     @ViewBuilder private func rain(_ proxy: MapProxy) -> some View {
         let _ = cameraChanges
-        if let frame = frames[safe: index], let image = images[frame.date],
+        if let frame = frames[safe: index], let image = frame.image,
            let northWest = proxy.convert(image.northWest, to: .local),
            let southEast = proxy.convert(image.southEast, to: .local) {
             Image(decorative: image.cgImage, scale: 1)
@@ -171,23 +179,23 @@ struct RadarPage: View {
         .region(MKCoordinateRegion(center: place, latitudinalMeters: zoom.rawValue, longitudinalMeters: zoom.rawValue))
     }
 
-    private func load() async {
+    /// Downloads the squares the view needs, once per zoom, then draws every frame. The first time
+    /// it opens on the present and plays forward into the forecast.
+    private func load(_ zoom: Zoom) async {
+        let first = radar == nil
         do {
-            frames = try await Radar.frames()
+            let loaded = try await Radar.load(around: place, view: zoom.rawValue, reusing: radar)
+            radar = loaded
+            let drawn = await Task.detached(priority: .userInitiated) { loaded.frames(around: place, view: zoom.rawValue) }.value
+            guard !Task.isCancelled else { return }
+            frames = drawn
         } catch {
             problem = true
             return
         }
-        // Open on the present, then play forward into the forecast.
-        index = frames.lastIndex { $0.date <= .now } ?? 0
-        crown = Double(index)
-        await withTaskGroup(of: (Date, Radar.Image?).self) { group in
-            for frame in frames {
-                group.addTask { (frame.date, await Radar.image(frame, around: place)) }
-            }
-            for await (date, image) in group {
-                images[date] = image
-            }
+        if first {
+            index = frames.lastIndex { $0.date <= .now } ?? 0
+            crown = Double(index)
         }
     }
 
@@ -199,21 +207,17 @@ struct RadarPage: View {
             try? await Task.sleep(for: last ? .seconds(1.5) : .milliseconds(450))
             guard !Task.isCancelled else { return }
             let next = last ? 0 : index + 1
-            // Wait for a frame that is still downloading rather than show a gap.
-            guard let frame = frames[safe: next], images[frame.date] != nil else { continue }
             index = next
             crown = Double(next)
         }
     }
 }
 
-/// The rain line for where you are, across the radar loop, with a marker at the frame on the map.
-/// Before now there is no forecast, so the line starts at the tick for now; whole hours get fainter
-/// ticks. The label above says which moment the marker is at.
+/// The rain line for where you are across the radar loop, observed radar and then the forecast,
+/// with a marker at the frame on the map. Whole hours get fainter ticks. Where KNMI has no data,
+/// the baseline is dotted rather than drawn as dry.
 struct RadarStrip: View {
-    let forecast: RainForecast
-    let start: Date
-    let end: Date
+    let series: RainForecast
     let now: Date
     let selected: Date
 
@@ -223,26 +227,28 @@ struct RadarStrip: View {
         GeometryReader { proxy in
             let width = proxy.size.width
             let plot = proxy.size.height - Self.labelHeight
-            let x = { (date: Date) in width * date.timeIntervalSince(start) / end.timeIntervalSince(start) }
+            let x = { (date: Date) in width * series.position(of: date) }
             ZStack(alignment: .topLeading) {
-                // Before now there is no forecast, so the baseline there is fainter than a dry forecast.
-                Rectangle()
-                    .fill(.white.opacity(0.15))
-                    .frame(width: x(now), height: 1)
-                    .offset(y: plot - 1)
-                Rectangle()
-                    .fill(.white.opacity(0.35))
-                    .frame(width: max(0, width - x(now)), height: 1)
-                    .offset(x: x(now), y: plot - 1)
-                let span = max(0, min(x(forecast.end), width) - x(forecast.start))
-                RainArea(forecast: forecast)
+                ForEach(stretches, id: \.start) { stretch in
+                    if stretch.known {
+                        Rectangle()
+                            .fill(.white.opacity(0.35))
+                            .frame(width: max(0, x(stretch.end) - x(stretch.start)), height: 1)
+                            .offset(x: x(stretch.start), y: plot - 1)
+                    } else {
+                        Path { path in
+                            path.move(to: CGPoint(x: x(stretch.start) + 2, y: plot - 0.5))
+                            path.addLine(to: CGPoint(x: x(stretch.end) - 2, y: plot - 0.5))
+                        }
+                        .stroke(.white.opacity(0.35), style: StrokeStyle(lineWidth: 1.5, lineCap: .round, dash: [0.1, 4]))
+                    }
+                }
+                RainArea(forecast: series)
                     .fill(RainPalette.buienradarBlue.opacity(0.55))
-                    .frame(width: span, height: plot - 1)
-                    .offset(x: x(forecast.start))
-                RainEdge(forecast: forecast)
+                    .frame(width: width, height: plot - 1)
+                RainEdge(forecast: series)
                     .stroke(RainPalette.buienradarBlue, style: StrokeStyle(lineWidth: 1.5, lineCap: .round, lineJoin: .round))
-                    .frame(width: span, height: plot - 1)
-                    .offset(x: x(forecast.start))
+                    .frame(width: width, height: plot - 1)
                 ForEach(ticks, id: \.self) { tick in
                     Rectangle().fill(.white.opacity(tick == now ? 0.8 : 0.35)).frame(width: 1, height: 4)
                         .position(x: x(tick), y: plot + 1)
@@ -262,12 +268,26 @@ struct RadarStrip: View {
         .accessibilityHidden(true)
     }
 
+    /// Runs of steps with and without data.
+    private var stretches: [(start: Date, end: Date, known: Bool)] {
+        var result: [(start: Date, end: Date, known: Bool)] = []
+        for sample in series.samples {
+            let end = min(sample.date.addingTimeInterval(RainForecast.step), series.end)
+            if let last = result.last, last.known == (sample.rate != nil) {
+                result[result.count - 1].end = end
+            } else {
+                result.append((sample.date, end, sample.rate != nil))
+            }
+        }
+        return result
+    }
+
     /// "Now" and whole hours, leaving out hours so close to "Now" that the two read as one label.
     private var ticks: [Date] {
         let calendar = Calendar.current
         var hours: [Date] = []
-        var hour = calendar.nextDate(after: start, matching: DateComponents(minute: 0), matchingPolicy: .nextTime)
-        while let current = hour, current < end {
+        var hour = calendar.nextDate(after: series.start, matching: DateComponents(minute: 0), matchingPolicy: .nextTime)
+        while let current = hour, current < series.end {
             if abs(current.timeIntervalSince(now)) >= 40 * 60 { hours.append(current) }
             hour = calendar.date(byAdding: .hour, value: 1, to: current)
         }
@@ -275,116 +295,235 @@ struct RadarStrip: View {
     }
 }
 
-/// Buienradar's Dutch radar: frames every five minutes with its forecast. Its website places them
-/// with these corners ("nlRadarWebMercator": 54.8 N 0 E to 49.5 N 10 E).
-enum Radar {
+/// The squares of KNMI's grid under the map, from BuienWatch's server: `latest`, then one request
+/// per row of squares that has rain, because squares in a row sit together in the pack.
+struct Radar: Sendable {
     struct Frame: Sendable {
         let date: Date
-        let url: URL
+        let image: Image?
     }
 
-    /// A frame cut to the area round you, recoloured for the dark map, with its own corners.
+    /// A frame drawn for the map, with its corners.
     struct Image: @unchecked Sendable {
         let cgImage: CGImage
         let northWest: CLLocationCoordinate2D
         let southEast: CLLocationCoordinate2D
     }
 
-    static let north = 54.8, south = 49.5, west = 0.0, east = 10.0
+    let latest: KNMI.Latest
+    /// Squares downloaded so far, by index in the pack. Dry squares need no download.
+    let squares: [Int: [UInt8]]
+    /// The rain line for the place across all frames.
+    let series: RainForecast
 
-    static func frames() async throws -> [Frame] {
-        // The key is the one Buienradar's own website sends. Six frames back is half an hour;
-        // 24 ahead is two hours, the same window as the rain line.
-        let url = URL(string: "https://image-lite.buienradar.nl/3.0/metadata/radarMapRain5mNL?history=6&forecast=24&ak=3c4a3037-85e6-4d1e-ad6c-f3f6e4b75f2f")!
-        let (data, _) = try await URLSession.shared.data(from: url)
-        let metadata = try JSONDecoder().decode(Metadata.self, from: data)
-        return metadata.times.compactMap { time in
-            guard let date = utc.date(from: time.timestamp), let url = URL(string: time.url) else { return nil }
-            return Frame(date: date, url: url)
+    /// The part of the map the picture covers for a view `view` metres across, in km from the place:
+    /// the watch screen is taller than wide, the map centres the place above the timeline, and the
+    /// grid is turned a few degrees from north, so it reaches further than the view each way.
+    static func reach(view: Double) -> (west: Double, east: Double, north: Double, south: Double) {
+        let km = view / 1000
+        return (0.62 * km, 0.62 * km, 0.6 * km, 0.5 * km)
+    }
+
+    static func load(around place: CLLocationCoordinate2D, view: Double, reusing old: Radar?) async throws -> Radar {
+        let latest: KNMI.Latest
+        if let old, Date.now.timeIntervalSince(old.latest.run) < 10 * 60 {
+            latest = old.latest
+        } else {
+            latest = try await KNMI.latest()
         }
-    }
-
-    /// The frame's pixels within about 85 km of you: enough for the wider view, and a fortieth of
-    /// the whole frame to recolour.
-    static func image(_ frame: Frame, around place: CLLocationCoordinate2D) async -> Image? {
-        guard let (data, _) = try? await URLSession.shared.data(from: frame.url),
-              let whole = UIImage(data: data)?.cgImage else { return nil }
-        let width = Double(whole.width), height = Double(whole.height)
-        let x = { (longitude: Double) in (longitude - west) / (east - west) * width }
-        let y = { (latitude: Double) in (mercator(north) - mercator(latitude)) / (mercator(north) - mercator(south)) * height }
-        let reach = 0.8
-        let left = max(0, x(place.longitude - reach * 1.6).rounded(.down))
-        let right = min(width, x(place.longitude + reach * 1.6).rounded(.up))
-        let top = max(0, y(place.latitude + reach).rounded(.down))
-        let bottom = min(height, y(place.latitude - reach).rounded(.up))
-        guard right > left, bottom > top,
-              let cut = whole.cropping(to: CGRect(x: left, y: top, width: right - left, height: bottom - top)),
-              let recoloured = forDarkMap(cut) else { return nil }
-        let longitude = { (px: Double) in west + px / width * (east - west) }
-        let latitude = { (py: Double) in latitudeFromMercator(mercator(north) - py / height * (mercator(north) - mercator(south))) }
-        return Image(cgImage: recoloured,
-                     northWest: CLLocationCoordinate2D(latitude: latitude(top), longitude: longitude(left)),
-                     southEast: CLLocationCoordinate2D(latitude: latitude(bottom), longitude: longitude(right)))
-    }
-
-    private static func mercator(_ latitude: Double) -> Double {
-        log(tan(.pi / 4 + latitude * .pi / 360))
-    }
-
-    private static func latitudeFromMercator(_ y: Double) -> Double {
-        (2 * atan(exp(y)) - .pi / 2) * 180 / .pi
-    }
-
-    /// Buienradar draws light rain pale and heavy rain dark, for its light map. On the watch's dark
-    /// map that hides the heaviest rain, so heavier rain becomes brighter and more opaque instead,
-    /// in Buienradar's blue, with its red kept for downpours.
-    static func forDarkMap(_ image: CGImage) -> CGImage? {
-        let width = image.width, height = image.height
-        var pixels = [UInt8](repeating: 0, count: width * height * 4)
-        let space = CGColorSpaceCreateDeviceRGB()
-        let info = CGImageAlphaInfo.premultipliedLast.rawValue
-        guard let context = CGContext(data: &pixels, width: width, height: height, bitsPerComponent: 8,
-                                      bytesPerRow: width * 4, space: space, bitmapInfo: info) else { return nil }
-        context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
-        for i in stride(from: 0, to: pixels.count, by: 4) {
-            let alpha = Double(pixels[i + 3]) / 255
-            guard alpha > 0.05 else {
-                pixels[i + 3] = 0
-                continue
+        var squares = old?.latest.run == latest.run ? old?.squares ?? [:] : [:]
+        let (rows, columns) = squareSpan(around: place, view: view, latest: latest)
+        try await withThrowingTaskGroup(of: [Int: [UInt8]].self) { group in
+            for row in rows {
+                let wanted = columns.filter { latest.squares[row * latest.columns + $0] > 0 && squares[row * latest.columns + $0] == nil }
+                guard let first = wanted.first, let last = wanted.last else { continue }
+                group.addTask { try await KNMI.squares((row * latest.columns + first)...(row * latest.columns + last), in: latest) }
             }
-            let r = Double(pixels[i]) / 255 / alpha, g = Double(pixels[i + 1]) / 255 / alpha, b = Double(pixels[i + 2]) / 255 / alpha
-            let downpour = r > b + 0.15
-            let intensity = downpour ? 1 : min(1, max(0, 1 - (0.3 * r + 0.59 * g + 0.11 * b)) * 1.6)
-            // Buienradar's blue (#5A9BD3) for light rain, towards white for heavy, red for downpours.
-            let (cr, cg, cb) = downpour ? (1.0, 0.3, 0.3) : (0.35 + 0.65 * intensity, 0.61 + 0.39 * intensity, 0.83 + 0.17 * intensity)
-            let a = 0.5 + 0.5 * intensity
-            pixels[i] = UInt8(cr * a * 255)
-            pixels[i + 1] = UInt8(cg * a * 255)
-            pixels[i + 2] = UInt8(cb * a * 255)
-            pixels[i + 3] = UInt8(a * 255)
+            for try await row in group { squares.merge(row) { $1 } }
         }
-        return pixels.withUnsafeMutableBytes { buffer in
-            CGContext(data: buffer.baseAddress, width: width, height: height, bitsPerComponent: 8,
-                      bytesPerRow: width * 4, space: space, bitmapInfo: info)?.makeImage()
+        let cell = KNMI.cell(latitude: place.latitude, longitude: place.longitude)
+        let samples = (0..<latest.frames).map { frame in
+            RainSample(date: latest.date(ofFrame: frame),
+                       rate: cell.flatMap { KNMI.rate(value(latest: latest, squares: squares, row: $0.row, column: $0.column, frame: frame)) })
+        }
+        let span = Double(latest.frames - 1) * Double(latest.stepMinutes) * 60
+        return Radar(latest: latest, squares: squares, series: RainForecast(samples: samples, span: span))
+    }
+
+    /// Rows and columns of squares under the picture.
+    private static func squareSpan(around place: CLLocationCoordinate2D, view: Double, latest: KNMI.Latest) -> (ClosedRange<Int>, ClosedRange<Int>) {
+        let box = bounds(around: place, view: view)
+        var xs: [Double] = [], ys: [Double] = []
+        for latitude in [box.north, (box.north + box.south) / 2, box.south] {
+            for longitude in [box.west, (box.west + box.east) / 2, box.east] {
+                let point = KNMI.gridPoint(latitude: latitude, longitude: longitude)
+                xs.append(point.x); ys.append(point.y)
+            }
+        }
+        let size = Double(latest.squareKm)
+        func clamp(_ value: Double, _ count: Int) -> Int { min(max(Int((value / size).rounded(.down)), 0), count - 1) }
+        return (clamp(ys.min()! - 2, latest.rows)...clamp(ys.max()! + 2, latest.rows),
+                clamp(xs.min()! - 2, latest.columns)...clamp(xs.max()! + 2, latest.columns))
+    }
+
+    /// The picture's corners in degrees.
+    static func bounds(around place: CLLocationCoordinate2D, view: Double) -> (north: Double, south: Double, west: Double, east: Double) {
+        let reach = reach(view: view)
+        let perDegreeLongitude = 111.32 * cos(place.latitude * .pi / 180)
+        return (place.latitude + reach.north / 111.2, place.latitude - reach.south / 111.2,
+                place.longitude - reach.west / perDegreeLongitude, place.longitude + reach.east / perDegreeLongitude)
+    }
+
+    /// One cell's byte for a frame: 0 dry, 255 no data, else rain (KNMI.rate).
+    static func value(latest: KNMI.Latest, squares: [Int: [UInt8]], row: Int, column: Int, frame: Int) -> UInt8 {
+        guard (0..<KNMI.rows).contains(row), (0..<KNMI.columns).contains(column) else { return 255 }
+        let size = latest.squareKm
+        let index = (row / size) * latest.columns + column / size
+        switch latest.squares[index] {
+        case 0: return 0
+        case ..<0: return 255
+        default:
+            guard let square = squares[index] else { return 255 }
+            let width = min(size, KNMI.columns - (column / size) * size)
+            return square[((row % size) * width + column % size) * latest.frames + frame]
         }
     }
 
-    private struct Metadata: Decodable {
-        struct Time: Decodable {
-            let timestamp: String
-            let url: String
+    /// Every frame drawn for a view `view` metres across.
+    func frames(around place: CLLocationCoordinate2D, view: Double) -> [Frame] {
+        let painter = Painter(radar: self, place: place, view: view)
+        return (0..<latest.frames).map { frame in
+            Frame(date: latest.date(ofFrame: frame), image: painter.image(frame: frame))
         }
+    }
+}
 
-        let times: [Time]
+/// Draws a frame the way Buienradar draws its radar picture: the 1 km cells blended smoothly into
+/// each other rather than shown as squares, so a shower has soft edges and a brighter core
+/// (`server/evidence/` shows the same minute from Buienradar and from KNMI's cells). Each pixel of
+/// the picture is a point on the map in Web Mercator; it takes the four cells round that point on
+/// KNMI's grid and blends them by distance.
+private struct Painter {
+    let radar: Radar
+    let width: Int
+    let height: Int
+    let northWest: CLLocationCoordinate2D
+    let southEast: CLLocationCoordinate2D
+    /// For each pixel, the grid point it falls on.
+    let points: [(x: Double, y: Double)]
+    /// The cells round those points: top row, left column, and how many.
+    let top: Int, left: Int, cellWidth: Int, cellHeight: Int
+
+    init(radar: Radar, place: CLLocationCoordinate2D, view: Double) {
+        self.radar = radar
+        let box = Radar.bounds(around: place, view: view)
+        // Eight pixels per cell close up and two wide out, so the blend between cells is smooth.
+        let kmPerPixel = view / 1000 / 240
+        let reach = Radar.reach(view: view)
+        width = Int(((reach.west + reach.east) / kmPerPixel).rounded())
+        height = Int(((reach.north + reach.south) / kmPerPixel).rounded())
+        northWest = CLLocationCoordinate2D(latitude: box.north, longitude: box.west)
+        southEast = CLLocationCoordinate2D(latitude: box.south, longitude: box.east)
+        func mercator(_ latitude: Double) -> Double { log(tan(.pi / 4 + latitude * .pi / 360)) }
+        let northY = mercator(box.north), southY = mercator(box.south)
+        var points: [(x: Double, y: Double)] = []
+        points.reserveCapacity(width * height)
+        for row in 0..<height {
+            let y = northY - (Double(row) + 0.5) / Double(height) * (northY - southY)
+            let latitude = (2 * atan(exp(y)) - .pi / 2) * 180 / .pi
+            for column in 0..<width {
+                let longitude = box.west + (Double(column) + 0.5) / Double(width) * (box.east - box.west)
+                points.append(KNMI.gridPoint(latitude: latitude, longitude: longitude))
+            }
+        }
+        self.points = points
+        let ys = points.map(\.y), xs = points.map(\.x)
+        let first = (row: Int(((ys.min() ?? 0) - 1.5).rounded(.down)), column: Int(((xs.min() ?? 0) - 1.5).rounded(.down)))
+        let last = (row: Int(((ys.max() ?? 0) + 1.5).rounded(.down)), column: Int(((xs.max() ?? 0) + 1.5).rounded(.down)))
+        top = first.row
+        left = first.column
+        cellHeight = last.row - first.row + 1
+        cellWidth = last.column - first.column + 1
     }
 
-    private static let utc: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.timeZone = TimeZone(identifier: "UTC")
-        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
-        return formatter
-    }()
+    /// Dry counts as well below the lightest rain, so that between a wet and a dry cell the rain
+    /// fades out about half way, as on Buienradar's picture.
+    static let dry: Float = -10
+
+    func image(frame: Int) -> Radar.Image? {
+        // The cells this picture needs, as rain level (dry far below 0) and no-data share.
+        var level = [Float](repeating: Self.dry, count: cellWidth * cellHeight)
+        var missing = [Float](repeating: 0, count: cellWidth * cellHeight)
+        for row in 0..<cellHeight {
+            for column in 0..<cellWidth {
+                let value = Radar.value(latest: radar.latest, squares: radar.squares, row: top + row, column: left + column, frame: frame)
+                if value == 255 { missing[row * cellWidth + column] = 1 } else if value > 0 { level[row * cellWidth + column] = Float(value) }
+            }
+        }
+        var pixels = [UInt8](repeating: 0, count: width * height * 4)
+        for (pixel, point) in points.enumerated() {
+            // Cell centres sit at half-cell positions.
+            let fx = point.x - 0.5 - Double(left), fy = point.y - 0.5 - Double(top)
+            let x0 = Int(fx.rounded(.down)), y0 = Int(fy.rounded(.down))
+            guard x0 >= 0, y0 >= 0, x0 + 1 < cellWidth, y0 + 1 < cellHeight else { continue }
+            let tx = Float(fx - Double(x0)), ty = Float(fy - Double(y0))
+            let i = y0 * cellWidth + x0
+            func blend(_ grid: [Float]) -> Float {
+                let upper = grid[i] * (1 - tx) + grid[i + 1] * tx
+                let lower = grid[i + cellWidth] * (1 - tx) + grid[i + cellWidth + 1] * tx
+                return upper * (1 - ty) + lower * ty
+            }
+            let (r, g, b, a) = Self.colour(level: blend(level), missing: blend(missing))
+            pixels[pixel * 4] = UInt8(r * a * 255)
+            pixels[pixel * 4 + 1] = UInt8(g * a * 255)
+            pixels[pixel * 4 + 2] = UInt8(b * a * 255)
+            pixels[pixel * 4 + 3] = UInt8(a * 255)
+        }
+        let space = CGColorSpaceCreateDeviceRGB()
+        guard let image = pixels.withUnsafeMutableBytes({ buffer in
+            CGContext(data: buffer.baseAddress, width: width, height: height, bitsPerComponent: 8, bytesPerRow: width * 4,
+                      space: space, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)?.makeImage()
+        }) else { return nil }
+        return Radar.Image(cgImage: image, northWest: northWest, southEast: southEast)
+    }
+
+    /// Light rain in Buienradar's blue, heavier rain brighter and more opaque, towards white, with
+    /// red kept for downpours from 10 mm/h (DESIGN.md, rule 2). Where the radar has no data, a grey
+    /// veil, so it never reads as dry. `level` is KNMI's byte scale: 1 is 0.1 mm/h, 51 is 1, 101 is 10.
+    static func colour(level: Float, missing: Float) -> (Float, Float, Float, Float) {
+        let veil = (r: Float(0.55), g: Float(0.55), b: Float(0.6), a: 0.4 * missing)
+        let presence = smoothstep(-4, 3, level)
+        guard presence > 0 else { return (veil.r, veil.g, veil.b, veil.a) }
+        let blue: (Float, Float, Float) = (0.35, 0.61, 0.83)
+        let light: (Float, Float, Float) = (0.62, 0.82, 1)
+        let white: (Float, Float, Float) = (0.93, 0.97, 1)
+        let red: (Float, Float, Float) = (1, 0.3, 0.3)
+        let colour: (Float, Float, Float)
+        let opacity: Float
+        switch level {
+        case ..<51:
+            colour = mix(blue, light, smoothstep(1, 51, level)); opacity = 0.55 + 0.25 * smoothstep(1, 51, level)
+        case ..<86:
+            colour = mix(light, white, smoothstep(51, 86, level)); opacity = 0.8 + 0.15 * smoothstep(51, 86, level)
+        default:
+            colour = mix(white, red, smoothstep(91, 101, level)); opacity = 0.95 + 0.05 * smoothstep(91, 101, level)
+        }
+        let a = presence * opacity
+        // Rain over a no-data veil: the rain wins where there is any.
+        let total = a + veil.a * (1 - a)
+        guard total > 0 else { return (0, 0, 0, 0) }
+        func over(_ c: Float, _ v: Float) -> Float { (c * a + v * veil.a * (1 - a)) / total }
+        return (over(colour.0, veil.r), over(colour.1, veil.g), over(colour.2, veil.b), total)
+    }
+
+    private static func smoothstep(_ low: Float, _ high: Float, _ x: Float) -> Float {
+        let t = min(max((x - low) / (high - low), 0), 1)
+        return t * t * (3 - 2 * t)
+    }
+
+    private static func mix(_ a: (Float, Float, Float), _ b: (Float, Float, Float), _ t: Float) -> (Float, Float, Float) {
+        (a.0 + (b.0 - a.0) * t, a.1 + (b.1 - a.1) * t, a.2 + (b.2 - a.2) * t)
+    }
 }
 
 extension Array {
