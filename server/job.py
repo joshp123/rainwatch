@@ -7,7 +7,7 @@
 # Run it:  KNMI_KEY=... python3 job.py <folder> [YYYYMMDDHHMM]
 # It writes to a folder. Where the files are then served from (a bucket, a web server) is not decided
 # here: build() only needs a store with get(name) and put(name, data, content_type, max_age).
-import io, json, math, os, sys, time, urllib.error, urllib.request, zlib
+import io, json, os, sys, time, urllib.error, urllib.request, zlib
 from datetime import datetime, timedelta, timezone
 
 import h5py
@@ -15,7 +15,6 @@ import numpy as np
 
 KNMI = "https://api.dataplatform.knmi.nl/open-data/v1/datasets"
 PLAIN = ("radar_forecast", "2.0", "RAD_NL25_RAC_FM_{}.h5")
-BLEND = ("seamless_precipitation_ensemble_forecast_members", "1.0", "KNMI_PYSTEPS_BLEND_ENS_{}.nc")
 OBSERVED = ("nl_rdr_data_rtcor_5m", "1.0", "RAD_NL25_RAC_RT_{}.h5")
 
 ROWS, COLS = 765, 700        # KNMI's grid, 1 km cells
@@ -60,27 +59,6 @@ class Folder:
         open(target, "wb").write(data)
 
 
-# ---- KNMI's grid: polar stereographic, true at 60 N, 1 km cells, row 0 at y = -3650 km ----
-
-A, B = 6378.137, 6356.752
-E = math.sqrt(1 - (B / A) ** 2)
-
-def _t(phi):
-    return np.tan(np.pi / 4 - phi / 2) / ((1 - E * np.sin(phi)) / (1 + E * np.sin(phi))) ** (E / 2)
-
-_SCALE = A * math.cos(math.radians(60)) / math.sqrt(1 - (E * math.sin(math.radians(60))) ** 2) / _t(math.radians(60))
-
-def cell_centres():
-    """Longitude and latitude of the centre of every cell."""
-    row, col = np.meshgrid(np.arange(ROWS), np.arange(COLS), indexing="ij")
-    x, y = col + 0.5, -(row + 0.5 + 3650)
-    ts = np.hypot(x, y) / _SCALE
-    phi = np.pi / 2 - 2 * np.arctan(ts)
-    for _ in range(6):
-        phi = np.pi / 2 - 2 * np.arctan(ts * ((1 - E * np.sin(phi)) / (1 + E * np.sin(phi))) ** (E / 2))
-    return np.degrees(np.arctan2(x, -y)), np.degrees(phi)
-
-
 # ---- the build ----
 
 def build(run, key, store, log=print):
@@ -114,27 +92,6 @@ def build(run, key, store, log=print):
     no_data = (raw >= 65534) | outside
     wet = rate >= WET
 
-    blend_file = knmi_file(key, BLEND, stamp); calls += 1
-    if blend_file is not None:
-        blend = h5py.File(io.BytesIO(blend_file))
-        members = blend["precip_intensity"]      # 20 versions x 72 steps x lat x lon, 0.01 mm/h, 65535 = none
-        seconds = list(blend["time"][:])
-        lat, lon = blend["lat"][:], blend["lon"][:]
-        cell_lon, cell_lat = cell_centres()
-        i = np.rint((cell_lat - lat[0]) / (lat[1] - lat[0])).astype(int)
-        j = np.rint((cell_lon - lon[0]) / (lon[1] - lon[0])).astype(int)
-        inside = (i >= 0) & (i < len(lat)) & (j >= 0) & (j < len(lon))
-        i, j = np.clip(i, 0, len(lat) - 1), np.clip(j, 0, len(lon) - 1)
-        for step in range(7, AHEAD):             # 35..120 minutes
-            field = members[:, seconds.index(step * 300)]
-            use = inside & ~(field == 65535).any(axis=0)[i, j]       # elsewhere the plain forecast stays
-            values = field.astype(np.float32) * 0.01
-            votes = (field >= 10).sum(axis=0)[i, j]                  # whole numbers: 0.10 mm/h counts as wet
-            middle = np.median(values, axis=0)[i, j]
-            frame = PAST + step
-            wet[frame][use] = votes[use] >= 10                       # the season test's rule
-            rate[frame][use] = np.maximum(middle[use], WET)
-
     # One byte per value: 0 dry, 255 no data, 1..250 rain from 0.1 mm/h up, 50 steps per factor of ten.
     byte = np.where(wet, np.clip(1 + np.rint(50 * np.log10(np.maximum(rate, WET) / WET)), 1, 250), 0).astype(np.uint8)
     byte[no_data] = NO_DATA
@@ -155,7 +112,7 @@ def build(run, key, store, log=print):
     latest = {
         "version": 1,
         "run": run.strftime("%Y-%m-%dT%H:%MZ"),
-        "blend": blend_file is not None,
+        "blend": False,      # the blend is off: 210 to 265 MB a run in widespread rain (DESIGN.md)
         "first_frame_minutes": -5 * PAST, "frames": PAST + AHEAD, "step_minutes": 5,
         "square_km": TILE, "rows": -(-ROWS // TILE), "columns": -(-COLS // TILE),
         "pack": f"runs/{stamp}.bin",
