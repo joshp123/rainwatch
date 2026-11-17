@@ -36,11 +36,7 @@ public enum AppleWeather {
             return Result(samples: fiveMinuteSteps(minute.forecast.map { ($0.date, $0.precipitationChance, mmPerHour($0.precipitationIntensity)) }),
                           issued: minute.metadata.date, expires: minute.metadata.expirationDate, resolution: .fiveMinutes)
         }
-        let samples = hourly.forecast.flatMap { hour in
-            let rate = hour.precipitationChance >= wetChance && hour.precipitationAmount.converted(to: .millimeters).value > 0
-                ? max(lightest, hour.precipitationAmount.converted(to: .millimeters).value) : 0
-            return (0..<12).map { RainSample(date: hour.date.addingTimeInterval(Double($0) * RainForecast.step), rate: rate) }
-        }
+        let samples = hourSteps(hourly.forecast.map { ($0.date, $0.precipitationChance, $0.precipitationAmount.converted(to: .millimeters).value) })
         return Result(samples: samples, issued: hourly.metadata.date, expires: hourly.metadata.expirationDate, resolution: .hourly)
     }
 
@@ -49,6 +45,15 @@ public enum AppleWeather {
         speed.converted(to: .kilometersPerHour).value * 1_000_000
     }
     #endif
+
+    /// Apple's hours in the app's five-minute steps: an hour is wet when Apple gives it at least an
+    /// even chance, at its amount in mm/h, the same all hour.
+    static func hourSteps(_ hours: [(date: Date, chance: Double, amount: Double)]) -> [RainSample] {
+        hours.flatMap { hour in
+            let rate = hour.chance >= wetChance && hour.amount > 0 ? max(lightest, hour.amount) : 0
+            return (0..<12).map { RainSample(date: hour.date.addingTimeInterval(Double($0) * RainForecast.step), rate: rate) }
+        }
+    }
 
     /// Apple's minutes in the app's five-minute steps: a step is wet when most of its minutes are,
     /// at their average intensity.
@@ -68,6 +73,9 @@ public enum AppleWeather {
 public struct AppleWeatherCredit: Codable, Sendable {
     public let legalPage: URL
     public let legalText: String
+
+    /// Where `legalPageURL` led on 17 November 2026, for when the attribution hasn't loaded yet.
+    public static let fallbackLegalPage = URL(string: "https://weatherkit.apple.com/legal-attribution.html")!
     public let markFile: URL
 
     public static var saved: AppleWeatherCredit? {

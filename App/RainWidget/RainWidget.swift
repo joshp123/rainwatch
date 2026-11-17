@@ -73,8 +73,11 @@ struct RainProvider: TimelineProvider {
         do {
             place = try await Place.current(mayAsk: false)
         } catch {
-            ReloadLog.record("no location")
-            return timeline(cached: Snapshot.saved, otherwise: .noLocation, now: now)
+            // Never the forecast for where the wearer last was: with location refused, that is
+            // not where they are.
+            ReloadLog.record("no location\(Place.isRefused ? ", refused" : "")")
+            return Timeline(entries: [RainEntry(date: now, forecast: nil, problem: .noLocation)],
+                            policy: .after(now.addingTimeInterval(reloadAfter)))
         }
         let source = place.chosen.map { "chosen \($0.name)" } ?? (place.isLive ? "live" : "saved \(RainCopy.clock(place.at))")
         do {

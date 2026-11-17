@@ -64,3 +64,44 @@ public enum Scenario: String, CaseIterable, Sendable {
         }
     }
 }
+
+/// TEST DATA, NOT A FORECAST. Made up in the shape of Apple's WeatherKit answers, to show the screens
+/// for places outside KNMI's area without calling Apple (`-scenario ukNextHour`). The values go
+/// through the same conversion as Apple's real answers (`AppleWeather`).
+public enum AppleScenario: String, CaseIterable, Sendable {
+    /// Apple's minute-by-minute next hour, as it gives in the UK.
+    case ukNextHour = "Test data: Apple next hour, London"
+    /// Apple's hourly forecast only, as it gives in Spain.
+    case spainHourly = "Test data: Apple hourly, Madrid"
+
+    public var place: String { rawValue.components(separatedBy: ", ").last ?? "" }
+
+    public var coordinate: (latitude: Double, longitude: Double) {
+        switch self {
+        case .ukNextHour: (51.51, -0.13)
+        case .spainHourly: (40.42, -3.70)
+        }
+    }
+
+    public var resolution: RainForecast.Resolution { self == .spainHourly ? .hourly : .fiveMinutes }
+
+    /// What is left of the test forecast at `now`, as if Apple made it five minutes earlier.
+    public func forecast(at now: Date) -> RainForecast? {
+        let made = now.addingTimeInterval(-5 * 60)
+        switch self {
+        case .ukNextHour:
+            // 61 minutes: dry for 20, then light rain building to about 1.2 mm/h, easing at the end.
+            let minutes = (0...60).map { minute -> (date: Date, chance: Double, rate: Double) in
+                let rain = minute < 20 ? 0 : min(1.2, 0.15 + Double(minute - 20) * 0.04) * (minute > 50 ? 0.6 : 1)
+                return (made.addingTimeInterval(Double(minute) * 60), minute < 20 ? 0.1 : 0.8, rain)
+            }
+            return RainForecast.at(now, from: AppleWeather.fiveMinuteSteps(minutes), resolution: .fiveMinutes)
+        case .spainHourly:
+            // Dry this hour, rain likely the next two, then dry.
+            let hour = Calendar.current.dateInterval(of: .hour, for: made)!.start
+            let hours: [(chance: Double, amount: Double)] = [(0.1, 0), (0.6, 0.8), (0.7, 1.6), (0.3, 0.2), (0.1, 0)]
+            let steps = AppleWeather.hourSteps(hours.enumerated().map { (hour.addingTimeInterval(Double($0.offset) * 3600), $0.element.chance, $0.element.amount) })
+            return RainForecast.at(now, from: steps, resolution: .hourly)
+        }
+    }
+}

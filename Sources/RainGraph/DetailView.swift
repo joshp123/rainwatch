@@ -17,9 +17,12 @@ public struct ForecastDetailView: View {
     public var body: some View {
         let copy = RainCopy(forecast)
         VStack(alignment: .leading, spacing: 2) {
+            // One line, as on the face: the longest headline, "Heavy rain for 2+ hours", is a few
+            // points wider than the screen at this size, so it may shrink that little.
             Text(copy.headline)
                 .font(.title3.weight(.semibold))
-                .lineLimit(2)
+                .lineLimit(1)
+                .minimumScaleFactor(0.85)
             if let detail = copy.detail {
                 Text(detail)
                     .font(.body)

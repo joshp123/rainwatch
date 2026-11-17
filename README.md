@@ -36,4 +36,4 @@ swift run render-mockups renders research/josh-face-2026-11-05.jpeg
 swift run copy-check
 ```
 
-The renderer draws the shared views on the Mac, in the watch's SF Compact Rounded; `renders/simulator/` has what watchOS itself drew. `copy-check` prints the words for every saved forecast (`Scenarios.swift`: real KNMI forecasts from the run of 16 November 2026 00:35 UTC). `research/` holds the evidence: the Buienradar user study, the wording survey, visual prior art, and the data sources.
+The renderer draws the shared views on the Mac, in the watch's SF Compact Rounded; `renders/simulator/` has what watchOS itself drew. `copy-check` prints the words for every saved forecast (`Scenarios.swift`: real KNMI forecasts from the run of 16 November 2026 00:35 UTC, and two made-up test forecasts in the shape of Apple's answers, `-scenario ukNextHour` and `-scenario spainHourly`, for Apple's screens without calling WeatherKit). `research/` holds the evidence: the Buienradar user study, the wording survey, visual prior art, and the data sources.

@@ -44,6 +44,22 @@ struct RadarPage: View {
     }
 
     var body: some View {
+        if problem {
+            // Nothing to play, so no playback controls: say so, and offer to try again, which loads
+            // the radar afresh.
+            ContentUnavailableView {
+                Label("Radar Unavailable", systemImage: "map")
+            } description: {
+                Text("KNMI’s radar can’t be reached.")
+            } actions: {
+                Button("Try Again") { problem = false }
+            }
+        } else {
+            player
+        }
+    }
+
+    @ViewBuilder private var player: some View {
         // Read here, not inside MapReader's closure: SwiftUI does not run that closure again when
         // state it reads changes, so the picture would stay on its first frame.
         let image = frames[safe: index]?.image
@@ -118,11 +134,7 @@ struct RadarPage: View {
                     .lineLimit(1)
                     .fixedSize()
             }
-            if problem {
-                Text("Radar unavailable")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-            } else if let radar, let first = frames.first?.date {
+            if let radar, let first = frames.first?.date {
                 RadarStrip(series: radar.series, now: nowFrameDate ?? first,
                            selected: frames[safe: index]?.date ?? first)
                     .frame(height: 30)
@@ -223,6 +235,14 @@ struct RainPicture: View {
                     .frame(width: 10, height: 10)
                     .overlay(Circle().stroke(.black.opacity(0.7), lineWidth: 2))
                     .position(point)
+            }
+        }
+        // Rain fades out under the clock and the buttons, so they stay readable over a downpour.
+        .mask {
+            VStack(spacing: 0) {
+                Color.clear.frame(height: 40)
+                LinearGradient(colors: [.clear, .black], startPoint: .top, endPoint: .bottom).frame(height: 26)
+                Color.black
             }
         }
         .allowsHitTesting(false)

@@ -65,30 +65,53 @@ public enum Place {
     /// The picked place if there is one; else the saved fix if it is recent, else a fresh fix if one
     /// comes within `timeout`, else the last saved one. Only the app may raise the system's location
     /// question (`mayAsk`): the app explains it first, and a complication asking would raise it with
-    /// no explanation, over whatever the wearer is doing.
+    /// no explanation, over whatever the wearer is doing. Once location is refused there is no place:
+    /// the last fix is where the wearer was, not where they are.
     public static func current(timeout: Duration = .seconds(8), mayAsk: Bool = true) async throws -> Found {
         if let chosen {
             return Found(coordinate: chosen.coordinate, isLive: false, at: .now, chosen: chosen)
         }
-        if !mayAsk, CLLocationManager().authorizationStatus == .notDetermined {
+        let status = CLLocationManager().authorizationStatus
+        switch status {
+        case .denied, .restricted: noteRefused(true)
+        case .authorizedAlways, .authorizedWhenInUse: noteRefused(false)
+        default: break
+        }
+        if isRefused { throw Failure.noLocation }
+        if !mayAsk, status == .notDetermined {
             guard let saved, let at = savedAt else { throw Failure.noLocation }
             return Found(coordinate: saved, isLive: false, at: at)
         }
         if let saved, let at = savedAt, Date.now.timeIntervalSince(at) < reuseFor {
             return Found(coordinate: saved, isLive: false, at: at)
         }
-        if let fix = await fix(timeout: timeout) {
+        switch await fix(timeout: timeout) {
+        case let .found(fix):
             save(fix)
             return Found(coordinate: fix, isLive: true, at: .now)
+        case .refused:
+            noteRefused(true)
+            throw Failure.noLocation
+        case .none:
+            if let saved, let at = savedAt { return Found(coordinate: saved, isLive: false, at: at) }
+            throw Failure.noLocation
         }
-        if let saved, let at = savedAt { return Found(coordinate: saved, isLive: false, at: at) }
-        throw Failure.noLocation
+    }
+
+    /// Location was refused, as the app or a widget last saw. Kept in the app group because watchOS
+    /// does not always tell a widget its own permission: the app sees it, and the face follows.
+    public static var isRefused: Bool {
+        UserDefaults(suiteName: appGroup)?.bool(forKey: "locationRefused") ?? false
+    }
+
+    public static func noteRefused(_ refused: Bool) {
+        UserDefaults(suiteName: appGroup)?.set(refused, forKey: "locationRefused")
     }
 
     /// Forgets the saved fix and any picked place, as a new install would.
     public static func forget() {
         let defaults = UserDefaults(suiteName: appGroup)
-        for key in ["latitude", "longitude", "fixedAt", "chosenPlace"] { defaults?.removeObject(forKey: key) }
+        for key in ["latitude", "longitude", "fixedAt", "chosenPlace", "locationRefused"] { defaults?.removeObject(forKey: key) }
     }
 
     public static var savedAt: Date? {
@@ -108,12 +131,18 @@ public enum Place {
         defaults?.set(Date.now, forKey: "fixedAt")
     }
 
+    private enum Fix: Sendable {
+        case found(CLLocationCoordinate2D)
+        case refused
+        case none
+    }
+
     /// Returns at the timeout even when Core Location never answers: a task group would wait for
     /// the location task to end, and on a watch waiting for permission it does not end.
-    private static func fix(timeout: Duration) async -> CLLocationCoordinate2D? {
+    private static func fix(timeout: Duration) async -> Fix {
         let answered = Mutex(false)
         return await withCheckedContinuation { continuation in
-            let answer: @Sendable (CLLocationCoordinate2D?) -> Void = { coordinate in
+            let answer: @Sendable (Fix) -> Void = { coordinate in
                 let first = answered.withLock { done in
                     defer { done = true }
                     return !done
@@ -123,16 +152,18 @@ public enum Place {
             let updates = Task {
                 do {
                     for try await update in CLLocationUpdate.liveUpdates() {
-                        if let location = update.location { return answer(location.coordinate) }
-                        if update.authorizationDenied || update.authorizationDeniedGlobally { return answer(nil) }
+                        if let location = update.location { return answer(.found(location.coordinate)) }
+                        if update.authorizationDenied || update.authorizationDeniedGlobally || update.authorizationRestricted {
+                            return answer(.refused)
+                        }
                     }
                 } catch {}
-                answer(nil)
+                answer(.none)
             }
             Task {
                 try? await Task.sleep(for: timeout)
                 updates.cancel()
-                answer(nil)
+                answer(.none)
             }
         }
     }

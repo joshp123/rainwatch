@@ -71,6 +71,20 @@ final class RainUITests: XCTestCase {
             XCTAssertTrue(forecastFrom.waitForExistence(timeout: 15))
             keep("page-\(scenario)")
         }
+        // Apple's screens, from test data shaped like its answers (live WeatherKit is tested below).
+        for (scenario, hourly) in [("ukNextHour", false), ("spainHourly", true)] {
+            app.terminate()
+            app.launchArguments = server + ["-scenario", scenario]
+            app.launch()
+            XCTAssertTrue(forecastFrom.waitForExistence(timeout: 15))
+            XCTAssertTrue(app.links["Legal"].exists || app.buttons["Legal"].exists, "\(scenario): Apple's legal link")
+            XCTAssertFalse(app.buttons["Radar"].exists, "\(scenario): no radar outside KNMI's area")
+            XCTAssertEqual(app.staticTexts["Hourly forecast"].exists, hourly, "\(scenario): hourly label")
+            keep("page-\(scenario)")
+            app.swipeUp()
+            sleep(1)
+            keep("page-\(scenario)-credit")
+        }
         for failure in ["noLocation", "offline", "noForecast", "stale"] {
             app.terminate()
             app.launchArguments = server + ["-failure", failure]
@@ -124,6 +138,45 @@ final class RainUITests: XCTestCase {
         }
     }
 
+    /// A refresh that fails over a saved forecast says so, with the forecast's age and Try Again
+    /// in view: some minutes later the person opens the app with no connection. (A forecast under
+    /// two minutes old is reused without a request, so the test waits that long.)
+    func testFailedRefreshSaysSo() {
+        XCTAssertTrue(forecastFrom.waitForExistence(timeout: 30))
+        app.terminate()
+        sleep(125)
+        app.launchArguments = ["-server", "http://127.0.0.1:1"]
+        app.launch()
+        sleep(10)
+        keep("refresh-failed")
+        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label BEGINSWITH 'Couldn’t update'")).firstMatch.exists,
+                      "A failed refresh should say so")
+        XCTAssertTrue(app.buttons["Try Again"].firstMatch.isHittable, "Try Again should be in view without scrolling")
+    }
+
+    /// The radar says plainly when it can't be reached, and offers Try Again instead of playback.
+    func testRadarUnavailable() {
+        app.terminate()
+        app.launchArguments = ["-server", "http://127.0.0.1:1", "-scenario", "rainComing"]
+        app.launch()
+        let radar = app.buttons["Radar"].firstMatch
+        XCTAssertTrue(radar.waitForExistence(timeout: 15))
+        radar.tap()
+        sleep(6)
+        keep("radar-unavailable")
+        XCTAssertTrue(app.buttons["Try Again"].firstMatch.exists, "The radar should offer Try Again")
+        XCTAssertFalse(app.buttons["Pause"].exists || app.buttons["Play"].exists, "Nothing to play")
+    }
+
+    /// The face after the app, as the wearer sees it on leaving the app.
+    @discardableResult private func keepFace(_ name: String) -> XCUIElement {
+        XCUIDevice.shared.press(.home)
+        sleep(5)
+        let face = XCUIApplication(bundleIdentifier: "com.apple.Carousel")
+        keep(name)
+        return face.otherElements.matching(NSPredicate(format: "label == 'RainWatch'")).firstMatch
+    }
+
     /// Apple's reviewer may refuse location: the app must still work, with a place picked by name.
     func testChoosePlaceWithoutLocation() {
         app.launchArguments = server + ["-freshInstall", "YES"]
@@ -156,6 +209,8 @@ final class RainUITests: XCTestCase {
         XCTAssertTrue(forecastFrom.waitForExistence(timeout: 30), "Picking a town should show its forecast")
         XCTAssertTrue(app.staticTexts["Utrecht"].exists, "The page should be named after the picked town")
         keep("place-forecast")
+        keepFace("place-face-utrecht")
+        app.activate()
         // Back to the wearer's location, as someone would after a trip.
         let change = app.buttons["Change Place"].firstMatch
         for _ in 0..<5 where !change.isHittable { app.swipeUp() }
@@ -164,6 +219,10 @@ final class RainUITests: XCTestCase {
         XCTAssertTrue(mine.waitForExistence(timeout: 5))
         mine.tap()
         XCTAssertTrue(app.staticTexts["Location Needed"].waitForExistence(timeout: 30))
+        keep("place-location-needed")
+        // The face follows: no place, never the last one.
+        let complication = keepFace("place-face-location-needed")
+        XCTAssertTrue(complication.staticTexts["PLACE"].exists, "The face should show that a place is needed")
     }
 
     private var forecastFrom: XCUIElement {

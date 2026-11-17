@@ -81,11 +81,12 @@ struct ContentView: View {
             switch load {
             case .intro:
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 8) {
+                    // Both ways in fit on the first screen: Apple's reviewer may refuse location.
+                    VStack(alignment: .leading, spacing: 6) {
                         Text("Rain where you are")
                             .font(.title3.weight(.semibold))
-                        Text("\(Bundle.main.displayName) needs your location. On the next screen, choose Allow While Using App, so your watch face stays up to date.")
-                            .font(.body)
+                        Text("Next, choose Allow While Using App to keep your watch face up to date.")
+                            .font(.footnote)
                             .foregroundStyle(.secondary)
                         Button("Continue") {
                             load = .loading("Finding where you are")
@@ -94,7 +95,6 @@ struct ContentView: View {
                         }
                         .buttonStyle(.borderedProminent)
                         .tint(RainPalette.buienradarBlue)
-                        .padding(.top, 4)
                         Button("Choose a Place") { picking = true }
                     }
                     .scenePadding(.horizontal)
@@ -105,15 +105,25 @@ struct ContentView: View {
                 failed(failure)
             case let .ready(forecast, issued, source, place):
                 ScrollView {
+                    // First on the page, so it is seen without scrolling: the forecast below is old.
+                    if couldNotUpdate {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Label("Couldn’t update. This forecast is from \(RainCopy.clock(issued)).", systemImage: "exclamationmark.triangle.fill")
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                            Button("Try Again") {
+                                couldNotUpdate = false
+                                Task { await refresh() }
+                            }
+                        }
+                        .scenePadding(.horizontal)
+                        .padding(.bottom, 8)
+                    }
                     ForecastDetailView(forecast: forecast, issued: issued)
                         .scenePadding(.horizontal)
                     Credit(source: source)
                         .scenePadding(.horizontal)
                         .padding(.top, 2)
-                    if couldNotUpdate {
-                        Button("Try Again") { Task { await refresh() } }
-                            .padding(.top, 6)
-                    }
                     Button { picking = true } label: {
                         Label(Place.chosen == nil ? "Choose a Place" : "Change Place", systemImage: "mappin.and.ellipse")
                     }
@@ -175,15 +185,16 @@ struct ContentView: View {
             ContentUnavailableView {
                 Label("No Connection", systemImage: "wifi.slash")
             } description: {
-                Text(source == .knmi ? "KNMI's forecast can't be reached." : "Apple Weather can't be reached.")
+                Text(source == .knmi ? "KNMI’s forecast can’t be reached." : "Apple Weather can’t be reached.")
             } actions: {
                 Button("Try Again") { Task { await refresh() } }
+                Button("Choose a Place") { picking = true }
             }
         case let .stale(since):
             ContentUnavailableView {
                 Label("No Recent Forecast", systemImage: "clock.badge.exclamationmark")
             } description: {
-                Text("KNMI's newest forecast is from \(RainCopy.clock(since)).")
+                Text("KNMI’s newest forecast is from \(RainCopy.clock(since)).")
             } actions: {
                 Button("Try Again") { Task { await refresh() } }
             }
@@ -224,8 +235,11 @@ struct ContentView: View {
         }
     }
 
+    /// The town's name, asked for with the position rounded to about 1 km, as the location question
+    /// promises.
     private static func town(at place: CLLocationCoordinate2D) async -> String? {
-        try? await MKReverseGeocodingRequest(location: CLLocation(latitude: place.latitude, longitude: place.longitude))?
+        let rounded = CLLocation(latitude: (place.latitude * 100).rounded() / 100, longitude: (place.longitude * 100).rounded() / 100)
+        return try? await MKReverseGeocodingRequest(location: rounded)?
             .mapItems.first?.addressRepresentations?.cityName
     }
 
@@ -248,11 +262,22 @@ struct ContentView: View {
             placeName = scenario.place
             return
         }
+        if let name = UserDefaults.standard.string(forKey: "scenario"),
+           let scenario = AppleScenario.allCases.first(where: { "\($0)" == name }),
+           let forecast = scenario.forecast(at: .now) {
+            load = .ready(forecast, issued: .now.addingTimeInterval(-5 * 60), source: scenario.resolution == .hourly ? .appleHourly : .appleMinute,
+                          place: CLLocationCoordinate2D(latitude: scenario.coordinate.latitude, longitude: scenario.coordinate.longitude))
+            placeName = scenario.place
+            return
+        }
         #endif
         let chosen = Place.chosen
         // Someone who refused location gets the choice of a place, not their last known position.
         let status = CLLocationManager().authorizationStatus
         if chosen == nil, status == .denied || status == .restricted {
+            // The face must stop showing the last place too.
+            Place.noteRefused(true)
+            WidgetCenter.shared.reloadAllTimelines()
             load = .failed(.noLocation)
             return
         }
@@ -313,10 +338,8 @@ struct Credit: View {
                 } else {
                     Text("\u{F8FF}Weather")
                 }
-                if let apple {
-                    Link("Legal", destination: apple.legalPage)
-                        .foregroundStyle(RainPalette.buienradarBlue)
-                }
+                Link("Legal", destination: apple?.legalPage ?? AppleWeatherCredit.fallbackLegalPage)
+                    .foregroundStyle(RainPalette.buienradarBlue)
             }
             .font(.footnote)
             .frame(maxWidth: .infinity, alignment: .leading)
