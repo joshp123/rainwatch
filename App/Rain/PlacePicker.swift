@@ -14,7 +14,9 @@ struct PlacePicker: View {
     var body: some View {
         NavigationStack {
             List {
-                TextField("Town or Postcode", text: $query)
+                // A plain field, always in view with its prompt. Apple's search field (`searchable`)
+                // stays hidden above an empty list on the watch, so nothing said what to type.
+                TextField("Town or postcode", text: $query)
                     .textContentType(.addressCity)
                     .onSubmit { Task { await search() } }
                 if searching {

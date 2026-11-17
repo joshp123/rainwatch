@@ -28,7 +28,7 @@
 		<string>com.apple.widgetkit-extension</string>
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>To show the rain where you are. It is sent rounded to about 1 km.</string>
+	<string>RainWatch rounds your location to about 1 km to get the rain forecast.</string>
 	<key>NSWidgetWantsLocation</key>
 	<true/>
 </dict>

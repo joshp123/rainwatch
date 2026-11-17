@@ -45,7 +45,9 @@ public struct RectangularRainView: View {
                     .foregroundStyle(palette.primary)
                     // Matched to Apple's Stocks rows beside it on Josh's face, about 16 points.
                     .font(RainFont.rounded(16, .semibold))
-                if roomy, isOld, let issued {
+                // An old forecast always says its time, in any slot: where there is room for only
+                // one line of words, as on Modular Ultra, it takes the place of the hour labels.
+                if isOld, let issued {
                     Text("Forecast from \(RainCopy.clock(issued))")
                         .font(RainFont.rounded(13.5, .medium))
                         .foregroundStyle(palette.secondary)
@@ -53,16 +55,24 @@ public struct RectangularRainView: View {
                     Text(credit)
                         .font(RainFont.rounded(13.5, .medium))
                         .foregroundStyle(palette.secondary)
-                } else if roomy, let detail = copy.detail {
+                } else if roomy, let detail = copy.detail, copy.detailIsAboutRain {
                     Text(detail)
                         .font(RainFont.rounded(13.5, .medium))
                         .foregroundStyle(palette.rain)
                         .accentable()
+                } else if roomy, let detail = copy.detail {
+                    Text(detail)
+                        .font(RainFont.rounded(13.5, .medium))
+                        .foregroundStyle(palette.secondary)
                 }
                 RainChart(forecast: forecast, palette: palette)
                     .padding(.top, 3)
-                TimeAxis(forecast: forecast, palette: palette)
-                    .padding(.top, 4)
+                if roomy || !isOld {
+                    TimeAxis(forecast: forecast, palette: palette)
+                        .padding(.top, 4)
+                } else {
+                    Color.clear.frame(height: 5)
+                }
             }
         }
         .lineLimit(1)
@@ -285,7 +295,8 @@ public struct CircularRainGauge: View {
                 // Three lines at the neighbours' sizes don't fit inside the arc on a 45 point
                 // disc, so the lead word is smaller; the number and the unit match theirs.
                 if let lead {
-                    word(lead, side: side, size: 0.2)
+                    // Four letters at the three-letter size would touch the arc.
+                    word(lead, side: side, size: lead.count > 3 ? 0.18 : 0.2)
                         .position(x: mid, y: mid - side * 0.15)
                 }
                 // Three characters at the two-character size would touch the arc.
@@ -314,12 +325,15 @@ public struct CircularRainGauge: View {
         .frame(width: side, height: side)
     }
 
-    private func word(_ text: String, side: CGFloat, size: CGFloat = 0.243) -> some View {
-        Text(text)
-            .font(RainFont.rounded(side * size, .semibold))
-            .foregroundStyle(palette.rain)
-            .accentable()
-            .fixedSize()
+    /// The words round the number. Blue means rain, so they are blue only while it rains; when it
+    /// is dry they are grey, and a circle with no blue in it means no rain within two hours.
+    @ViewBuilder private func word(_ text: String, side: CGFloat, size: CGFloat = 0.243) -> some View {
+        let label = Text(text).font(RainFont.rounded(side * size, .semibold))
+        if RainCopy(forecast).isRainingNow {
+            label.foregroundStyle(palette.rain).accentable().fixedSize()
+        } else {
+            label.foregroundStyle(palette.secondary).fixedSize()
+        }
     }
 }
 

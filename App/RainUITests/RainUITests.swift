@@ -168,6 +168,178 @@ final class RainUITests: XCTestCase {
         XCTAssertFalse(app.buttons["Pause"].exists || app.buttons["Play"].exists, "Nothing to play")
     }
 
+    /// Sets up the simulator's Modular Ultra face (added by hand once, from All Watch Faces) the way
+    /// the design shows it: RainWatch in the large slot and in the bottom middle circle.
+    func testSetUpFaceWithoutLocation() {
+        let face = XCUIApplication(bundleIdentifier: "com.apple.Carousel")
+        // Out of whatever the last run left open, then to the face by way of the app: one press of
+        // the crown from an app always lands on the face.
+        answerLocation("Don’t Allow")
+        for label in ["Close", "Back"] where face.buttons[label].firstMatch.exists { face.buttons[label].firstMatch.tap(); sleep(2) }
+        app.launchArguments = ["-scenario", "onAndOff"]
+        app.launch()
+        sleep(3)
+        XCUIDevice.shared.press(.home)
+        sleep(4)
+        func dump(_ tag: String) {
+            let texts = face.staticTexts.allElementsBoundByIndex.map(\.label)
+            let buttons = face.buttons.allElementsBoundByIndex.map { "\($0.label)\($0.isHittable ? "" : "~")" }
+            print("EXPLORE \(tag) texts: \(texts) buttons: \(buttons)")
+            keep("explore-\(tag)")
+        }
+        for y in [0.85, 0.3, 0.6] where !face.buttons["Edit"].exists {
+            face.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: y)).press(forDuration: 2)
+            sleep(3)
+        }
+        dump("library")
+        face.buttons["Edit"].tap()
+        sleep(3)
+        func slot(_ name: String) -> XCUIElement { face.buttons["\(name) complication"] }
+        for _ in 0..<8 where !slot("Middle").isHittable { face.swipeLeft(); sleep(2) }
+        /// Picks an app's complication for a slot, taking the first one where the app lists several.
+        func set(_ name: String, to app: String) {
+            slot(name).tap()
+            sleep(3)
+            let target = face.staticTexts[app].firstMatch
+            var found = false
+            for _ in 0..<90 {
+                if target.exists, target.isHittable { found = true; break }
+                if target.exists { XCUIDevice.shared.rotateDigitalCrown(delta: 0.3) } else { face.swipeUp(velocity: .slow) }
+            }
+            guard found else {
+                print("EXPLORE \(app) not offered for \(name)")
+                face.buttons["Close"].firstMatch.tap()
+                sleep(2)
+                return
+            }
+            target.tap()
+            sleep(3)
+            if !slot(name).isHittable {
+                dump("choices-\(name)")
+                let first = face.cells.firstMatch
+                if first.exists { first.tap(); sleep(3) }
+            }
+            if !slot(name).isHittable { face.buttons["Back"].firstMatch.tap(); sleep(2) }
+        }
+        set("Bottom Middle", to: "RainWatch")
+        set("Bottom Left", to: "Time")
+        dump("configured")
+        XCUIDevice.shared.press(.home)
+        sleep(2)
+        XCUIDevice.shared.press(.home)
+        sleep(4)
+        dump("face")
+    }
+
+    // MARK: The design file's screens (design/capture.sh)
+
+    /// Every moment of a day on the wrist: the app, then the face it leaves behind.
+    func testDesignStatesWithoutLocation() {
+        let states: [(String, [String])] = [
+            ("dry", ["-scenario", "dry"]),
+            ("coming", ["-scenario", "showerComing"]),
+            ("raining", ["-scenario", "rainingEasing"]),
+            ("stopping", ["-scenario", "onAndOff"]),
+            ("ageing", ["-scenario", "showerComing", "-age", "32"]),
+            ("hour-old", ["-failure", "stale"]),
+            ("not-updated", ["-scenario", "rainingEasing", "-couldNotUpdate", "YES"]),
+            ("abroad-minute", ["-scenario", "ukNextHour"]),
+            ("abroad-hourly", ["-scenario", "spainHourly"]),
+            ("location-off", ["-failure", "noLocation"]),
+            ("location-not-found", ["-failure", "locationNotFound"]),
+            ("forecast-unavailable", ["-failure", "offline"]),
+            ("no-forecast-here", ["-failure", "noForecast"]),
+        ]
+        for (name, arguments) in states {
+            app.terminate()
+            // As a new install each time, so a place picked by another test doesn't carry over.
+            app.launchArguments = arguments + ["-freshInstall", "YES"]
+            app.launch()
+            sleep(4)
+            keep("app-\(name)")
+            XCUIDevice.shared.press(.home)
+            sleep(7)
+            keep("face-\(name)")
+        }
+        app.terminate()
+        app.launchArguments = ["-server", "http://127.0.0.1:1", "-scenario", "rainComing"]
+        app.launch()
+        let radar = app.buttons["Radar"].firstMatch
+        if radar.waitForExistence(timeout: 15) {
+            radar.tap()
+            sleep(7)
+            keep("app-radar-unavailable")
+        }
+    }
+
+    /// First launch, refusing location and picking a place instead. Needs location never asked.
+    func testDesignRefuseWithoutLocation() {
+        app.launchArguments = server + ["-freshInstall", "YES"]
+        app.launch()
+        XCTAssertTrue(app.buttons["Continue"].waitForExistence(timeout: 15))
+        keep("flow-1-first-launch")
+        app.buttons["Continue"].tap()
+        sleep(3)
+        keep("flow-2-question")
+        XCUIDevice.shared.rotateDigitalCrown(delta: 1.2)
+        sleep(2)
+        keep("flow-3-answers")
+        answerLocation("Don’t Allow")
+        XCTAssertTrue(app.staticTexts["Location Off"].waitForExistence(timeout: 30))
+        keep("flow-a-location-off")
+        app.buttons["Choose a Place"].firstMatch.tap()
+        sleep(4)
+        keep("flow-b-place")
+        let field = app.textFields["Town or postcode"].firstMatch
+        XCTAssertTrue(field.waitForExistence(timeout: 5), "The place search should have a field")
+        field.tap()
+        sleep(3)
+        keep("flow-b2-keyboard")
+        app.typeText("Utrecht")
+        let done = [app, XCUIApplication(bundleIdentifier: "com.apple.Carousel")]
+            .map { $0.buttons["Done"].firstMatch }
+            .first { $0.waitForExistence(timeout: 3) }
+        done?.tap()
+        let utrecht = app.buttons.containing(NSPredicate(format: "label BEGINSWITH 'Utrecht'")).firstMatch
+        XCTAssertTrue(utrecht.waitForExistence(timeout: 20))
+        sleep(1)
+        keep("flow-c-results")
+        utrecht.tap()
+        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label CONTAINS 'forecast from'")).firstMatch.waitForExistence(timeout: 30))
+        sleep(2)
+        keep("flow-d-forecast")
+        // To the very end of the page, where the scale labels are clear of the title.
+        for _ in 0..<3 { XCUIDevice.shared.rotateDigitalCrown(delta: 2); sleep(1) }
+        sleep(1)
+        keep("flow-e-forecast-end")
+        XCUIDevice.shared.press(.home)
+        sleep(7)
+        keep("flow-f-face")
+        app.activate()
+        let change = app.buttons["Change Place"].firstMatch
+        for _ in 0..<5 where !change.isHittable { app.swipeUp() }
+        change.tap()
+        sleep(2)
+        keep("flow-g-change-place")
+    }
+
+    /// First launch, allowing location. Needs location never asked.
+    func testDesignAllowWithoutLocation() {
+        XCUIDevice.shared.location = XCUILocation(location: CLLocation(latitude: 51.92, longitude: 4.48))
+        app.launchArguments = server + ["-freshInstall", "YES"]
+        app.launch()
+        XCTAssertTrue(app.buttons["Continue"].waitForExistence(timeout: 15))
+        app.buttons["Continue"].tap()
+        sleep(2)
+        answerLocation("Allow While Using App")
+        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label CONTAINS 'forecast from'")).firstMatch.waitForExistence(timeout: 40))
+        sleep(3)
+        keep("flow-4-forecast")
+        XCUIDevice.shared.press(.home)
+        sleep(7)
+        keep("flow-5-face")
+    }
+
     /// The face after the app, as the wearer sees it on leaving the app.
     @discardableResult private func keepFace(_ name: String) -> XCUIElement {
         XCUIDevice.shared.press(.home)

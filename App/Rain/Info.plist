@@ -23,7 +23,7 @@
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>To show the rain where you are. It is sent rounded to about 1 km.</string>
+	<string>RainWatch rounds your location to about 1 km to get the rain forecast.</string>
 	<key>WKApplication</key>
 	<true/>
 	<key>WKWatchOnly</key>

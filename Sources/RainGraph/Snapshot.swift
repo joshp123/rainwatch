@@ -94,7 +94,9 @@ public struct Snapshot: Codable, Sendable {
         return snapshot
     }
 
-    private func isFor(latitude: Double, longitude: Double) -> Bool {
+    /// True when this forecast is for that place, to about half a kilometre. A saved forecast for
+    /// somewhere the wearer has left is never shown in place of one that could not be fetched.
+    public func isFor(latitude: Double, longitude: Double) -> Bool {
         abs(self.latitude - latitude) < 0.005 && abs(self.longitude - longitude) < 0.005
     }
 

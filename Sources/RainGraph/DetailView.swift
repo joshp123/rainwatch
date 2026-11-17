@@ -6,13 +6,19 @@ import SwiftUI
 /// styles, so it matches Apple's apps and follows the wearer's text size.
 public struct ForecastDetailView: View {
     let forecast: RainForecast
-    /// When the data was made: its age, which the page states.
+    /// When the data was made.
     let issued: Date
+    /// The last refresh failed, so the forecast on screen was not renewed.
+    let couldNotUpdate: Bool
 
-    public init(forecast: RainForecast, issued: Date) {
+    public init(forecast: RainForecast, issued: Date, couldNotUpdate: Bool = false) {
         self.forecast = forecast
         self.issued = issued
+        self.couldNotUpdate = couldNotUpdate
     }
+
+    /// From 20 minutes old the forecast says its time on the second line, as the watch face does.
+    private var isOld: Bool { forecast.now.timeIntervalSince(issued) >= 20 * 60 }
 
     public var body: some View {
         let copy = RainCopy(forecast)
@@ -23,18 +29,24 @@ public struct ForecastDetailView: View {
                 .font(.title3.weight(.semibold))
                 .lineLimit(1)
                 .minimumScaleFactor(0.85)
-            if let detail = copy.detail {
+            // One line under the headline: that the update failed, else the forecast's time once
+            // it is old, else what comes next. Blue only when it is about rain.
+            if couldNotUpdate {
+                Label("Couldn’t update", systemImage: "exclamationmark.triangle.fill")
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+            } else if isOld {
+                Text("Forecast from \(RainCopy.clock(issued))")
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+            } else if let detail = copy.detail {
                 Text(detail)
                     .font(.body)
-                    .foregroundStyle(RainPalette.buienradarBlue)
+                    .foregroundStyle(copy.detailIsAboutRain ? AnyShapeStyle(RainPalette.buienradarBlue) : AnyShapeStyle(.secondary))
             }
             ForecastChart(forecast: forecast)
-                .frame(height: forecast.hasRain ? 100 : 40)
+                .frame(height: forecast.hasRain ? 92 : 40)
                 .padding(.top, 8)
-            Text("Forecast from \(RainCopy.clock(issued))")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-                .padding(.top, 6)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -80,11 +92,18 @@ public struct ForecastChart: View {
         .chartXScale(domain: forecast.start...forecast.end)
         .chartYScale(domain: 0...100)
         .chartXAxis {
-            AxisMarks(values: [forecast.start] + labelledHours) { value in
+            // Every hour has a tick; a label sits centred under its own tick, so it is read with the
+            // right moment on the line. "Now" hangs from the left edge and the last hour from the
+            // right, to stay inside the screen.
+            AxisMarks(values: [forecast.start] + forecast.hourMarks) { value in
                 AxisTick(length: 4, stroke: StrokeStyle(lineWidth: 1))
-                AxisValueLabel {
-                    if let date = value.as(Date.self) {
-                        Text(date == forecast.start ? "Now" : RainCopy.clock(date))
+                if let date = value.as(Date.self) {
+                    if date == forecast.start {
+                        AxisValueLabel(anchor: .topLeading, collisionResolution: .disabled) { Text("Now").font(Self.labelFont).fixedSize() }
+                    } else if labelledHours.contains(date) {
+                        AxisValueLabel(anchor: forecast.end.timeIntervalSince(date) < 20 * 60 ? .topTrailing : .top) {
+                            Text(RainCopy.clock(date)).font(Self.labelFont)
+                        }
                     }
                 }
             }
@@ -96,7 +115,7 @@ public struct ForecastChart: View {
                 AxisGridLine(stroke: StrokeStyle(lineWidth: 1, dash: [2, 3]))
                 // Above its rule, so the label never breaks the dashed line.
                 AxisValueLabel(anchor: .bottomTrailing) {
-                    Text(value.as(Double.self) == Self.scaleLines[0] ? "Light" : "Heavy")
+                    Text(value.as(Double.self) == Self.scaleLines[0] ? "Light" : "Heavy").font(Self.labelFont)
                 }
             }
         }
@@ -127,8 +146,11 @@ public struct ForecastChart: View {
         forecast.start.addingTimeInterval(t * forecast.span)
     }
 
+    /// Apple's smallest text on the watch is 12 points; the chart's own default is smaller.
+    static let labelFont = Font.system(size: 12)
+
     /// Hours far enough from "Now" not to read as one label with it.
     private var labelledHours: [Date] {
-        forecast.hourMarks.filter { $0.timeIntervalSince(forecast.start) >= 25 * 60 }
+        forecast.hourMarks.filter { $0.timeIntervalSince(forecast.start) >= 30 * 60 }
     }
 }

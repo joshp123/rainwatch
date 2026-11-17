@@ -75,6 +75,7 @@
 
 /* Begin PBXFileReference section */
 		11E5830986D952F71247765B /* RainWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RainWidget.swift; sourceTree = "<group>"; };
+		1783F6870809AC5A87E57E3B /* buienradar-apple-watch-design */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "buienradar-apple-watch-design"; path = ..; sourceTree = SOURCE_ROOT; };
 		1F9A00C4F9B89E5A7D762A86 /* RainWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = RainWidget.entitlements; sourceTree = "<group>"; };
 		24A5456AC0840FD7A47E7340 /* RadarPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadarPage.swift; sourceTree = "<group>"; };
 		3E3D2F253DB2162EA5C37245 /* RainContainer.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = RainContainer.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -89,7 +90,6 @@
 		BDE443DA153B758F14C90BBE /* PlacePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlacePicker.swift; sourceTree = "<group>"; };
 		D0DFCBBAE96F646AA450D859 /* Rain.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Rain.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DCBDA42EF1F0EABADA8F70BF /* RainUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RainUITests.swift; sourceTree = "<group>"; };
-		F8C4BF18348C0C6C2C270C31 /* buienradar-apple-watch */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "buienradar-apple-watch"; path = ..; sourceTree = SOURCE_ROOT; };
 		FD980AE5FE9CA11F1F1DF450 /* Rain.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Rain.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -125,7 +125,7 @@
 		529867CDC413DEB51F6DF7C6 /* Packages */ = {
 			isa = PBXGroup;
 			children = (
-				F8C4BF18348C0C6C2C270C31 /* buienradar-apple-watch */,
+				1783F6870809AC5A87E57E3B /* buienradar-apple-watch-design */,
 			);
 			name = Packages;
 			sourceTree = "<group>";

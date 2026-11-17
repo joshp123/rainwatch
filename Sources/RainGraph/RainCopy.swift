@@ -45,7 +45,9 @@ public struct RainCopy: Sendable {
     /// always names the hour.
     public var headline: String {
         guard forecast.hasRain else { return "Dry for \(reach.words)" }
-        guard let minutes = minutesLeft, let change else { return "\(now?.intensity.phrase ?? "Rain") for \(reach.words)" }
+        // Always "Dry" or "Rain" first, so the longest headline still fits one line; the graph and
+        // the line under it say how hard.
+        guard let minutes = minutesLeft, let change else { return "Rain for \(reach.words)" }
         let state = isRainingNow ? "Rain" : "Dry"
         if minutes >= 60 || hourly { return "\(state) until \(Self.clock(change))" }
         return isRainingNow ? "Rain stops in \(minutes) min" : "Dry for \(minutes) min"
@@ -73,21 +75,31 @@ public struct RainCopy: Sendable {
 
     public static let hourlyLabel = "Hourly forecast"
 
+    /// True when the line under the headline is about rain. Blue means rain, so only then is the
+    /// line blue; a line about a dry spell is grey.
+    public var detailIsAboutRain: Bool {
+        guard !hourly, forecast.hasRain else { return false }
+        guard let next = spells.dropFirst().first else { return isRainingNow }
+        if next.isRain { return true }
+        return next.end >= forecast.forecastEnd && (minutesLeft ?? 0) >= 60
+    }
+
     private var peakPhrase: String? {
         guard let peak = forecast.samples.filter({ $0.date < forecast.forecastEnd }).max(by: { $0.height < $1.height }) else { return nil }
         return "Heaviest around \(Self.clock(peak.date))"
     }
 
-    /// Circular middle, read top to bottom as one phrase, always about rain, as the blue line is:
-    /// "IN 30 MIN" until rain arrives when it is dry, "FOR 5 MIN" while it lasts when it is raining.
-    /// The same three words can then never mean opposite things. An hour or more reads "1+ HRS",
-    /// so the number never needs three digits. Dry says how long under it, "2+ HRS": "FOR 2+ HRS"
-    /// is wider than the disc at a readable size. An hourly forecast's change is at the next whole
-    /// hour, so it reads "<1 HR" rather than a count of minutes it doesn't know.
+    /// Circular middle, read top to bottom as the headline in three words: what it is doing now and
+    /// how long that lasts. "DRY 39 MIN" is the headline "Dry for 39 min"; "RAIN 14 MIN" is "Rain
+    /// stops in 14 min". The number always answers "how long does this last", so it never means
+    /// opposite things. An hour or more reads "1+ HRS", so the number never needs three digits.
+    /// With no rain in sight there is no arc and the two lines sit as one block: "Dry", "2+ HRS".
+    /// An hourly forecast's change is at the next whole hour, so it reads "<1 HR" rather than a
+    /// count of minutes it doesn't know.
     public var circular: (lead: String?, value: String, unit: String?) {
         guard forecast.hasRain else { return (nil, "Dry", "\(reach.value) \(reach.unit)") }
-        guard let minutesLeft else { return ("FOR", reach.value, reach.unit) }
-        let lead = isRainingNow ? "FOR" : "IN"
+        let lead = isRainingNow ? "RAIN" : "DRY"
+        guard let minutesLeft else { return (lead, reach.value, reach.unit) }
         if minutesLeft >= 60 { return (lead, "1+", "HRS") }
         return hourly ? (lead, "<1", "HR") : (lead, "\(minutesLeft)", "MIN")
     }

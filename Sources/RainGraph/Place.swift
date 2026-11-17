@@ -62,6 +62,17 @@ public enum Place {
     /// time, and one GPS fix serves them all.
     static let reuseFor: TimeInterval = 5 * 60
 
+    /// A saved fix is where the wearer was. A complication that cannot get its own fix may stand on
+    /// it for an hour, as it may stand on an hour-old forecast; after that there is no place. So
+    /// after Allow Once, or with a watch that cannot find itself, the face never goes on showing a
+    /// town the wearer left this morning.
+    public static let trustFor: TimeInterval = 60 * 60
+
+    private static var trustedSaved: (CLLocationCoordinate2D, Date)? {
+        guard let saved, let at = savedAt, Date.now.timeIntervalSince(at) < trustFor else { return nil }
+        return (saved, at)
+    }
+
     /// The picked place if there is one; else the saved fix if it is recent, else a fresh fix if one
     /// comes within `timeout`, else the last saved one. Only the app may raise the system's location
     /// question (`mayAsk`): the app explains it first, and a complication asking would raise it with
@@ -79,7 +90,7 @@ public enum Place {
         }
         if isRefused { throw Failure.noLocation }
         if !mayAsk, status == .notDetermined {
-            guard let saved, let at = savedAt else { throw Failure.noLocation }
+            guard let (saved, at) = trustedSaved else { throw Failure.noLocation }
             return Found(coordinate: saved, isLive: false, at: at)
         }
         if let saved, let at = savedAt, Date.now.timeIntervalSince(at) < reuseFor {
@@ -93,7 +104,7 @@ public enum Place {
             noteRefused(true)
             throw Failure.noLocation
         case .none:
-            if let saved, let at = savedAt { return Found(coordinate: saved, isLive: false, at: at) }
+            if let (saved, at) = trustedSaved { return Found(coordinate: saved, isLive: false, at: at) }
             throw Failure.noLocation
         }
     }

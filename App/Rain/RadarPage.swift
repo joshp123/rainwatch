@@ -49,10 +49,9 @@ struct RadarPage: View {
             // the radar afresh.
             ContentUnavailableView {
                 Label("Radar Unavailable", systemImage: "map")
-            } description: {
-                Text("KNMI’s radar can’t be reached.")
             } actions: {
                 Button("Try Again") { problem = false }
+                    .padding(.top, 8)
             }
         } else {
             player
