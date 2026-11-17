@@ -14,7 +14,7 @@ The goal is a glance he can trust: whether it is dry now and for how long, drawn
 
 ## The server
 
-The forecast job is `server/job.py`. It runs every 5 minutes on the gohome VPS (`~/code/nix/nixos-config/hosts/nixos/gohome-hub/rainwatch.nix`), which uploads its two files to S3; CloudFront serves them at `rain.jjpcodes.com` (`~/code/opentofu-infra/services/rainwatch`). Why it is built this way: `server/FIRST-PRINCIPLES.md`. KNMI's fair-use rules bind every change: one fetch per run, never the same file twice (https://developer.dataplatform.knmi.nl/fair-use).
+`server/DESIGN.md` says what the server does and where it runs. KNMI's fair-use rules bind every change to `server/job.py`: one fetch per run, never the same file twice (https://developer.dataplatform.knmi.nl/fair-use).
 
 ## App Store Connect and Apple's developer account: command line only
 
