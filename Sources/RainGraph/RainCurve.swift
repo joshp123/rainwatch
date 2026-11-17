@@ -13,6 +13,9 @@ public enum RainCurve {
         case squareRoot
         /// The graph height itself, so a heavy peak stands clearly above a light one.
         case linear
+        /// Lifts light rain further than the square root: a proposal for the watch face's small
+        /// graph, where drizzle is otherwise a few points tall.
+        case cubeRoot
     }
 
     public static func display(_ height: Double, _ scale: Scale = .squareRoot) -> Double {
@@ -21,6 +24,7 @@ public enum RainCurve {
         switch scale {
         case .squareRoot: return max(traceFloor, fraction.squareRoot())
         case .linear: return max(0.1, fraction)
+        case .cubeRoot: return max(traceFloor, pow(fraction, 1.0 / 3))
         }
     }
 

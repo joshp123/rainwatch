@@ -9,8 +9,14 @@ import Synchronization
 public enum Place {
     public static let appGroup = "group.nl.jjp.rain"
 
-    public enum Failure: Error {
-        case noLocation
+    /// Why there is no place to forecast for.
+    public enum Failure: Error, Equatable {
+        /// Location was never answered, or Allow Once has run out.
+        case notAsked
+        /// Location is refused or turned off.
+        case off
+        /// Location is allowed, but no fix has come for an hour.
+        case notFound
     }
 
     public struct Found: Sendable {
@@ -88,9 +94,9 @@ public enum Place {
         case .authorizedAlways, .authorizedWhenInUse: noteRefused(false)
         default: break
         }
-        if isRefused { throw Failure.noLocation }
+        if isRefused { throw Failure.off }
         if !mayAsk, status == .notDetermined {
-            guard let (saved, at) = trustedSaved else { throw Failure.noLocation }
+            guard let (saved, at) = trustedSaved else { throw Failure.notAsked }
             return Found(coordinate: saved, isLive: false, at: at)
         }
         if let saved, let at = savedAt, Date.now.timeIntervalSince(at) < reuseFor {
@@ -102,10 +108,10 @@ public enum Place {
             return Found(coordinate: fix, isLive: true, at: .now)
         case .refused:
             noteRefused(true)
-            throw Failure.noLocation
+            throw Failure.off
         case .none:
             if let (saved, at) = trustedSaved { return Found(coordinate: saved, isLive: false, at: at) }
-            throw Failure.noLocation
+            throw Failure.notFound
         }
     }
 

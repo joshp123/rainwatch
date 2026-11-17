@@ -11,5 +11,6 @@ let package = Package(
         .target(name: "RainGraph"),
         .executableTarget(name: "render-mockups", dependencies: ["RainGraph"]),
         .executableTarget(name: "copy-check", dependencies: ["RainGraph"]),
+        .testTarget(name: "RainGraphTests", dependencies: ["RainGraph"]),
     ]
 )

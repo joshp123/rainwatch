@@ -22,10 +22,16 @@ struct RainApp: App {
         shared?.set(UserDefaults.standard.string(forKey: "server"), forKey: "debugServer")
         // `-age 32` makes the saved forecast that many minutes old, on the face too.
         shared?.set(UserDefaults.standard.integer(forKey: "age"), forKey: "debugAge")
+        // `-slotStyle 2` draws the face's large slot in one of the styles under comparison.
+        shared?.set(UserDefaults.standard.integer(forKey: "slotStyle"), forKey: "debugSlotStyle")
         // `-freshInstall YES` starts as a new install would, for the path Apple's reviewer takes.
         if UserDefaults.standard.bool(forKey: "freshInstall") {
             Place.forget()
             Snapshot.forget()
+        }
+        // `-pickedPlace Utrecht` shows the scenario as the forecast for a place picked by name.
+        if let name = UserDefaults.standard.string(forKey: "pickedPlace") {
+            Place.choose(Place.Chosen(name: name, detail: "", latitude: 0, longitude: 0))
         }
         WidgetCenter.shared.reloadAllTimelines()
     }
@@ -46,33 +52,7 @@ struct ContentView: View {
         case intro
         case loading
         case ready(RainForecast, issued: Date, source: Snapshot.Source, place: CLLocationCoordinate2D)
-        case failed(Failure)
-    }
-
-    /// What went wrong, in Apple's empty-state layout, with the way out.
-    enum Failure: Equatable {
-        /// Location is refused or turned off.
-        case noLocation
-        /// Location is allowed, but no fix came.
-        case locationNotFound
-        case offline(Snapshot.Source)
-        /// Apple refused the call or had no forecast: never shown as dry.
-        case noForecast
-        /// KNMI's newest forecast is over an hour old: the server or KNMI has stopped.
-        case stale(since: Date)
-
-        #if DEBUG
-        init?(debugName: String) {
-            switch debugName {
-            case "noLocation": self = .noLocation
-            case "locationNotFound": self = .locationNotFound
-            case "offline": self = .offline(.knmi)
-            case "noForecast": self = .noForecast
-            case "stale": self = .stale(since: Date(timeIntervalSince1970: ((RainApp.launched.timeIntervalSince1970 - 75 * 60) / 300).rounded(.down) * 300))
-            default: return nil
-            }
-        }
-        #endif
+        case failed(Problem)
     }
 
     /// Opens on the forecast the face was just showing, if it is still fresh, and refreshes over it.
@@ -84,6 +64,9 @@ struct ContentView: View {
     @State private var picking = false
     /// Set once Continue is tapped on the intro, so the system's question comes when it's expected.
     @State private var askedForLocation = false
+    /// Counts refreshes, so one that a newer one has overtaken cannot write its result: opening the
+    /// app, Try Again and picking a place each start one, and they can overlap.
+    @State private var refreshes = 0
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
@@ -93,10 +76,7 @@ struct ContentView: View {
                 // Apple's rule for a screen before a permission question: one button, which opens
                 // the question. Choosing a place is offered after a refusal instead.
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Rain where you are")
-                        .font(.title3.weight(.semibold))
-                    Text("Choose Allow While Using App and the forecast follows you.")
-                        .foregroundStyle(.secondary)
+                    Text("To see live rain data where you are, choose Allow While Using App.")
                     Spacer(minLength: 0)
                     Button("Continue") {
                         load = .loading
@@ -117,7 +97,7 @@ struct ContentView: View {
                         .scenePadding(.horizontal)
                     // Whose forecast it is and when it was made, in view under the graph.
                     // An old forecast already says its time on the second line.
-                    Credit(source: source, issued: issued, showsTime: forecast.now.timeIntervalSince(issued) < 20 * 60 || couldNotUpdate)
+                    Credit(source: source, issued: issued, showsTime: forecast.now.timeIntervalSince(issued) < Snapshot.oldAfter || couldNotUpdate)
                         .scenePadding(.horizontal)
                         .padding(.top, 4)
                     if couldNotUpdate {
@@ -185,51 +165,25 @@ struct ContentView: View {
         }
     }
 
-    @ViewBuilder private func failed(_ failure: Failure) -> some View {
-        switch failure {
-        case .noLocation:
-            ContentUnavailableView {
-                Label("Location Off", systemImage: "location.slash")
-            } description: {
-                Text("Allow it in Settings.")
-            } actions: {
-                Button("Choose a Place") { picking = true }
+    /// A problem in Apple's empty-state layout, in the words the face uses for it too (`Problem`).
+    private func failed(_ problem: Problem) -> some View {
+        ContentUnavailableView {
+            // With two buttons the symbol goes: with it, the second button runs off the screen.
+            if problem.actions.count > 1 {
+                Text(problem.title).font(.title3.bold())
+            } else {
+                Label(problem.title, systemImage: problem.symbol)
             }
-        case .locationNotFound:
-            ContentUnavailableView {
-                // No symbol: with one, the second button runs off the screen.
-                Text("Location Not Found")
-                    .font(.title3.bold())
-            } actions: {
-                Button("Try Again") { Task { await refresh() } }
-                    .padding(.top, 8)
-                Button("Choose a Place") { picking = true }
-            }
-        case .offline:
-            ContentUnavailableView {
-                Label("Forecast Unavailable", systemImage: "exclamationmark.icloud")
-            } actions: {
-                Button("Try Again") { Task { await refresh() } }
-                    // Without a line of description the title sits on the button.
-                    .padding(.top, 8)
-            }
-        case let .stale(since):
-            ContentUnavailableView {
-                Label("No Recent Forecast", systemImage: "clock.badge.exclamationmark")
-            } description: {
-                Text("Last forecast \(RainCopy.clock(since))")
-            } actions: {
-                Button("Try Again") { Task { await refresh() } }
-            }
-        case .noForecast:
-            ContentUnavailableView {
-                // No symbol: with one, the second button runs off the screen.
-                Text("No Forecast Here")
-                    .font(.title3.bold())
-            } actions: {
-                Button("Try Again") { Task { await refresh() } }
-                    .padding(.top, 8)
-                Button("Choose a Place") { picking = true }
+        } description: {
+            if let detail = problem.detail { Text(detail) }
+        } actions: {
+            ForEach(problem.actions.indices, id: \.self) { index in
+                let button = switch problem.actions[index] {
+                case .tryAgain: Button("Try Again") { Task { await refresh() } }
+                case .choosePlace: Button("Choose a Place") { picking = true }
+                }
+                // Without a line of description the title sits on the first button.
+                button.padding(.top, index == 0 && problem.detail == nil ? 8 : 0)
             }
         }
     }
@@ -242,20 +196,23 @@ struct ContentView: View {
 
     private static var saved: Load? {
         if Place.chosen == nil, [.denied, .restricted].contains(CLLocationManager().authorizationStatus) {
-            return .failed(.noLocation)
+            return .failed(.locationOff)
         }
         guard let snapshot = Snapshot.saved, let forecast = snapshot.forecast(at: .now) else { return nil }
         return .ready(forecast, issued: snapshot.issued, source: snapshot.source,
                       place: CLLocationCoordinate2D(latitude: snapshot.latitude, longitude: snapshot.longitude))
     }
 
-    /// With a forecast on screen, a failed refresh keeps it and offers to try again; without one,
-    /// it shows what went wrong.
-    private func fail(_ failure: Failure) {
-        if case .ready = load {
-            couldNotUpdate = true
-        } else {
-            load = .failed(failure)
+    /// Shows a situation. Every refresh ends here, so the screen is always one of the states in
+    /// STATES.md.
+    private func show(_ situation: Situation, place: CLLocationCoordinate2D) {
+        switch situation {
+        case let .forecast(forecast, snapshot, updateFailed):
+            load = .ready(forecast, issued: snapshot.issued, source: snapshot.source, place: place)
+            couldNotUpdate = updateFailed
+        case let .problem(problem):
+            load = .failed(problem)
+            couldNotUpdate = false
         }
     }
 
@@ -271,8 +228,8 @@ struct ContentView: View {
         #if DEBUG
         // Screenshots of every state: `-scenario showerComing` shows a saved forecast instead of
         // fetching one, and `-failure offline` shows a failure.
-        if let name = UserDefaults.standard.string(forKey: "failure"), let failure = Failure(debugName: name) {
-            load = .failed(failure)
+        if let name = UserDefaults.standard.string(forKey: "failure"), let problem = Problem.named(name, launched: RainApp.launched) {
+            load = problem == .locationNotAsked ? .intro : .failed(problem)
             return
         }
         if let name = UserDefaults.standard.string(forKey: "scenario"),
@@ -286,7 +243,7 @@ struct ContentView: View {
             guard let forecast = RainForecast.at(.now, from: scenario.forecast(at: run.addingTimeInterval(Scenario.age)).samples) else { return }
             load = .ready(forecast, issued: run, source: .knmi,
                           place: CLLocationCoordinate2D(latitude: scenario.coordinate.latitude, longitude: scenario.coordinate.longitude))
-            placeName = scenario.place
+            placeName = Place.chosen?.name ?? scenario.place
             couldNotUpdate = UserDefaults.standard.bool(forKey: "couldNotUpdate")
             return
         }
@@ -299,6 +256,8 @@ struct ContentView: View {
             return
         }
         #endif
+        refreshes += 1
+        let mine = refreshes
         let chosen = Place.chosen
         // Someone who refused location gets the choice of a place, not their last known position.
         let status = CLLocationManager().authorizationStatus
@@ -306,7 +265,7 @@ struct ContentView: View {
             // The face must stop showing the last place too.
             Place.noteRefused(true)
             WidgetCenter.shared.reloadAllTimelines()
-            load = .failed(.noLocation)
+            load = .failed(.locationOff)
             return
         }
         if chosen == nil, status == .notDetermined, !askedForLocation {
@@ -323,42 +282,33 @@ struct ContentView: View {
             }
             session = CLServiceSession(authorization: .whenInUse)
         }
-        // Where the forecast on screen is for, to tell a failed refresh here from one somewhere new.
-        var shownPlace: CLLocationCoordinate2D?
-        if case let .ready(_, _, _, shown) = load { shownPlace = shown }
-        var newPlace: CLLocationCoordinate2D?
+        let place: CLLocationCoordinate2D
         do {
             // The first time, Core Location waits for an answer to its permission question.
             let asking = chosen == nil && CLLocationManager().authorizationStatus == .notDetermined
-            let place = try await Place.current(timeout: .seconds(asking ? 120 : 8)).coordinate
-            newPlace = place
-            let snapshot = try await Snapshot.fetch(latitude: place.latitude, longitude: place.longitude)
-            guard let forecast = snapshot.forecast(at: .now) else {
-                fail(snapshot.source == .knmi ? .stale(since: snapshot.issued) : .noForecast)
-                return
-            }
-            load = .ready(forecast, issued: snapshot.issued, source: snapshot.source, place: place)
-            couldNotUpdate = false
-            // Free of the widget budget while the app is in front.
-            WidgetCenter.shared.reloadAllTimelines()
-            if chosen == nil { placeName = await Self.town(at: place) ?? placeName }
-        } catch Place.Failure.noLocation {
-            // Refused is one thing; allowed but with no fix is another, and trying again can help.
-            let refused = [.denied, .restricted].contains(CLLocationManager().authorizationStatus)
-            fail(refused ? .noLocation : .locationNotFound)
-        } catch let Snapshot.Failure.offline(source) {
-            // The forecast on screen stays only if it is for this place: after a move it is the
-            // forecast for somewhere else, and "Couldn't update" would hide that.
-            if let shownPlace, let newPlace,
-               CLLocation(latitude: shownPlace.latitude, longitude: shownPlace.longitude)
-                .distance(from: CLLocation(latitude: newPlace.latitude, longitude: newPlace.longitude)) > 1500 {
-                load = .failed(.offline(source))
-            } else {
-                fail(.offline(source))
-            }
+            place = try await Place.current(timeout: .seconds(asking ? 120 : 8)).coordinate
         } catch {
-            fail(.noForecast)
+            // No place, so no forecast: the one on screen is for where the wearer was.
+            guard mine == refreshes else { return }
+            load = .failed(Problem(error as? Place.Failure ?? .notFound))
+            couldNotUpdate = false
+            return
         }
+        let fetch: Situation.Fetch
+        do {
+            fetch = .fetched(try await Snapshot.fetch(latitude: place.latitude, longitude: place.longitude))
+        } catch Snapshot.Failure.offline {
+            fetch = .unreachable
+        } catch {
+            fetch = .refused
+        }
+        // A refresh started later owns the screen: its place and its forecast are the newer ones.
+        guard mine == refreshes else { return }
+        show(.after(fetch, latitude: place.latitude, longitude: place.longitude, saved: Snapshot.saved, now: .now), place: place)
+        guard case .fetched = fetch else { return }
+        // Free of the widget budget while the app is in front.
+        WidgetCenter.shared.reloadAllTimelines()
+        if chosen == nil, let town = await Self.town(at: place), mine == refreshes { placeName = town }
     }
 }
 

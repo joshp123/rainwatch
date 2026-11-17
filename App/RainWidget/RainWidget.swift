@@ -1,3 +1,4 @@
+import CoreLocation
 import RainGraph
 import SwiftUI
 import WidgetKit
@@ -10,13 +11,6 @@ struct RainWidgets: WidgetBundle {
 }
 
 struct RainEntry: TimelineEntry {
-    enum Problem {
-        /// The last forecast is too old to count down from.
-        case stale(since: Date)
-        case noLocation
-        case noForecast
-    }
-
     let date: Date
     /// Nil when there is no forecast to show; `problem` then says why.
     let forecast: RainForecast?
@@ -74,42 +68,48 @@ struct RainProvider: TimelineProvider {
         } catch {
             // Never the forecast for where the wearer last was: with location refused, that is
             // not where they are.
-            ReloadLog.record("no location\(Place.isRefused ? ", refused" : "")")
-            return Timeline(entries: [RainEntry(date: now, forecast: nil, problem: .noLocation)],
+            let problem = Problem(error as? Place.Failure ?? .notFound)
+            ReloadLog.record("no location: \(problem)")
+            return Timeline(entries: [RainEntry(date: now, forecast: nil, problem: problem)],
                             policy: .after(now.addingTimeInterval(reloadAfter)))
         }
         let source = place.chosen.map { "chosen \($0.name)" } ?? (place.isLive ? "live" : "saved \(RainCopy.clock(place.at))")
         // A fix is where the wearer was. An hour after it the face has no place, on time even if
         // watchOS reloads late, as an hour-old forecast is withdrawn on time.
         let placeExpires = place.chosen == nil ? place.at.addingTimeInterval(Place.trustFor) : nil
+        let fetch: Situation.Fetch
         do {
             let snapshot = try await Snapshot.fetch(latitude: place.coordinate.latitude, longitude: place.coordinate.longitude, now: now)
             ReloadLog.record("fetched \(snapshot.source.rawValue), \(snapshot.requests) requests, data from \(RainCopy.clock(snapshot.issued)), location \(source)")
-            return timeline(snapshot, now: now, placeExpires: placeExpires)
+            fetch = .fetched(snapshot)
+        } catch Snapshot.Failure.offline {
+            ReloadLog.record("fetch failed, location \(source)")
+            fetch = .unreachable
         } catch {
-            ReloadLog.record("fetch failed, location \(source): \(error.localizedDescription)")
-            // The saved forecast stands in only if it is for this place: never the forecast for
-            // somewhere the wearer has left.
-            let cached = Snapshot.saved.flatMap {
-                $0.isFor(latitude: place.coordinate.latitude, longitude: place.coordinate.longitude) ? $0 : nil
-            }
-            return timeline(cached: cached, otherwise: .noForecast, now: now, placeExpires: placeExpires)
+            ReloadLog.record("no forecast, location \(source): \(error.localizedDescription)")
+            fetch = .refused
         }
+        // The same rules as the app (`Situation.after`): a saved forecast stands in for a failed
+        // fetch only if it is for this place and under an hour old.
+        let situation = Situation.after(fetch, latitude: place.coordinate.latitude, longitude: place.coordinate.longitude, saved: Snapshot.saved, now: now)
+        let entries: [RainEntry]
+        switch situation {
+        case let .forecast(_, snapshot, _):
+            // After Allow Once the app has no permission left: the face then says so, not "not found".
+            let once = CLLocationManager().authorizationStatus == .notDetermined
+            entries = Situation.schedule(snapshot, now: now, placeExpires: placeExpires, withoutPlace: once ? .locationNotAsked : .locationNotFound)
+                .map { RainEntry(date: $0.date, situation: $0.situation) }
+        case .problem:
+            entries = [RainEntry(date: now, situation: situation)]
+        }
+        return Timeline(entries: entries, policy: .after(now.addingTimeInterval(reloadAfter)))
     }
 
     #if DEBUG
     /// The face for a saved forecast, or for a state with none: `stale`, `noLocation`, `noForecast`.
     /// `age` makes the forecast that many minutes old, as the app's `-age` does.
     static func debugEntry(_ name: String, age: Int, set: Date, now: Date) -> RainEntry? {
-        switch name {
-        case "stale":
-            // The same run time the app's `-failure stale` shows.
-            let run = Date(timeIntervalSince1970: ((set.timeIntervalSince1970 - 75 * 60) / 300).rounded(.down) * 300)
-            return RainEntry(date: now, forecast: nil, problem: .stale(since: run))
-        case "noLocation": return RainEntry(date: now, forecast: nil, problem: .noLocation)
-        case "noForecast", "offline": return RainEntry(date: now, forecast: nil, problem: .noForecast)
-        default: break
-        }
+        if let problem = Problem.named(name, launched: set) { return RainEntry(date: now, forecast: nil, problem: problem) }
         if let scenario = Scenario.allCases.first(where: { "\($0)" == name }) {
             let age = max(Scenario.age, Double(age) * 60)
             let run = Date(timeIntervalSince1970: ((set.timeIntervalSince1970 - age) / 300).rounded(.down) * 300)
@@ -124,24 +124,16 @@ struct RainProvider: TimelineProvider {
     }
     #endif
 
-    static func timeline(_ snapshot: Snapshot, now: Date, placeExpires: Date? = nil) -> Timeline<RainEntry> {
-        var entries = snapshot.forecasts(from: now).map {
-            RainEntry(date: $0.now, forecast: $0, issued: snapshot.issued, source: snapshot.source)
-        }
-        if let placeExpires, let last = entries.last, last.date >= placeExpires {
-            entries.removeAll { $0.date >= placeExpires }
-            entries.append(RainEntry(date: max(placeExpires, now), forecast: nil, problem: .noLocation))
-            return Timeline(entries: entries, policy: .after(now.addingTimeInterval(reloadAfter)))
-        }
-        // When the data runs out or turns stale, the countdown is withdrawn.
-        let staleFrom = entries.last.map { $0.date.addingTimeInterval(60) } ?? now
-        entries.append(RainEntry(date: max(min(snapshot.staleAt, staleFrom), now), forecast: nil, problem: .stale(since: snapshot.issued)))
-        return Timeline(entries: entries, policy: .after(now.addingTimeInterval(reloadAfter)))
-    }
+}
 
-    private static func timeline(cached: Snapshot?, otherwise problem: RainEntry.Problem, now: Date, placeExpires: Date? = nil) -> Timeline<RainEntry> {
-        if let cached { return timeline(cached, now: now, placeExpires: placeExpires) }
-        return Timeline(entries: [RainEntry(date: now, forecast: nil, problem: problem)], policy: .after(now.addingTimeInterval(reloadAfter)))
+extension RainEntry {
+    init(date: Date, situation: Situation) {
+        switch situation {
+        case let .forecast(forecast, snapshot, _):
+            self.init(date: date, forecast: forecast, issued: snapshot.issued, source: snapshot.source)
+        case let .problem(problem):
+            self.init(date: date, forecast: nil, problem: problem)
+        }
     }
 }
 
@@ -168,6 +160,16 @@ struct RainComplicationView: View {
     @Environment(\.widgetRenderingMode) private var renderingMode
     let entry: RainEntry
 
+    /// The graph style under comparison (`-slotStyle 2`), in debug builds only.
+    private var slotStyle: SlotStyle {
+        #if DEBUG
+        let index = UserDefaults(suiteName: Place.appGroup)?.integer(forKey: "debugSlotStyle") ?? 0
+        return SlotStyle.options.indices.contains(index) ? SlotStyle.options[index] : .today
+        #else
+        return .today
+        #endif
+    }
+
     private var palette: RainPalette {
         renderingMode == .fullColor ? .fullColour : .tinted(.white)
     }
@@ -190,7 +192,7 @@ struct RainComplicationView: View {
             }
             .containerBackground(for: .widget) { Color.clear }
         case .accessoryRectangular:
-            RectangularRainView(forecast: forecast, palette: palette, issued: entry.issued, appleWeather: entry.source?.isApple ?? false)
+            RectangularRainView(forecast: forecast, palette: palette, issued: entry.issued, appleWeather: entry.source?.isApple ?? false, style: slotStyle)
                 .containerBackground(for: .widget) { forecast.hasRain ? palette.stack : palette.stackDry }
         case .accessoryCorner:
             // Words along the edge; a drop in the corner, filled when rain is due.
@@ -242,15 +244,10 @@ struct RainComplicationView: View {
         }
     }
 
+    /// The face's words for a problem are the app's (`Problem`), so the two never disagree.
     private var problemText: (headline: String, detail: String, short: String?) {
-        switch entry.problem {
-        case let .stale(since):
-            ("Last forecast \(RainCopy.clock(since))", "Tap to refresh", "DATA")
-        case .noLocation:
-            ("No place", "Tap to set one", "PLACE")
-        case .noForecast, nil:
-            ("No forecast", "Tap to try again", "DATA")
-        }
+        let problem = entry.problem ?? .forecastUnavailable
+        return (problem.faceHeadline, problem.faceHint, problem.circleWord)
     }
 }
 

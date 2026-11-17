@@ -18,7 +18,7 @@ public struct ForecastDetailView: View {
     }
 
     /// From 20 minutes old the forecast says its time on the second line, as the watch face does.
-    private var isOld: Bool { forecast.now.timeIntervalSince(issued) >= 20 * 60 }
+    private var isOld: Bool { forecast.now.timeIntervalSince(issued) >= Snapshot.oldAfter }
 
     public var body: some View {
         let copy = RainCopy(forecast)

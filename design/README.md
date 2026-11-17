@@ -1,10 +1,11 @@
-<!-- Written by AI on 2026.11.17 by model claude fable 5.2, at Josh's request. -->
+<!-- Written by AI on 2026.11.18 by model claude fable 5.2, at Josh's request. -->
 
 # The design file's screens
 
 The Paper file "RainWatch: design for approval" (https://app.paper.design/file/01M7NBWW1V3TM4BBDNRMXEMP2F) is the design Josh approves before the app is changed to match it. Every watch in it is a screenshot of this branch's app in the "Rain Ultra 3" simulator; nothing is drawn.
 
-- `capture.sh <simulator udid>` runs the `testDesign...` UI tests and saves each screen in `captures/raw`. Read the warning at its top first: the simulator plays sounds through the Mac.
+- `capture.sh <simulator udid> [states]` saves the app and the face in each state in `captures/raw`, without a sound. It only launches the app with a debug option and takes screenshots, and it fails if any simulator process played anything. Build first: in `App/`, `xcodebuild -project Rain.xcodeproj -scheme Rain -destination 'generic/platform=watchOS Simulator' -derivedDataPath build build`.
+- `capture-flow.sh <simulator udid>` runs the `testDesign...` UI tests for the screens that need taps: Apple's location question and the place search. It makes the simulator play sounds through the Mac, so don't run it while Josh is there.
 - `frame.py` rounds each screenshot's corners (`captures/screens`) and puts it in Apple's Ultra 3 frame (`captures/framed`). The frame, `captures/apple-ultra-3-frame.png`, is from Apple's design resources (Product Bezels), which its licence allows for mock-ups of watchOS apps.
 - `captures/josh-watch-2026-11-17.png` is Josh's real watch face that evening, with the circle as it is on `main`.
 - `listen.swift` measures what chosen processes play, with Core Audio process taps: `swiftc -O listen.swift -o listen && ./listen 60 CoreSimulator`.

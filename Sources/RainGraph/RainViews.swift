@@ -5,6 +5,25 @@ import WidgetKit
 
 /// Rectangular family: the large slot on Modular Ultra, and the Smart Stack.
 /// The headline says whether it is dry now and for how long; the line shows the whole two hours.
+/// Ways to draw the large slot's graph, to compare on the face (design/README.md). `today` is the
+/// one in use.
+public struct SlotStyle: Sendable {
+    /// A solid fill and no dotted scale lines.
+    public var solid = false
+    public var scale: RainCurve.Scale = .squareRoot
+    /// The row of "Now" and the hours under the graph. Without it the graph is taller.
+    public var hourLabels = true
+
+    public static let today = SlotStyle()
+    /// The numbers the app's `-slotStyle` option takes.
+    public static let options: [SlotStyle] = [
+        .today,
+        SlotStyle(solid: true),
+        SlotStyle(solid: true, scale: .cubeRoot),
+        SlotStyle(solid: true, scale: .cubeRoot, hourLabels: false),
+    ]
+}
+
 public struct RectangularRainView: View {
     let forecast: RainForecast
     let palette: RainPalette
@@ -13,7 +32,10 @@ public struct RectangularRainView: View {
     /// Set for Apple's data, whose terms want its mark wherever it is shown.
     let appleWeather: Bool
 
-    public init(forecast: RainForecast, palette: RainPalette, issued: Date? = nil, appleWeather: Bool = false) {
+    var style = SlotStyle.today
+
+    public init(forecast: RainForecast, palette: RainPalette, issued: Date? = nil, appleWeather: Bool = false, style: SlotStyle = .today) {
+        self.style = style
         self.forecast = forecast
         self.palette = palette
         self.issued = issued
@@ -22,7 +44,7 @@ public struct RectangularRainView: View {
 
     private var isOld: Bool {
         guard let issued else { return false }
-        return forecast.now.timeIntervalSince(issued) >= 20 * 60
+        return forecast.now.timeIntervalSince(issued) >= Snapshot.oldAfter
     }
 
     /// Apple's data names its source on the second line, in place of what follows: the line below
@@ -65,9 +87,11 @@ public struct RectangularRainView: View {
                         .font(RainFont.rounded(13.5, .medium))
                         .foregroundStyle(palette.secondary)
                 }
-                RainChart(forecast: forecast, palette: palette)
+                RainChart(forecast: forecast, palette: palette, scale: style.scale, solid: style.solid)
                     .padding(.top, 3)
-                if roomy || !isOld {
+                if !style.hourLabels {
+                    Color.clear.frame(height: 6)
+                } else if roomy || !isOld {
                     TimeAxis(forecast: forecast, palette: palette)
                         .padding(.top, 4)
                 } else {
@@ -87,13 +111,14 @@ struct RainChart: View {
     let forecast: RainForecast
     let palette: RainPalette
     var scale: RainCurve.Scale = .squareRoot
+    var solid = false
 
     var body: some View {
         GeometryReader { proxy in
             let size = proxy.size
             ZStack(alignment: .topLeading) {
                 // Under 24 points the three lines merge into a band that reads as a ruler.
-                ForEach(size.height >= 24 ? RainForecast.scaleLines : [], id: \.self) { line in
+                ForEach(size.height >= 24 && !solid ? RainForecast.scaleLines : [], id: \.self) { line in
                     Path { path in
                         let y = size.height * (1 - RainCurve.display(line, scale))
                         path.move(to: CGPoint(x: 0, y: y))
@@ -106,7 +131,7 @@ struct RainChart: View {
                 let hole = dot.map { Path.disc($0, radius: 4.5) }
                 RainArea(forecast: forecast, scale: scale)
                     .cut(hole)
-                    .fill(palette.rain.opacity(0.55))
+                    .fill(palette.rain.opacity(solid ? 0.9 : 0.55))
                     .accentable()
                 RainEdge(forecast: forecast, scale: scale)
                     .cut(hole, stroke: StrokeStyle(lineWidth: 1.5, lineCap: .round, lineJoin: .round))
