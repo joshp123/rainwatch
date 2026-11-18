@@ -694,6 +694,17 @@
         }
       }
     },
+    "To keep your watch face up to date, choose Allow While Using App.": {
+      "comment": "Under Permission Expired, before the system's location question. The quoted words are watchOS's own button",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kies ‘Bij gebruik van app’ om je wijzerplaat bij te houden."
+          }
+        }
+      }
+    },
     "To see the rain where you are, choose Allow While Using App.": {
       "comment": "First launch, before the system's location question. The quoted words are watchOS's own button",
       "localizations": {
@@ -745,17 +756,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Wanneer de volgende bui begint of stopt."
-          }
-        }
-      }
-    },
-    "Your location was allowed once. To keep your watch face up to date, choose Allow While Using App.": {
-      "comment": "Under Permission Expired, before the system's location question. The quoted words are watchOS's own button",
-      "localizations": {
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Je locatie was één keer toegestaan. Kies ‘Bij gebruik van app’ om je wijzerplaat bij te houden."
           }
         }
       }

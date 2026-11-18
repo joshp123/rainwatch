@@ -52,7 +52,7 @@ public enum Problem: Equatable, Sendable {
         switch self {
         // watchOS lets no app open Settings, so the way there is spelled out.
         case .locationOff: localized("Open Settings, then Privacy & Security > Location Services > \(Bundle.main.displayName) > While Using the App.")
-        case .locationExpired: localized("Your location was allowed once. To keep your watch face up to date, choose Allow While Using App.")
+        case .locationExpired: localized("To keep your watch face up to date, choose Allow While Using App.")
         case let .forecastTooOld(since): localized("Last forecast \(RainCopy.clock(since))")
         default: nil
         }

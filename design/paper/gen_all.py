@@ -46,7 +46,7 @@ def normal(s):
 
 
 PARAGRAPHS = {'To see the rain where you are, choose Allow While Using App.',
-              'Your location was allowed once. To keep your watch face up to date, choose Allow While Using App.',
+              'To keep your watch face up to date, choose Allow While Using App.',
               'Open Settings, then Privacy & Security > Location Services > %@ > While Using the App.',
               'Location Not Found', 'No Forecast Here', 'Location Not Set', 'Permission Expired', 'Location Off',
               'Forecast Unavailable', 'No Recent Forecast'}  # face problem headlines are the app titles in sentence case
@@ -102,7 +102,7 @@ def style_for(kind, key, text, box, lang, index, lines):
     if kind == 'app':
         if key in ('Forecast Unavailable', 'No Recent Forecast'): return 'cuvTitle', 'center'
         if key in titles: return 'cuvTitleBold', 'center'
-        if key in ('Your location was allowed once. To keep your watch face up to date, choose Allow While Using App.', 'Last forecast %@') or key and key.startswith('Open Settings'):
+        if key in ('To keep your watch face up to date, choose Allow While Using App.', 'Last forecast %@') or key and key.startswith('Open Settings'):
             return 'cuvDetail', 'center'
         if key == 'To see the rain where you are, choose Allow While Using App.': return 'intro', 'left'
         if key in ('Try Again', 'Choose a Place', 'Continue'): return 'button', 'center'

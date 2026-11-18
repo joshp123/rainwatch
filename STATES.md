@@ -54,7 +54,7 @@ An Apple forecast is deleted from the watch once it reaches that age: Apple's te
 | Forecast, 20 to 60 minutes old | as above | Headline, then "Forecast made 23:40" (Apple's: " Weather, made 23:40") | The same two lines ("Hourly forecast made 23:40" for Apple's hourly); "Source: KNMI" or Apple's mark under the graph |
 | Forecast, last fetch failed | as above | as above | Second line "Couldn't update"; "KNMI forecast made 00:05" under the graph; Try Again |
 | Location not set | No PLACE | Location not set / Tap to set up | The first-launch screen: one sentence, Continue |
-| Permission expired | No PLACE | Permission expired / Tap to allow location | Permission Expired / "Your location was allowed once. To keep your watch face up to date, choose Allow While Using App." / Continue, which opens the system's question again |
+| Permission expired | No PLACE | Permission expired / Tap to allow location | Permission Expired / "To keep your watch face up to date, choose Allow While Using App." / Continue, which opens the system's question again |
 | Location off | No PLACE | Location off / Tap for steps | Location Off / the way to it in Settings (watchOS lets no app open Settings) / Choose a Place |
 | Location not found | No PLACE | Location not found / Tap to try again | Location Not Found / Try Again, Choose a Place |
 | Forecast unavailable | No DATA | Forecast unavailable / Tap to try again | Forecast Unavailable / Try Again |
