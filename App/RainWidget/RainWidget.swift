@@ -169,7 +169,11 @@ struct RainWidget: Widget {
         }
         .configurationDisplayName(Bundle.main.displayName)
         .description(Text(localized("When the next rain starts or stops.")))
+        #if os(watchOS)
         .supportedFamilies([.accessoryCircular, .accessoryRectangular, .accessoryCorner, .accessoryInline])
+        #else
+        .supportedFamilies([.accessoryCircular, .accessoryRectangular, .accessoryInline])
+        #endif
     }
 }
 
@@ -211,6 +215,7 @@ struct RainComplicationView: View {
         case .accessoryRectangular:
             RectangularRainView(forecast: forecast, palette: palette, issued: entry.issued, appleWeather: entry.source?.isApple ?? false)
                 .containerBackground(for: .widget) { forecast.hasRain ? palette.stack : palette.stackDry }
+        #if os(watchOS)
         case .accessoryCorner:
             // Words along the edge; a drop in the corner, filled when rain is due.
             Image(systemName: forecast.hasRain ? "drop.fill" : "drop")
@@ -219,6 +224,7 @@ struct RainComplicationView: View {
                 .widgetAccentable()
                 .widgetLabel { Text(RainCopy(forecast).short) }
                 .containerBackground(for: .widget) { Color.clear }
+        #endif
         default:
             Text(RainCopy(forecast).short)
                 .containerBackground(for: .widget) { Color.clear }

@@ -9,19 +9,32 @@
 /* Begin PBXBuildFile section */
 		0826FF3CD0532276101FE5C6 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = B63D41E8863446BE4D00593B /* PrivacyInfo.xcprivacy */; };
 		0A1D01DAF814D649CBD1A57E /* RainUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCBDA42EF1F0EABADA8F70BF /* RainUITests.swift */; };
+		14B42430A2054CCE97E021FA /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = B63D41E8863446BE4D00593B /* PrivacyInfo.xcprivacy */; };
 		27573C743B2DCC739921613C /* RainApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76FBC3379322E9F2BB1F03BF /* RainApp.swift */; };
+		2FAA92F55396F4C422BCD7CF /* RainApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76FBC3379322E9F2BB1F03BF /* RainApp.swift */; };
 		33AED277446BA20DF165C8E3 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 68ECAF15C842676E6654B6C7 /* InfoPlist.xcstrings */; };
-		50D5FB73E5EE55A91F01EFE8 /* Rain.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = D0DFCBBAE96F646AA450D859 /* Rain.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		342B2F2F201A8E3D5D07D0F6 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 68ECAF15C842676E6654B6C7 /* InfoPlist.xcstrings */; };
+		4DF18805E7859A6B603EC348 /* PlacePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDE443DA153B758F14C90BBE /* PlacePicker.swift */; };
+		51A22DA35C6A4FD1F3DADC61 /* Rain.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = D0DFCBBAE96F646AA450D859 /* Rain.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		59BA6B9CE92D0E18B28CC25A /* RainWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E5830986D952F71247765B /* RainWidget.swift */; };
 		5FA3C18A06A752D68D7EF0C9 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 68ECAF15C842676E6654B6C7 /* InfoPlist.xcstrings */; };
+		665402DA30A7CEDE26DC33E2 /* RainPhoneWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 3582A1B5AAF155B29AEECC64 /* RainPhoneWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		6AB72E45888650E454164A94 /* RainGraph in Frameworks */ = {isa = PBXBuildFile; productRef = 7BBE3C71B351E044B65650D4 /* RainGraph */; };
-		74D5C7CD706FDB49CCEF775C /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 68ECAF15C842676E6654B6C7 /* InfoPlist.xcstrings */; };
 		7F2F8AFC6DD5CFA9CC2FC9F7 /* RainGraph in Frameworks */ = {isa = PBXBuildFile; productRef = B9CE89E80650D5D474B56FB9 /* RainGraph */; };
+		970C3EF34AEE4662D7882F6F /* RainGraph in Frameworks */ = {isa = PBXBuildFile; productRef = D1F467C38AC3B2DB187CE2A7 /* RainGraph */; };
+		99B05EE984799E697BB22163 /* LockScreenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F3AFE88D04C861AA95C9680 /* LockScreenTests.swift */; };
 		B22967C882EA0E5BBDBF8E0E /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = B63D41E8863446BE4D00593B /* PrivacyInfo.xcprivacy */; };
+		C4D17A6ED9D2210A71FF905C /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 68ECAF15C842676E6654B6C7 /* InfoPlist.xcstrings */; };
 		C515955A92FFF24D64E9D61C /* RadarPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24A5456AC0840FD7A47E7340 /* RadarPage.swift */; };
 		C61DC05755C10F88133FF3FB /* PlacePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDE443DA153B758F14C90BBE /* PlacePicker.swift */; };
 		C9165D0FF9414C17A0EFFF46 /* RainWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E5830986D952F71247765B /* RainWidget.swift */; };
+		C993D5DE93F7EE03B8703FB0 /* RadarPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24A5456AC0840FD7A47E7340 /* RadarPage.swift */; };
 		C9F58103C88666020C5E3BD5 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 46B7917EA7465055193A0A13 /* AppIcon.icon */; };
+		CB5EF51178D27ECAC715613C /* AboutPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2D4A293F61D362B2D1FDADE /* AboutPage.swift */; };
 		CCF1C72DB096A5FB96074BE3 /* RainWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 9D596FEADDDC9BDA6C9CE992 /* RainWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		D06B29C814BEA844CEBD63C5 /* RainGraph in Frameworks */ = {isa = PBXBuildFile; productRef = 76FDA9B89A8EF0B0A535F8C8 /* RainGraph */; };
+		E083FBFA1365BA293F742ABE /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 46B7917EA7465055193A0A13 /* AppIcon.icon */; };
+		F2172A162E5A6822E4FE9BFD /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = B63D41E8863446BE4D00593B /* PrivacyInfo.xcprivacy */; };
 		FC6C7695C25C043D1485AE35 /* AboutPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2D4A293F61D362B2D1FDADE /* AboutPage.swift */; };
 /* End PBXBuildFile section */
 
@@ -33,14 +46,28 @@
 			remoteGlobalIDString = 803C3D1FB8A4010D29281EF6;
 			remoteInfo = RainWidget;
 		};
-		74919C92BE267CA258CBCF97 /* PBXContainerItemProxy */ = {
+		5F403DB51DE5A2E6C97CEB82 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 6B278A453160CA5964542B5E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D441D2B4BC55DC33DAC81D30;
+			remoteInfo = RainPhoneWidget;
+		};
+		7B08ED762D0B0475E1FBC6E5 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 6B278A453160CA5964542B5E /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 80660A19AB5CFDC9CDA54D1D;
 			remoteInfo = Rain;
 		};
-		7B08ED762D0B0475E1FBC6E5 /* PBXContainerItemProxy */ = {
+		B2EE555050013CF1346645EF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 6B278A453160CA5964542B5E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 11554B0D84022BCA8D42926E;
+			remoteInfo = RainPhone;
+		};
+		C70580237EB5C73A6769B4DC /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 6B278A453160CA5964542B5E /* Project object */;
 			proxyType = 1;
@@ -61,37 +88,53 @@
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		FCD6851A402E016E8BCA74FA /* Embed Watch Content */ = {
+		30EDB4D8397BE20B1E0C4C46 /* Embed Watch Content */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
 			dstSubfolderSpec = 16;
 			files = (
-				50D5FB73E5EE55A91F01EFE8 /* Rain.app in Embed Watch Content */,
+				51A22DA35C6A4FD1F3DADC61 /* Rain.app in Embed Watch Content */,
 			);
 			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F072E383C52EC9A0A8C244A2 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				665402DA30A7CEDE26DC33E2 /* RainPhoneWidget.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		05B9ED3BAB9C7F8A820EE999 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		0D7F2F6C5DD1DD3735DC0DD5 /* RainPhone.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = RainPhone.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		11E5830986D952F71247765B /* RainWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RainWidget.swift; sourceTree = "<group>"; };
+		126E3891E82504FC4B5EEE3C /* rainwatch-iphone */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "rainwatch-iphone"; path = ..; sourceTree = SOURCE_ROOT; };
 		1F9A00C4F9B89E5A7D762A86 /* RainWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = RainWidget.entitlements; sourceTree = "<group>"; };
 		24A5456AC0840FD7A47E7340 /* RadarPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadarPage.swift; sourceTree = "<group>"; };
-		3E3D2F253DB2162EA5C37245 /* RainContainer.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = RainContainer.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		3582A1B5AAF155B29AEECC64 /* RainPhoneWidget.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = RainPhoneWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		46B7917EA7465055193A0A13 /* AppIcon.icon */ = {isa = PBXFileReference; path = AppIcon.icon; sourceTree = "<group>"; };
 		5EA8CD1D830406319B28510E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		5F752B637CD1BAD1FA280EDB /* rainwatch-copy */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "rainwatch-copy"; path = ..; sourceTree = SOURCE_ROOT; };
 		62D213F8CBF45908BD07AE5C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		68ECAF15C842676E6654B6C7 /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
 		76FBC3379322E9F2BB1F03BF /* RainApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RainApp.swift; sourceTree = "<group>"; };
+		8156BFA604EB7D8D479A847E /* RainPhone.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = RainPhone.entitlements; sourceTree = "<group>"; };
 		8A0DB4767FA1352EE3E8111A /* RainUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RainUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9D596FEADDDC9BDA6C9CE992 /* RainWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = RainWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		9F3AFE88D04C861AA95C9680 /* LockScreenTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockScreenTests.swift; sourceTree = "<group>"; };
 		B63D41E8863446BE4D00593B /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		BDE443DA153B758F14C90BBE /* PlacePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlacePicker.swift; sourceTree = "<group>"; };
 		C2D4A293F61D362B2D1FDADE /* AboutPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutPage.swift; sourceTree = "<group>"; };
 		D0DFCBBAE96F646AA450D859 /* Rain.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Rain.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DCBDA42EF1F0EABADA8F70BF /* RainUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RainUITests.swift; sourceTree = "<group>"; };
+		E96F23073E54DA15D5203EEC /* RainPhoneUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = RainPhoneUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		FD980AE5FE9CA11F1F1DF450 /* Rain.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Rain.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -104,6 +147,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		4D26D1879C261AA51580A513 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D06B29C814BEA844CEBD63C5 /* RainGraph in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8751EACF03F449FFCE87A3F6 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -112,9 +163,26 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A51B1C0281DCBA4A71C1C3BE /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				970C3EF34AEE4662D7882F6F /* RainGraph in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		10DA36A7B8D33B6A13057442 /* RainPhone */ = {
+			isa = PBXGroup;
+			children = (
+				05B9ED3BAB9C7F8A820EE999 /* Info.plist */,
+				8156BFA604EB7D8D479A847E /* RainPhone.entitlements */,
+			);
+			path = RainPhone;
+			sourceTree = "<group>";
+		};
 		3C6166FDED9AF98DBFAF027F /* Shared */ = {
 			isa = PBXGroup;
 			children = (
@@ -127,7 +195,7 @@
 		529867CDC413DEB51F6DF7C6 /* Packages */ = {
 			isa = PBXGroup;
 			children = (
-				5F752B637CD1BAD1FA280EDB /* rainwatch-copy */,
+				126E3891E82504FC4B5EEE3C /* rainwatch-iphone */,
 			);
 			name = Packages;
 			sourceTree = "<group>";
@@ -159,6 +227,8 @@
 			children = (
 				529867CDC413DEB51F6DF7C6 /* Packages */,
 				7FBD4ED217235243AE2EC1DE /* Rain */,
+				10DA36A7B8D33B6A13057442 /* RainPhone */,
+				A2627E9A82B6B8C59DA6D55A /* RainPhoneUITests */,
 				5EC6DDBA9092DC1EAAED5513 /* RainUITests */,
 				FEBEAE28E99F468CE69E8722 /* RainWidget */,
 				3C6166FDED9AF98DBFAF027F /* Shared */,
@@ -166,11 +236,21 @@
 			);
 			sourceTree = "<group>";
 		};
+		A2627E9A82B6B8C59DA6D55A /* RainPhoneUITests */ = {
+			isa = PBXGroup;
+			children = (
+				9F3AFE88D04C861AA95C9680 /* LockScreenTests.swift */,
+			);
+			path = RainPhoneUITests;
+			sourceTree = "<group>";
+		};
 		D0745836F09411C65FBA4DAB /* Products */ = {
 			isa = PBXGroup;
 			children = (
 				D0DFCBBAE96F646AA450D859 /* Rain.app */,
-				3E3D2F253DB2162EA5C37245 /* RainContainer.app */,
+				0D7F2F6C5DD1DD3735DC0DD5 /* RainPhone.app */,
+				E96F23073E54DA15D5203EEC /* RainPhoneUITests.xctest */,
+				3582A1B5AAF155B29AEECC64 /* RainPhoneWidget.appex */,
 				8A0DB4767FA1352EE3E8111A /* RainUITests.xctest */,
 				9D596FEADDDC9BDA6C9CE992 /* RainWidget.appex */,
 			);
@@ -190,25 +270,47 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		468A47A313FCD34B78B86F6C /* RainContainer */ = {
+		11554B0D84022BCA8D42926E /* RainPhone */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 7DD4CD69357C0ACB8F7DE641 /* Build configuration list for PBXNativeTarget "RainContainer" */;
+			buildConfigurationList = 1F4ED550FDAF56AF885F81BF /* Build configuration list for PBXNativeTarget "RainPhone" */;
 			buildPhases = (
-				A025ECBD1AB2BD5A12C18ABB /* Sources */,
-				B94604C5A2E9D96EEBADA4F1 /* Resources */,
-				FCD6851A402E016E8BCA74FA /* Embed Watch Content */,
+				A755432881E98EBF77C6EF4E /* Sources */,
+				3596B3685F1D5D9E8FFD1736 /* Resources */,
+				4D26D1879C261AA51580A513 /* Frameworks */,
+				F072E383C52EC9A0A8C244A2 /* Embed Foundation Extensions */,
+				30EDB4D8397BE20B1E0C4C46 /* Embed Watch Content */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				3D4BE26BDE97097CECA82DB4 /* PBXTargetDependency */,
+				35100A1D602172CACBA14063 /* PBXTargetDependency */,
+				FB4C2FEEDE3A708570C831C7 /* PBXTargetDependency */,
 			);
-			name = RainContainer;
+			name = RainPhone;
+			packageProductDependencies = (
+				76FDA9B89A8EF0B0A535F8C8 /* RainGraph */,
+			);
+			productName = RainPhone;
+			productReference = 0D7F2F6C5DD1DD3735DC0DD5 /* RainPhone.app */;
+			productType = "com.apple.product-type.application";
+		};
+		43E23A7983963DCCFF9F020F /* RainPhoneUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0FDE2DE512C08D41CDC72CB2 /* Build configuration list for PBXNativeTarget "RainPhoneUITests" */;
+			buildPhases = (
+				2677F9836FBF1C4B3488F822 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				880CDC4D0F29E8360E813335 /* PBXTargetDependency */,
+			);
+			name = RainPhoneUITests;
 			packageProductDependencies = (
 			);
-			productName = RainContainer;
-			productReference = 3E3D2F253DB2162EA5C37245 /* RainContainer.app */;
-			productType = "com.apple.product-type.application.watchapp2-container";
+			productName = RainPhoneUITests;
+			productReference = E96F23073E54DA15D5203EEC /* RainPhoneUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 		803C3D1FB8A4010D29281EF6 /* RainWidget */ = {
 			isa = PBXNativeTarget;
@@ -270,6 +372,26 @@
 			productReference = 8A0DB4767FA1352EE3E8111A /* RainUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		D441D2B4BC55DC33DAC81D30 /* RainPhoneWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E9A4605784E3B319AC687B9F /* Build configuration list for PBXNativeTarget "RainPhoneWidget" */;
+			buildPhases = (
+				3DF211DE9392B7A0210478B6 /* Sources */,
+				723465E2C18878E19C6C3518 /* Resources */,
+				A51B1C0281DCBA4A71C1C3BE /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = RainPhoneWidget;
+			packageProductDependencies = (
+				D1F467C38AC3B2DB187CE2A7 /* RainGraph */,
+			);
+			productName = RainPhoneWidget;
+			productReference = 3582A1B5AAF155B29AEECC64 /* RainPhoneWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -279,9 +401,14 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
-					468A47A313FCD34B78B86F6C = {
+					11554B0D84022BCA8D42926E = {
 						DevelopmentTeam = 7M8BR7R488;
 						ProvisioningStyle = Automatic;
+					};
+					43E23A7983963DCCFF9F020F = {
+						DevelopmentTeam = 7M8BR7R488;
+						ProvisioningStyle = Automatic;
+						TestTargetID = 11554B0D84022BCA8D42926E;
 					};
 					803C3D1FB8A4010D29281EF6 = {
 						DevelopmentTeam = 7M8BR7R488;
@@ -295,6 +422,10 @@
 						DevelopmentTeam = 7M8BR7R488;
 						ProvisioningStyle = Automatic;
 						TestTargetID = 80660A19AB5CFDC9CDA54D1D;
+					};
+					D441D2B4BC55DC33DAC81D30 = {
+						DevelopmentTeam = 7M8BR7R488;
+						ProvisioningStyle = Automatic;
 					};
 				};
 			};
@@ -316,7 +447,9 @@
 			projectRoot = "";
 			targets = (
 				80660A19AB5CFDC9CDA54D1D /* Rain */,
-				468A47A313FCD34B78B86F6C /* RainContainer */,
+				11554B0D84022BCA8D42926E /* RainPhone */,
+				43E23A7983963DCCFF9F020F /* RainPhoneUITests */,
+				D441D2B4BC55DC33DAC81D30 /* RainPhoneWidget */,
 				A22DEADBA476A2A188E85AB1 /* RainUITests */,
 				803C3D1FB8A4010D29281EF6 /* RainWidget */,
 			);
@@ -333,6 +466,25 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		3596B3685F1D5D9E8FFD1736 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E083FBFA1365BA293F742ABE /* AppIcon.icon in Resources */,
+				342B2F2F201A8E3D5D07D0F6 /* InfoPlist.xcstrings in Resources */,
+				F2172A162E5A6822E4FE9BFD /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		723465E2C18878E19C6C3518 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C4D17A6ED9D2210A71FF905C /* InfoPlist.xcstrings in Resources */,
+				14B42430A2054CCE97E021FA /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8B88BE65615B0F3F07AC41A6 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -340,14 +492,6 @@
 				C9F58103C88666020C5E3BD5 /* AppIcon.icon in Resources */,
 				5FA3C18A06A752D68D7EF0C9 /* InfoPlist.xcstrings in Resources */,
 				0826FF3CD0532276101FE5C6 /* PrivacyInfo.xcprivacy in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		B94604C5A2E9D96EEBADA4F1 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				74D5C7CD706FDB49CCEF775C /* InfoPlist.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -365,11 +509,27 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		2677F9836FBF1C4B3488F822 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				99B05EE984799E697BB22163 /* LockScreenTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		28A73D516C01895EA6864233 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				C9165D0FF9414C17A0EFFF46 /* RainWidget.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3DF211DE9392B7A0210478B6 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				59BA6B9CE92D0E18B28CC25A /* RainWidget.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -381,10 +541,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		A025ECBD1AB2BD5A12C18ABB /* Sources */ = {
+		A755432881E98EBF77C6EF4E /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CB5EF51178D27ECAC715613C /* AboutPage.swift in Sources */,
+				4DF18805E7859A6B603EC348 /* PlacePicker.swift in Sources */,
+				C993D5DE93F7EE03B8703FB0 /* RadarPage.swift in Sources */,
+				2FAA92F55396F4C422BCD7CF /* RainApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -401,10 +565,20 @@
 			target = 803C3D1FB8A4010D29281EF6 /* RainWidget */;
 			targetProxy = 3AD342EE0A8373616DC0DF18 /* PBXContainerItemProxy */;
 		};
-		3D4BE26BDE97097CECA82DB4 /* PBXTargetDependency */ = {
+		35100A1D602172CACBA14063 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D441D2B4BC55DC33DAC81D30 /* RainPhoneWidget */;
+			targetProxy = 5F403DB51DE5A2E6C97CEB82 /* PBXContainerItemProxy */;
+		};
+		880CDC4D0F29E8360E813335 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 11554B0D84022BCA8D42926E /* RainPhone */;
+			targetProxy = B2EE555050013CF1346645EF /* PBXContainerItemProxy */;
+		};
+		FB4C2FEEDE3A708570C831C7 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 80660A19AB5CFDC9CDA54D1D /* Rain */;
-			targetProxy = 74919C92BE267CA258CBCF97 /* PBXContainerItemProxy */;
+			targetProxy = C70580237EB5C73A6769B4DC /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -422,6 +596,40 @@
 			};
 			name = Debug;
 		};
+		13E283F35469FA7532085BF7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = RainPhone/RainPhone.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = RainPhone/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = nl.jjp.rain;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		2752CA77F97868F0EBA7B51A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = nl.jjp.rain.uitests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_TARGET_NAME = RainPhone;
+			};
+			name = Release;
+		};
 		2B550D5AAEB455D09FCE13FC /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -435,19 +643,39 @@
 			};
 			name = Release;
 		};
-		547096E7F0D0DDB4DB4EBB76 /* Release */ = {
+		556D9228938D8208DFB0F861 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				INFOPLIST_FILE = RainContainer/Info.plist;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = RainPhone/RainPhone.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = RainPhone/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = nl.jjp.rain;
 				SDKROOT = iphoneos;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
-			name = Release;
+			name = Debug;
+		};
+		7990D6E668DE67CB39EAE3EB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = nl.jjp.rain.uitests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_TARGET_NAME = RainPhone;
+			};
+			name = Debug;
 		};
 		801853183F6CFD561949F866 /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -466,6 +694,38 @@
 				TEST_TARGET_NAME = Rain;
 			};
 			name = Debug;
+		};
+		AFC8BA973AE9EA291071AE82 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = RainPhoneWidget/RainPhoneWidget.entitlements;
+				INFOPLIST_FILE = RainPhoneWidget/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = nl.jjp.rain.widget;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		BEE7950D854A0CCF44020131 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = RainPhoneWidget/RainPhoneWidget.entitlements;
+				INFOPLIST_FILE = RainPhoneWidget/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = nl.jjp.rain.widget;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
 		};
 		C8E6A5F1D16C1F048F51A5C7 /* Release */ = {
 			isa = XCBuildConfiguration;
@@ -526,20 +786,6 @@
 				WATCHOS_DEPLOYMENT_TARGET = 26.0;
 			};
 			name = Release;
-		};
-		DEA1775C6012FF4E4C322BB1 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				INFOPLIST_FILE = RainContainer/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = nl.jjp.rain;
-				SDKROOT = iphoneos;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Debug;
 		};
 		F73C1EE82ADA025EBCBA3FF8 /* Release */ = {
 			isa = XCBuildConfiguration;
@@ -663,6 +909,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		0FDE2DE512C08D41CDC72CB2 /* Build configuration list for PBXNativeTarget "RainPhoneUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7990D6E668DE67CB39EAE3EB /* Debug */,
+				2752CA77F97868F0EBA7B51A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		1400B148878B571F09718C58 /* Build configuration list for PBXProject "Rain" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -681,6 +936,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
+		1F4ED550FDAF56AF885F81BF /* Build configuration list for PBXNativeTarget "RainPhone" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				556D9228938D8208DFB0F861 /* Debug */,
+				13E283F35469FA7532085BF7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		6CCA6052063F9C1FF0DBEE62 /* Build configuration list for PBXNativeTarget "RainUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -690,20 +954,20 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		7DD4CD69357C0ACB8F7DE641 /* Build configuration list for PBXNativeTarget "RainContainer" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				DEA1775C6012FF4E4C322BB1 /* Debug */,
-				547096E7F0D0DDB4DB4EBB76 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Debug;
-		};
 		D0106967CAFE77854D318B08 /* Build configuration list for PBXNativeTarget "RainWidget" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				FFDDB0B688115EC7843E37E1 /* Debug */,
 				F73C1EE82ADA025EBCBA3FF8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		E9A4605784E3B319AC687B9F /* Build configuration list for PBXNativeTarget "RainPhoneWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AFC8BA973AE9EA291071AE82 /* Debug */,
+				BEE7950D854A0CCF44020131 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
@@ -718,11 +982,19 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		76FDA9B89A8EF0B0A535F8C8 /* RainGraph */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = RainGraph;
+		};
 		7BBE3C71B351E044B65650D4 /* RainGraph */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = RainGraph;
 		};
 		B9CE89E80650D5D474B56FB9 /* RainGraph */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = RainGraph;
+		};
+		D1F467C38AC3B2DB187CE2A7 /* RainGraph */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = RainGraph;
 		};

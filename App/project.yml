@@ -18,29 +18,92 @@ settings:
     MARKETING_VERSION: "1.0.0"
     CURRENT_PROJECT_VERSION: "9"
 targets:
-  # The App Store takes a watch-only app only inside an iPhone app that never runs: an archive of
-  # the watch app alone can't be sent to App Store Connect. Archive this target's scheme for iOS.
-  RainContainer:
-    type: application.watchapp2-container
+  # The iPhone app: the same forecast, its own Lock Screen widgets, and the watch app inside it.
+  # The watch app still runs without it (WKRunsIndependentlyOfCompanionApp). Archive this scheme for iOS.
+  RainPhone:
+    type: application
     platform: iOS
     sources:
+      - RainPhone
+      - path: Rain/RainApp.swift
+      - path: Rain/AboutPage.swift
+      - path: Rain/PlacePicker.swift
+      - path: Rain/RadarPage.swift
+      - path: Rain/AppIcon.icon
+        buildPhase: resources
+      - path: Shared/PrivacyInfo.xcprivacy
+        buildPhase: resources
       - path: Shared/InfoPlist.xcstrings
         buildPhase: resources
     dependencies:
+      - package: RainGraph
+      - target: RainPhoneWidget
       - target: Rain
     info:
-      path: RainContainer/Info.plist
+      path: RainPhone/Info.plist
       properties:
         CFBundleDisplayName: RainWatch
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
-        ITSWatchOnlyContainer: true
-        LSApplicationLaunchProhibited: true
         ITSAppUsesNonExemptEncryption: false
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        NSLocationWhenInUseUsageDescription: "RainWatch rounds your location to about 1 km to get the rain forecast."
+    entitlements:
+      path: RainPhone/RainPhone.entitlements
+      properties:
+        com.apple.security.application-groups: [group.nl.jjp.rain]
+        com.apple.developer.weatherkit: true
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: nl.jjp.rain
-    scheme: {}
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        TARGETED_DEVICE_FAMILY: "1"
+    scheme:
+      testTargets: [RainPhoneUITests]
+  RainPhoneUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources: [RainPhoneUITests]
+    dependencies:
+      - target: RainPhone
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: nl.jjp.rain.uitests
+        TEST_TARGET_NAME: RainPhone
+        GENERATE_INFOPLIST_FILE: YES
+        TARGETED_DEVICE_FAMILY: "1"
+  RainPhoneWidget:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: RainWidget/RainWidget.swift
+      - path: Shared/PrivacyInfo.xcprivacy
+        buildPhase: resources
+      - path: Shared/InfoPlist.xcstrings
+        buildPhase: resources
+    dependencies:
+      - package: RainGraph
+    info:
+      path: RainPhoneWidget/Info.plist
+      properties:
+        CFBundleDisplayName: RainWatch
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        NSWidgetWantsLocation: true
+        ITSAppUsesNonExemptEncryption: false
+        NSLocationWhenInUseUsageDescription: "RainWatch rounds your location to about 1 km to get the rain forecast."
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    entitlements:
+      path: RainPhoneWidget/RainPhoneWidget.entitlements
+      properties:
+        com.apple.security.application-groups: [group.nl.jjp.rain]
+        com.apple.developer.weatherkit: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: nl.jjp.rain.widget
+        TARGETED_DEVICE_FAMILY: "1"
   Rain:
     type: application
     platform: watchOS
@@ -63,7 +126,8 @@ targets:
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         WKApplication: true
-        WKWatchOnly: true
+        WKCompanionAppBundleIdentifier: nl.jjp.rain
+        WKRunsIndependentlyOfCompanionApp: true
         ITSAppUsesNonExemptEncryption: false
         NSLocationWhenInUseUsageDescription: "RainWatch rounds your location to about 1 km to get the rain forecast."
     entitlements:

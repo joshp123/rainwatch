@@ -21,7 +21,7 @@ xcodebuild -project Rain.xcodeproj -scheme Rain -destination 'platform=watchOS S
 
 Install `build/Build/Products/Debug-watchsimulator/Rain.app` with `xcrun simctl install`, then set a location with `xcrun simctl location <device> set 51.92,4.48`. Until `rain.jjpcodes.com` is live, debug builds read a local copy of the server's files: build one with `server/job.py`, serve it with range requests (`nix run nixpkgs#caddy -- file-server --listen 127.0.0.1:8765 --root <folder>`) and launch with `-server http://127.0.0.1:8765`. `App/test.sh` does this with the copy in `App/RainUITests/Server`. On watchOS the location permission has to be granted by tapping Allow in the app; `simctl privacy` does not reach it.
 
-Device builds sign with team 7M8BR7R488 and automatic signing, with the app group `group.nl.jjp.rain` and WeatherKit. The watch app is `nl.jjp.rain.watchkitapp`. For the App Store, archive the `RainContainer` scheme for `generic/platform=iOS`: App Store Connect only takes a watch-only app inside an iPhone app, `nl.jjp.rain`, that never runs.
+Device builds sign with team 7M8BR7R488 and automatic signing, with the app group `group.nl.jjp.rain` and WeatherKit. The watch app is `nl.jjp.rain.watchkitapp`. For the App Store, archive the `RainPhone` scheme for `generic/platform=iOS`: the iPhone app, `nl.jjp.rain`, with its widget (`nl.jjp.rain.widget`) and the watch app inside it. The watch app still runs without it. `App/RainPhoneUITests` puts the widgets on an iPhone simulator's Lock Screen for screenshots.
 
 ## The event log
 

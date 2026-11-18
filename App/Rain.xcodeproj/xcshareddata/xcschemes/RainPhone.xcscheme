@@ -15,9 +15,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "468A47A313FCD34B78B86F6C"
-               BuildableName = "RainContainer.app"
-               BlueprintName = "RainContainer"
+               BlueprintIdentifier = "11554B0D84022BCA8D42926E"
+               BuildableName = "RainPhone.app"
+               BlueprintName = "RainPhone"
                ReferencedContainer = "container:Rain.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -32,13 +32,24 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "468A47A313FCD34B78B86F6C"
-            BuildableName = "RainContainer.app"
-            BlueprintName = "RainContainer"
+            BlueprintIdentifier = "11554B0D84022BCA8D42926E"
+            BuildableName = "RainPhone.app"
+            BlueprintName = "RainPhone"
             ReferencedContainer = "container:Rain.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <Testables>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "43E23A7983963DCCFF9F020F"
+               BuildableName = "RainPhoneUITests.xctest"
+               BlueprintName = "RainPhoneUITests"
+               ReferencedContainer = "container:Rain.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
       <CommandLineArguments>
       </CommandLineArguments>
@@ -57,9 +68,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "468A47A313FCD34B78B86F6C"
-            BuildableName = "RainContainer.app"
-            BlueprintName = "RainContainer"
+            BlueprintIdentifier = "11554B0D84022BCA8D42926E"
+            BuildableName = "RainPhone.app"
+            BlueprintName = "RainPhone"
             ReferencedContainer = "container:Rain.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -76,9 +87,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "468A47A313FCD34B78B86F6C"
-            BuildableName = "RainContainer.app"
-            BlueprintName = "RainContainer"
+            BlueprintIdentifier = "11554B0D84022BCA8D42926E"
+            BuildableName = "RainPhone.app"
+            BlueprintName = "RainPhone"
             ReferencedContainer = "container:Rain.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

@@ -180,19 +180,11 @@ struct ContentView: View {
                 // The arrow is Apple's mark for "where you are"; a picked place has none. A town's
                 // name from Apple Maps would need its map beside it (Attachment 6, 2.4), so where you
                 // are is "My Location", and a picked place is called what the wearer typed.
-                .navigationTitle {
-                    // A long name shrinks before it is cut short.
-                    Group {
-                        if let chosen = Place.chosen {
-                            Text(chosen.name)
-                        } else {
-                            Label(localized("My Location"), systemImage: "location.fill")
-                                .labelStyle(.titleAndIcon)
-                        }
-                    }
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
-                }
+                #if os(watchOS)
+                .navigationTitle { placeTitle }
+                #else
+                .toolbar { ToolbarItem(placement: .principal) { placeTitle } }
+                #endif
                 // Apple's Weather colours its pages by the weather; blue here means rain is due.
                 .containerBackground((forecast.hasRain ? RainPalette.buienradarBlue.opacity(0.45) : Color.black).gradient,
                                      for: .navigation)
@@ -244,6 +236,20 @@ struct ContentView: View {
                 break
             }
         }
+    }
+
+    /// A long name shrinks before it is cut short.
+    private var placeTitle: some View {
+        Group {
+            if let chosen = Place.chosen {
+                Text(chosen.name)
+            } else {
+                Label(localized("My Location"), systemImage: "location.fill")
+                    .labelStyle(.titleAndIcon)
+            }
+        }
+        .lineLimit(1)
+        .minimumScaleFactor(0.7)
     }
 
     /// A problem in Apple's empty-state layout, in the words the face uses for it too (`Problem`).

@@ -96,8 +96,10 @@ struct RadarPage: View {
             // With Reduce Motion on, the radar waits on the present until asked to play.
             if reduceMotion { playing = false }
         }
+        #if os(watchOS)
         .digitalCrownRotation($crown, from: 0, through: Double(max(frames.count - 1, 0)), by: 1,
                               sensitivity: .low, isContinuous: false, isHapticFeedbackEnabled: true)
+        #endif
         .onChange(of: crown) { _, value in
             // Playback moves the crown too; only a turn by hand lands on another frame.
             let turned = Int(value.rounded())

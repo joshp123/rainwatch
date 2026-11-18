@@ -1,5 +1,5 @@
 import SwiftUI
-#if !os(watchOS)
+#if os(macOS)
 import CoreText
 #endif
 
@@ -58,11 +58,11 @@ public struct RainPalette: Sendable {
     }()
 }
 
-/// The watch's rounded face font. The mock renderer on the Mac uses SF Compact Rounded so the
-/// renders match the watch; on watchOS this is the system rounded font, which is the same face.
+/// The system's rounded font. The mock renderer on the Mac uses SF Compact Rounded so the renders
+/// match the watch; on watchOS that is the system rounded font, and on iPhone it is SF Pro Rounded.
 public enum RainFont {
     public static func rounded(_ size: CGFloat, _ weight: Font.Weight = .medium) -> Font {
-        #if os(watchOS)
+        #if os(watchOS) || os(iOS)
         .system(size: size, weight: weight, design: .rounded)
         #else
         let descriptor = compactRounded[".SFCompactRounded-\(name(weight))"]
@@ -70,7 +70,7 @@ public enum RainFont {
         #endif
     }
 
-    #if !os(watchOS)
+    #if os(macOS)
     /// macOS only exposes the watch face font by file, not by name.
     nonisolated(unsafe) private static let compactRounded: [String: CTFontDescriptor] = {
         let url = URL(fileURLWithPath: "/System/Library/Fonts/SFCompactRounded.ttf") as CFURL

@@ -34,7 +34,7 @@ AUTH="-authenticationKeyPath $WORK/AuthKey_$KEY_ID.p8 -authenticationKeyID $KEY_
 nix run nixpkgs#xcodegen -- generate
 rm -rf build/Rain.xcarchive
 # shellcheck disable=SC2086
-xcodebuild -project Rain.xcodeproj -scheme RainContainer -configuration Release \
+xcodebuild -project Rain.xcodeproj -scheme RainPhone -configuration Release \
   -destination 'generic/platform=iOS' -archivePath build/Rain.xcarchive -derivedDataPath build/release \
   -allowProvisioningUpdates $AUTH archive
 # shellcheck disable=SC2086

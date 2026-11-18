@@ -4,7 +4,7 @@ import PackageDescription
 let package = Package(
     name: "RainWatchMockups",
     defaultLocalization: "en",
-    platforms: [.watchOS(.v26), .macOS(.v15)],
+    platforms: [.watchOS(.v26), .iOS(.v26), .macOS(.v15)],
     products: [
         .library(name: "RainGraph", targets: ["RainGraph"]),
     ],
