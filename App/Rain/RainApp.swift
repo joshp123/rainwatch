@@ -117,12 +117,17 @@ struct ContentView: View {
                 }
                 // The arrow is Apple's mark for "where you are"; a picked place has none.
                 .navigationTitle {
-                    if Place.chosen == nil, let placeName {
-                        Label(placeName, systemImage: "location.fill")
-                            .labelStyle(.titleAndIcon)
-                    } else {
-                        Text(placeName ?? Bundle.main.displayName)
+                    // A long name, such as "City of Westminster", shrinks before it is cut short.
+                    Group {
+                        if Place.chosen == nil, let placeName {
+                            Label(placeName, systemImage: "location.fill")
+                                .labelStyle(.titleAndIcon)
+                        } else {
+                            Text(placeName ?? Bundle.main.displayName)
+                        }
                     }
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
                 }
                 // Apple's Weather colours its pages by the weather; blue here means rain is due.
                 .containerBackground((forecast.hasRain ? RainPalette.buienradarBlue.opacity(0.45) : Color.black).gradient,
