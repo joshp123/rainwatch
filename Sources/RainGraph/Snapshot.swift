@@ -86,12 +86,19 @@ public struct Snapshot: Codable, Sendable {
     /// an hour.
     public static func fetch(latitude: Double, longitude: Double, now: Date = .now) async throws -> Snapshot {
         if let saved, saved.isFor(latitude: latitude, longitude: longitude), saved.canBeReused(at: now) {
+            Log.event("forecast: reused, fetched \(Int(now.timeIntervalSince(saved.fetched))) s ago (\(saved.source.rawValue), data \(Log.age(of: saved.issued, now: now)))")
             return saved
         }
-        var snapshot = try await fetchNew(latitude: latitude, longitude: longitude, now: now)
-        try? JSONEncoder().encode(snapshot).write(to: file)
-        snapshot.requests = max(snapshot.requests, 1)
-        return snapshot
+        do {
+            var snapshot = try await Log.stage("Fetch forecast") { try await fetchNew(latitude: latitude, longitude: longitude, now: now) }
+            try? JSONEncoder().encode(snapshot).write(to: file)
+            snapshot.requests = max(snapshot.requests, 1)
+            Log.event("forecast: \(snapshot.source.rawValue), data \(Log.age(of: snapshot.issued, now: now)), \(snapshot.requests) requests")
+            return snapshot
+        } catch {
+            Log.event("forecast: none (\(error))")
+            throw error
+        }
     }
 
     /// Close enough to reuse a fetch made moments ago: about half a kilometre.
@@ -117,6 +124,7 @@ public struct Snapshot: Codable, Sendable {
             // The run is the one already saved: its values for this place are already here.
             if let saved, saved.source == .knmi, saved.issued == latest.run,
                KNMI.cell(latitude: saved.latitude, longitude: saved.longitude) == cell {
+                Log.event("square: same run as saved, no request")
                 var same = Snapshot(samples: saved.samples, source: .knmi, issued: latest.run, fetched: now,
                                     latitude: latitude, longitude: longitude)
                 same.requests = 1
@@ -139,7 +147,7 @@ public struct Snapshot: Codable, Sendable {
         #if canImport(WeatherKit)
         let apple: AppleWeather.Result
         do {
-            apple = try await AppleWeather.forecast(latitude: latitude, longitude: longitude, now: now)
+            apple = try await Log.stage("Apple Weather") { try await AppleWeather.forecast(latitude: latitude, longitude: longitude, now: now) }
         } catch is URLError {
             throw Failure.offline(.appleMinute)
         } catch {
@@ -164,23 +172,5 @@ public struct Snapshot: Codable, Sendable {
         let folder = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: Place.appGroup)
             ?? FileManager.default.temporaryDirectory
         return folder.appendingPathComponent("forecast.json")
-    }
-}
-
-/// One line per widget reload in the app group, so a day on the real watch shows how often watchOS
-/// actually refreshed and where the location came from.
-public enum ReloadLog {
-    public static func record(_ line: String, now: Date = .now) {
-        guard let folder = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: Place.appGroup) else { return }
-        // In Library, the only part of the container a Mac may copy from a real watch.
-        let file = folder.appendingPathComponent("Library/reloads.log")
-        let entry = Data("\(now.ISO8601Format()) \(line)\n".utf8)
-        if let handle = try? FileHandle(forWritingTo: file) {
-            handle.seekToEndOfFile()
-            handle.write(entry)
-            try? handle.close()
-        } else {
-            try? entry.write(to: file)
-        }
     }
 }

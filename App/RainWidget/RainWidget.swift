@@ -46,8 +46,11 @@ struct RainProvider: TimelineProvider {
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<RainEntry>) -> Void) {
         let completion = SendableCompletion(completion)
+        let family = "\(context.family)"
         Task {
-            completion(await Self.timeline(now: .now))
+            // watchOS does not say why it reloads; the app logs when it asked for one.
+            Log.event("timeline asked (\(family))")
+            completion(await Log.stage("Timeline") { await Self.timeline(now: .now) })
         }
     }
 
@@ -69,24 +72,20 @@ struct RainProvider: TimelineProvider {
             // Never the forecast for where the wearer last was: with location refused, that is
             // not where they are.
             let problem = Problem(error as? Place.Failure ?? .notFound)
-            ReloadLog.record("no location: \(problem)")
+            Log.event("timeline: problem \(problem), next reload in \(Int(reloadAfter / 60)) min")
             return Timeline(entries: [RainEntry(date: now, forecast: nil, problem: problem)],
                             policy: .after(now.addingTimeInterval(reloadAfter)))
         }
-        let source = place.chosen.map { "chosen \($0.name)" } ?? (place.isLive ? "live" : "saved \(RainCopy.clock(place.at))")
         // A fix is where the wearer was. An hour after it the face has no place, on time even if
         // watchOS reloads late, as an hour-old forecast is withdrawn on time.
         let placeExpires = place.chosen == nil ? place.at.addingTimeInterval(Place.trustFor) : nil
         let fetch: Situation.Fetch
         do {
             let snapshot = try await Snapshot.fetch(latitude: place.coordinate.latitude, longitude: place.coordinate.longitude, now: now)
-            ReloadLog.record("fetched \(snapshot.source.rawValue), \(snapshot.requests) requests, data from \(RainCopy.clock(snapshot.issued)), location \(source)")
             fetch = .fetched(snapshot)
         } catch Snapshot.Failure.offline {
-            ReloadLog.record("fetch failed, location \(source)")
             fetch = .unreachable
         } catch {
-            ReloadLog.record("no forecast, location \(source): \(error.localizedDescription)")
             fetch = .refused
         }
         // The same rules as the app (`Situation.after`): a saved forecast stands in for a failed
@@ -102,7 +101,27 @@ struct RainProvider: TimelineProvider {
         case .problem:
             entries = [RainEntry(date: now, situation: situation)]
         }
+        Log.event("timeline: \(Self.describe(entries)), next reload in \(Int(reloadAfter / 60)) min")
         return Timeline(entries: entries, policy: .after(now.addingTimeInterval(reloadAfter)))
+    }
+
+    /// The states a timeline moves through, for the log: "forecast for 42 min, then problem ...".
+    private static func describe(_ entries: [RainEntry]) -> String {
+        var parts: [String] = []
+        var index = 0
+        while index < entries.count {
+            let entry = entries[index]
+            var end = index
+            while end + 1 < entries.count, (entries[end + 1].forecast == nil) == (entry.forecast == nil) { end += 1 }
+            let minutes = Int(entries[end].date.timeIntervalSince(entry.date) / 60) + 1
+            if entry.forecast != nil {
+                parts.append("forecast (\(entry.source?.rawValue ?? "?"), data \(entry.issued.map { Log.age(of: $0, now: entry.date) } ?? "?")) for \(minutes) min")
+            } else {
+                parts.append("problem \(entry.problem.map { "\($0)" } ?? "?")")
+            }
+            index = end + 1
+        }
+        return parts.joined(separator: ", then ")
     }
 
     #if DEBUG

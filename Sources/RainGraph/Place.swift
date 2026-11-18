@@ -79,6 +79,14 @@ public enum Place {
         return (saved, at)
     }
 
+    /// A fix from within the hour that is at hand without waiting: the saved one, or the last one
+    /// the system holds. The app shows its forecast at once and then looks for a new fix.
+    public static var recent: (coordinate: CLLocationCoordinate2D, at: Date)? {
+        if let (saved, at) = trustedSaved { return (saved, at) }
+        guard let last = CLLocationManager().location, Date.now.timeIntervalSince(last.timestamp) < trustFor else { return nil }
+        return (last.coordinate, last.timestamp)
+    }
+
     /// The picked place if there is one; else the saved fix if it is recent, else a fresh fix if one
     /// comes within `timeout`, else the last saved one. Only the app may raise the system's location
     /// question (`mayAsk`): the app explains it first, and a complication asking would raise it with
@@ -86,32 +94,60 @@ public enum Place {
     /// the last fix is where the wearer was, not where they are.
     public static func current(timeout: Duration = .seconds(8), mayAsk: Bool = true) async throws -> Found {
         if let chosen {
+            Log.event("place: picked by name")
             return Found(coordinate: chosen.coordinate, isLive: false, at: .now, chosen: chosen)
         }
         let status = CLLocationManager().authorizationStatus
+        Log.event("location permission: \(name(status))")
         switch status {
         case .denied, .restricted: noteRefused(true)
         case .authorizedAlways, .authorizedWhenInUse: noteRefused(false)
         default: break
         }
-        if isRefused { throw Failure.off }
+        if isRefused {
+            Log.event("place: none, location is off")
+            throw Failure.off
+        }
         if !mayAsk, status == .notDetermined {
-            guard let (saved, at) = trustedSaved else { throw Failure.notAsked }
+            guard let (saved, at) = trustedSaved else {
+                Log.event("place: none, location never answered")
+                throw Failure.notAsked
+            }
+            Log.event("place: saved fix, \(Log.age(of: at)) (location not answered)")
             return Found(coordinate: saved, isLive: false, at: at)
         }
         if let saved, let at = savedAt, Date.now.timeIntervalSince(at) < reuseFor {
+            Log.event("place: saved fix reused, \(Log.age(of: at))")
             return Found(coordinate: saved, isLive: false, at: at)
         }
-        switch await fix(timeout: timeout) {
+        let start = ContinuousClock.now
+        switch await Log.stage("Location fix", { await fix(timeout: timeout) }) {
         case let .found(fix):
             save(fix)
+            Log.event("place: new fix after \(Log.seconds(since: start))")
             return Found(coordinate: fix, isLive: true, at: .now)
         case .refused:
             noteRefused(true)
+            Log.event("place: none, location refused")
             throw Failure.off
         case .none:
-            if let (saved, at) = trustedSaved { return Found(coordinate: saved, isLive: false, at: at) }
+            if let (saved, at) = trustedSaved {
+                Log.event("place: no fix in \(Log.seconds(since: start)), saved fix stands in, \(Log.age(of: at))")
+                return Found(coordinate: saved, isLive: false, at: at)
+            }
+            Log.event("place: none, no fix in \(Log.seconds(since: start)) and none saved under an hour old")
             throw Failure.notFound
+        }
+    }
+
+    private static func name(_ status: CLAuthorizationStatus) -> String {
+        switch status {
+        case .notDetermined: "not answered"
+        case .denied: "refused"
+        case .restricted: "restricted"
+        case .authorizedAlways: "always"
+        case .authorizedWhenInUse: "while using"
+        @unknown default: "unknown"
         }
     }
 

@@ -1,4 +1,5 @@
 import Foundation
+import Synchronization
 
 /// KNMI's rain forecast, as BuienWatch's server publishes it (`server/job.py`): a pack holding every
 /// 32 km square of KNMI's 1 km grid, and `latest`, which names the run and the length of each square
@@ -106,12 +107,25 @@ public enum KNMI {
         }
     }
 
+    /// `latest` as last read, with when. The server's CDN keeps it for 60 seconds, so a copy that
+    /// young is as new as a request would bring: the radar opens without asking again.
+    private static let lastRead = Mutex<(latest: Latest, at: Date)?>(nil)
+
     public static func latest(session: URLSession = .shared) async throws -> Latest {
+        if let read = lastRead.withLock({ $0 }), Date.now.timeIntervalSince(read.at) < 60 {
+            Log.event("latest: reused, read \(Int(Date.now.timeIntervalSince(read.at))) s ago")
+            return read.latest
+        }
         var request = URLRequest(url: server.appendingPathComponent("latest"))
         request.cachePolicy = .reloadIgnoringLocalCacheData
-        let (data, response) = try await session.data(for: request)
+        let start = ContinuousClock.now
+        let (data, response) = try await Log.stage("Fetch latest") { try await session.data(for: request) }
+        Log.event("latest: HTTP \(status(response)), \(data.count) bytes in \(Log.seconds(since: start))")
         try check(response)
-        return try JSONDecoder().decode(Latest.self, from: data)
+        let latest = try JSONDecoder().decode(Latest.self, from: data)
+        Log.event("latest: run \(Log.age(of: latest.run))")
+        lastRead.withLock { $0 = (latest, .now) }
+        return latest
     }
 
     /// One place's values for every frame of the run: mm/h, 0 dry, nil no data. Nil when its square
@@ -119,9 +133,13 @@ public enum KNMI {
     public static func samples(at cell: Cell, in latest: Latest, session: URLSession = .shared) async throws -> [RainSample]? {
         let index = latest.square(holding: cell)
         let length = latest.squares[index]
-        if length < 0 { return nil }
+        if length < 0 {
+            Log.event("square: outside the radar's reach")
+            return nil
+        }
         let values: [UInt8]
         if length == 0 {
+            Log.event("square: dry, no request")
             values = Array(repeating: 0, count: latest.frames)
         } else {
             let square = try await squares(index...index, in: latest, session: session)[index] ?? []
@@ -152,7 +170,9 @@ public enum KNMI {
         guard length > 0 else { return [:] }
         var request = URLRequest(url: server.appendingPathComponent(latest.pack))
         request.setValue("bytes=\(offset)-\(offset + length - 1)", forHTTPHeaderField: "Range")
-        let (data, response) = try await session.data(for: request)
+        let start = ContinuousClock.now
+        let (data, response) = try await Log.stage("Fetch squares") { try await session.data(for: request) }
+        Log.event("squares \(indices.count): HTTP \(status(response)), \(data.count) bytes in \(Log.seconds(since: start))")
         try check(response)
         // A server that ignores the range sends the whole pack.
         let bytes = (response as? HTTPURLResponse)?.statusCode == 206 ? data : data.subdata(in: offset..<min(data.count, offset + length))
@@ -174,6 +194,10 @@ public enum KNMI {
     public enum Failure: Error {
         case badPack
         case status(Int)
+    }
+
+    private static func status(_ response: URLResponse) -> Int {
+        (response as? HTTPURLResponse)?.statusCode ?? 0
     }
 
     private static func check(_ response: URLResponse) throws {

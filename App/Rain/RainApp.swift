@@ -32,6 +32,11 @@ struct RainApp: App {
             Place.choose(Place.Chosen(name: name, detail: "", latitude: 0, longitude: 0))
         }
         WidgetCenter.shared.reloadAllTimelines()
+        Log.event("launched: debug build \(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "?"), \(Self.sinceProcessStart) after the process started")
+    }
+    #else
+    init() {
+        Log.event("launched: build \(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "?"), \(Self.sinceProcessStart) after the process started")
     }
     #endif
 
@@ -39,6 +44,17 @@ struct RainApp: App {
         WindowGroup {
             ContentView()
         }
+    }
+
+    /// Seconds since the process started, so the log shows what a launch cost before the app's own
+    /// code ran.
+    static var sinceProcessStart: String {
+        var info = kinfo_proc()
+        var size = MemoryLayout<kinfo_proc>.stride
+        var name = [CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid()]
+        guard sysctl(&name, 4, &info, &size, nil, 0) == 0 else { return "an unknown time" }
+        let started = Double(info.kp_proc.p_starttime.tv_sec) + Double(info.kp_proc.p_starttime.tv_usec) / 1e6
+        return String(format: "%.2f s", Date.now.timeIntervalSince1970 - started)
     }
 }
 
@@ -67,7 +83,38 @@ struct ContentView: View {
     /// Counts refreshes, so one that a newer one has overtaken cannot write its result: opening the
     /// app, Try Again and picking a place each start one, and they can overlap.
     @State private var refreshes = 0
+    @State private var refreshing = false
+    @State private var lastRefresh: ContinuousClock.Instant?
     @Environment(\.scenePhase) private var scenePhase
+
+    /// Every change of what is on screen goes through here, so the log holds each transition of
+    /// STATES.md as it really happened.
+    private func move(to next: Load, because reason: String) {
+        Log.event("screen: \(Self.name(load)) -> \(Self.name(next)) (\(reason))")
+        load = next
+        logWhenDrawn()
+    }
+
+    /// The main thread is busy until the new screen is laid out and drawn, so the next thing it
+    /// runs marks the moment the screen is up.
+    private func logWhenDrawn() {
+        let changed = ContinuousClock.now
+        Task { Log.event("drawn \(Log.seconds(since: changed)) after the change") }
+    }
+
+    private static func name(_ load: Load) -> String {
+        switch load {
+        case .intro: "first launch"
+        case .loading: "loading"
+        case let .ready(_, issued, source, _): "forecast (\(source.rawValue), data \(Log.age(of: issued)))"
+        case let .failed(problem): "problem \(problem)"
+        }
+    }
+
+    private func reloadWidgets(because reason: String) {
+        Log.event("asked the widgets to reload (\(reason))")
+        WidgetCenter.shared.reloadAllTimelines()
+    }
 
     var body: some View {
         NavigationStack {
@@ -79,9 +126,9 @@ struct ContentView: View {
                     Text(localized("To see live rain data where you are, choose Allow While Using App."))
                     Spacer(minLength: 0)
                     Button(localized("Continue")) {
-                        load = .loading
+                        move(to: .loading, because: "Continue")
                         askedForLocation = true
-                        Task { await refresh() }
+                        Task { await refresh("Continue") }
                     }
                     .buttonStyle(.borderedProminent)
                     .tint(RainPalette.buienradarBlue)
@@ -103,7 +150,7 @@ struct ContentView: View {
                     if couldNotUpdate {
                         Button(localized("Try Again")) {
                             couldNotUpdate = false
-                            Task { await refresh() }
+                            Task { await refresh("Try Again") }
                         }
                         .padding(.top, 10)
                     }
@@ -153,18 +200,30 @@ struct ContentView: View {
                 Place.choose(place)
                 picking = false
                 placeName = place?.name
-                load = .loading
+                move(to: .loading, because: place == nil ? "Use My Location" : "a place was picked")
                 couldNotUpdate = false
-                Task { await refresh() }
+                Task { await refresh("place changed") }
             }
         }
-        .onChange(of: scenePhase, initial: true) { _, phase in
+        .onAppear {
+            Log.event("first screen: \(Self.name(load)), \(RainApp.sinceProcessStart) after the process started")
+            logWhenDrawn()
+        }
+        // The first refresh starts with the app, whatever the scene is doing: waiting for the scene
+        // to turn active left the spinner up for as long as it did not (seen on Josh's watch).
+        .task { await refresh("launch") }
+        .onChange(of: scenePhase) { _, phase in
             switch phase {
             case .active:
-                Task { await refresh() }
+                Log.event("scene: active")
+                // One that is running, or that ended moments ago at launch, will do.
+                if !refreshing, lastRefresh.map({ $0.duration(to: .now) > .seconds(10) }) ?? true {
+                    Task { await refresh("app came to the front") }
+                }
             case .background:
+                Log.event("scene: background")
                 // Apple's advice: one last reload as the app leaves, while it is still free.
-                WidgetCenter.shared.reloadAllTimelines()
+                reloadWidgets(because: "app left the screen")
             default:
                 break
             }
@@ -185,7 +244,7 @@ struct ContentView: View {
         } actions: {
             ForEach(problem.actions.indices, id: \.self) { index in
                 let button = switch problem.actions[index] {
-                case .tryAgain: Button(localized("Try Again")) { Task { await refresh() } }
+                case .tryAgain: Button(localized("Try Again")) { Task { await refresh("Try Again") } }
                 case .choosePlace: Button(localized("Choose a Place")) { picking = true }
                 }
                 // Without a line of description the title sits on the first button.
@@ -222,10 +281,11 @@ struct ContentView: View {
     private func show(_ situation: Situation, place: CLLocationCoordinate2D) {
         switch situation {
         case let .forecast(forecast, snapshot, updateFailed):
-            load = .ready(forecast, issued: snapshot.issued, source: snapshot.source, place: place)
+            move(to: .ready(forecast, issued: snapshot.issued, source: snapshot.source, place: place),
+                 because: updateFailed ? "the update failed, the saved forecast stands in" : "forecast fetched")
             couldNotUpdate = updateFailed
         case let .problem(problem):
-            load = .failed(problem)
+            move(to: .failed(problem), because: "no forecast to show")
             couldNotUpdate = false
         }
     }
@@ -238,12 +298,12 @@ struct ContentView: View {
             .mapItems.first?.addressRepresentations?.cityName
     }
 
-    private func refresh() async {
+    private func refresh(_ trigger: String) async {
         #if DEBUG
         // Screenshots of every state: `-scenario showerComing` shows a saved forecast instead of
         // fetching one, and `-failure offline` shows a failure.
         if let name = UserDefaults.standard.string(forKey: "failure"), let problem = Problem.named(name, launched: RainApp.launched) {
-            load = problem == .locationNotAsked ? .intro : .failed(problem)
+            move(to: problem == .locationNotAsked ? .intro : .failed(problem), because: "-failure option")
             return
         }
         if let name = UserDefaults.standard.string(forKey: "scenario"),
@@ -255,8 +315,9 @@ struct ContentView: View {
             let age = max(Scenario.age, Double(UserDefaults.standard.integer(forKey: "age")) * 60)
             let run = Date(timeIntervalSince1970: ((RainApp.launched.timeIntervalSince1970 - age) / 300).rounded(.down) * 300)
             guard let forecast = RainForecast.at(.now, from: scenario.forecast(at: run.addingTimeInterval(Scenario.age)).samples) else { return }
-            load = .ready(forecast, issued: run, source: .knmi,
-                          place: CLLocationCoordinate2D(latitude: scenario.coordinate.latitude, longitude: scenario.coordinate.longitude))
+            move(to: .ready(forecast, issued: run, source: .knmi,
+                            place: CLLocationCoordinate2D(latitude: scenario.coordinate.latitude, longitude: scenario.coordinate.longitude)),
+                 because: "-scenario option")
             placeName = Place.chosen?.name ?? scenario.place
             couldNotUpdate = UserDefaults.standard.bool(forKey: "couldNotUpdate")
             return
@@ -264,26 +325,37 @@ struct ContentView: View {
         if let name = UserDefaults.standard.string(forKey: "scenario"),
            let scenario = AppleScenario.allCases.first(where: { "\($0)" == name }),
            let forecast = scenario.forecast(at: .now) {
-            load = .ready(forecast, issued: .now.addingTimeInterval(-5 * 60), source: scenario.resolution == .hourly ? .appleHourly : .appleMinute,
-                          place: CLLocationCoordinate2D(latitude: scenario.coordinate.latitude, longitude: scenario.coordinate.longitude))
+            move(to: .ready(forecast, issued: .now.addingTimeInterval(-5 * 60), source: scenario.resolution == .hourly ? .appleHourly : .appleMinute,
+                            place: CLLocationCoordinate2D(latitude: scenario.coordinate.latitude, longitude: scenario.coordinate.longitude)),
+                 because: "-scenario option")
             placeName = scenario.place
             return
         }
         #endif
         refreshes += 1
         let mine = refreshes
+        let started = ContinuousClock.now
+        Log.event("refresh \(mine): started (\(trigger))")
+        refreshing = true
+        defer {
+            if mine == refreshes {
+                refreshing = false
+                lastRefresh = .now
+            }
+            Log.event("refresh \(mine): \(mine == refreshes ? "done" : "overtaken by refresh \(refreshes)") after \(Log.seconds(since: started))")
+        }
         let chosen = Place.chosen
         // Someone who refused location gets the choice of a place, not their last known position.
         let status = CLLocationManager().authorizationStatus
         if chosen == nil, status == .denied || status == .restricted {
             // The face must stop showing the last place too.
             Place.noteRefused(true)
-            WidgetCenter.shared.reloadAllTimelines()
-            load = .failed(.locationOff)
+            reloadWidgets(because: "location is off")
+            move(to: .failed(.locationOff), because: "location is refused or off")
             return
         }
         if chosen == nil, status == .notDetermined, !askedForLocation {
-            load = .intro
+            move(to: .intro, because: "location was never answered")
             return
         }
         if let chosen {
@@ -296,6 +368,18 @@ struct ContentView: View {
             }
             session = CLServiceSession(authorization: .whenInUse)
         }
+        // A place known within the hour is at hand without waiting, so its forecast goes on screen
+        // at once. A new fix follows, and if it is somewhere else the forecast is fetched again.
+        if chosen == nil, CLLocationManager().authorizationStatus != .notDetermined, let recent = Place.recent {
+            Log.event("place: recent fix, \(Log.age(of: recent.at)), used while a new one is found")
+            guard await fetchAndShow(recent.coordinate, refresh: mine) else { return }
+            guard let fresh = try? await Place.current(), fresh.isLive, mine == refreshes else { return }
+            let moved = CLLocation(latitude: fresh.coordinate.latitude, longitude: fresh.coordinate.longitude)
+                .distance(from: CLLocation(latitude: recent.coordinate.latitude, longitude: recent.coordinate.longitude)) > 1500
+            Log.event("place: the new fix is \(moved ? "over" : "within") 1.5 km of the recent one")
+            if moved { _ = await fetchAndShow(fresh.coordinate, refresh: mine) }
+            return
+        }
         let place: CLLocationCoordinate2D
         do {
             // The first time, Core Location waits for an answer to its permission question.
@@ -304,10 +388,16 @@ struct ContentView: View {
         } catch {
             // No place, so no forecast: the one on screen is for where the wearer was.
             guard mine == refreshes else { return }
-            load = .failed(Problem(error as? Place.Failure ?? .notFound))
+            move(to: .failed(Problem(error as? Place.Failure ?? .notFound)), because: "no place")
             couldNotUpdate = false
             return
         }
+        _ = await fetchAndShow(place, refresh: mine)
+    }
+
+    /// Fetches the forecast for a place and shows what `Situation.after` decides. False when a
+    /// newer refresh has taken over the screen.
+    private func fetchAndShow(_ place: CLLocationCoordinate2D, refresh mine: Int) async -> Bool {
         let fetch: Situation.Fetch
         do {
             fetch = .fetched(try await Snapshot.fetch(latitude: place.latitude, longitude: place.longitude))
@@ -317,12 +407,19 @@ struct ContentView: View {
             fetch = .refused
         }
         // A refresh started later owns the screen: its place and its forecast are the newer ones.
-        guard mine == refreshes else { return }
+        guard mine == refreshes else { return false }
         show(.after(fetch, latitude: place.latitude, longitude: place.longitude, saved: Snapshot.saved, now: .now), place: place)
-        guard case .fetched = fetch else { return }
-        // Free of the widget budget while the app is in front.
-        WidgetCenter.shared.reloadAllTimelines()
-        if chosen == nil, let town = await Self.town(at: place), mine == refreshes { placeName = town }
+        guard case let .fetched(snapshot) = fetch else { return true }
+        // Free of the widget budget while the app is in front. A reused forecast is one the widgets
+        // already have.
+        if snapshot.requests > 0 { reloadWidgets(because: "new forecast") }
+        // The town's name follows; nothing waits for it.
+        if Place.chosen == nil {
+            Task {
+                if let town = await Log.stage("Town name", { await Self.town(at: place) }), mine == refreshes { placeName = town }
+            }
+        }
+        return true
     }
 }
 

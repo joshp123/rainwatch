@@ -280,7 +280,9 @@ final class RainUITests: XCTestCase {
         keepFace("place-face-utrecht")
         app.activate()
         // Back to the wearer's location, as someone would after a trip.
+        // At the end of the page: a sliver of it shows at first, too little to tap.
         let change = app.buttons["Change Place"].firstMatch
+        app.swipeUp()
         for _ in 0..<5 where !change.isHittable { app.swipeUp() }
         change.tap()
         let mine = app.buttons["Use My Location"].firstMatch

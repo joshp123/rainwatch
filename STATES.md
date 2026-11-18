@@ -64,6 +64,7 @@ Height means how hard it rains, on one scale in the circle, the large slot and t
 
 | From | Event | To |
 |---|---|---|
+| Loading (the app, with no saved forecast under an hour old) | A fix under an hour old is at hand | Forecast for that place, after a fetch; then for the new fix too, if it is over 1.5 km away |
 | Location not set | Continue, then Allow While Using App or Allow Once | Forecast (after a fetch) |
 | Location not set | Continue, then Don't Allow | Location off |
 | Location off, not found, or no forecast here | Choose a Place, pick one | Forecast for that place |
@@ -95,5 +96,14 @@ Found by reading every path that writes the screen or the face's timeline, 17 an
 | 8: a fix lasts an hour | After Allow Once the face used the last fix for ever | `Place.current` returned `saved` at any age when permission was not determined | `Place.trustFor`, and `Situation.schedule` ends the timeline at the hour | `theFaceGivesUpAPlaceAnHourAfterItsFix` |
 | 2, by a race | Pick a place while a refresh for your location is still running: whichever finished last won, so the app could show your location's forecast under the picked place | three call sites start `Task { await refresh() }` with nothing to order them | `refreshes` counter: an overtaken refresh writes nothing | none: read from the code, not reproduced; a test needs the simulator |
 | 7: same words | The face said "No forecast / Open RainWatch to try again" where the app said "No Connection", and "Location needed" where the app said either of two things | separate strings in `problemText` and `failed()` | one `Problem` for both | `theFaceAndTheAppNameAProblemAlike` |
+
+## What the log showed on Josh's watch
+
+Every change of the app's screen is logged as "screen: A -> B (why)", and every widget timeline as the states it moves through (`Log.swift`; AGENTS.md says how to copy the log off the watch). On 18 November 2026 the log from his watch showed every transition in the table above and two states that are not in it. Both are fixed.
+
+| What the log showed | Why | Fix |
+|---|---|---|
+| The app on "loading" for two minutes with no refresh running | The first refresh started only when the scene turned active, and after a launch with the screen off it never did | The first refresh starts with the app |
+| The widgets asked to reload twice within a second, for a forecast they already had | Coming to the front started a second refresh as the first ended, and every refresh asked for a reload | A refresh that just ended is not repeated, and the widgets are asked to reload only for a forecast newly fetched |
 
 Not confirmed, so not changed: the face reads the app's permission through a flag the app writes (`Place.isRefused`), because watchOS does not always tell a widget its own permission. If a widget ever saw "refused" while the app is allowed, the face would say Location off until the app is opened. That needs a real watch to check.
