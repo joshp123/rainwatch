@@ -1,5 +1,6 @@
 """The App Store screenshots: a headline over a real capture of the app, 422 x 514, no alpha.
-Run after design/capture.sh, in English and with SIM_LANGUAGE=nl:
+Run after design/capture.sh, in English and with SIM_LANGUAGE=nl. The London capture is the
+real Apple Weather forecast, from a simulator placed in London (LAUNCH.md, item 21):
     uv run --with pillow python store/screenshots/make.py
 Written by AI on 2026.11.18 by model claude fable 5.2."""
 import os
@@ -19,6 +20,7 @@ SHOTS = {
         ('app-raining', 'Two hours at a glance'),
         ('app-radar', 'Radar on your wrist'),
         ('face-dry', 'Dry? One look says so'),
+        ('app-london', 'Works abroad too'),
     ]),
     'nl-NL': ('raw-nl', [
         ('face-coming', 'Word ik nat?'),
@@ -26,6 +28,7 @@ SHOTS = {
         ('app-raining', 'Twee uur in één blik'),
         ('app-radar', 'De radar op je pols'),
         ('face-dry', 'Droog? Dat zie je zo'),
+        ('app-london', 'Ook over de grens'),
     ]),
 }
 

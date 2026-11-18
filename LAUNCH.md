@@ -57,10 +57,10 @@ Who does it: Claude (or another agent), unless it says Josh. "Josh" means only w
 | # | Task | Who | Status |
 |---|---|---|---|
 | 20 | Subtitle, keywords and description, in English and Dutch. "buien" and "regen" go in the Dutch keywords. No "Buienradar", "real-time", "accurate" or "best" | Claude; Josh reads before it goes live | Written 18 Nov in `store/metadata/` and applied to the draft listing with `asc metadata apply`; nothing is live until the app is submitted. Josh reads it first |
-| 21 | Five screenshots at 422 × 514, from the real watch, in English and Dutch, each with a headline of eight words or fewer ("Will I get wet?") | Claude | Done 18 Nov: `store/screenshots/`, made by `make.py` from silent simulator captures, uploaded to the draft listing in both languages |
+| 21 | Five screenshots at 422 × 514, from the real watch, in English and Dutch, each with a headline of eight words or fewer ("Will I get wet?") | Claude | Done 18 Nov: six for each language in `store/screenshots/`, made by `make.py` from captures of the real app in the simulator, and uploaded to the draft listing. The sixth is the live Apple Weather forecast for London; the Madrid screen is in `design/captures/` but was dry, so it is not used |
 | 22 | App Privacy answers: coarse location, for app functionality, not linked to the person, no tracking | Claude | Applied 14 Nov from `store/privacy.json`, not yet published; recheck once the server design is settled |
 | 23 | Category (Weather), age rating, copyright | Claude | Done 18 Nov: Weather, every age-rating answer "none", copyright "2026 Josh Palmer", manual release |
-| 24 | Notes for the reviewer: watch-only, Choose a Place, the data sources; a 60-second demo video | Claude | Notes written (`store/metadata/review-information.json`) and set on the draft with Josh's contact details, which are not in this repo. The demo video is still to do: the UI tests record one of the reviewer's route (`App/test.sh`) |
+| 24 | Notes for the reviewer: watch-only, Choose a Place, the data sources; a 60-second demo video | Claude | Notes written (`store/metadata/review-information.json`) and set on the draft with Josh's contact details, which are not in this repo. The 60-second demo video is still to do |
 
 **D. Testing and release**
 
