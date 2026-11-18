@@ -46,9 +46,9 @@ def normal(s):
 
 
 PARAGRAPHS = {'To see the rain where you are, choose Allow While Using App.',
-              'To keep your watch face up to date, choose Allow While Using App.',
+              'Your location was allowed once. To keep your watch face up to date, choose Allow While Using App.',
               'Open Settings, then Privacy & Security > Location Services > %@ > While Using the App.',
-              'Location Not Found', 'No Forecast Here', 'Location Not Set', 'Location Expired', 'Location Off',
+              'Location Not Found', 'No Forecast Here', 'Location Not Set', 'Permission Expired', 'Location Off',
               'Forecast Unavailable', 'No Recent Forecast'}  # face problem headlines are the app titles in sentence case
 
 
@@ -60,7 +60,7 @@ def keys_for(lang):
         out.append((pattern(normal(v)), key))
         if key[0].isupper() and ' ' in key and key.istitle() is False:
             pass
-    for key in ['Location Not Set', 'Location Expired', 'Location Off', 'Location Not Found', 'Forecast Unavailable',
+    for key in ['Location Not Set', 'Permission Expired', 'Location Off', 'Location Not Found', 'Forecast Unavailable',
                 'No Forecast Here', 'No Recent Forecast']:
         v = value(key, lang)
         words = v.split(' ')
@@ -97,12 +97,12 @@ def overlap(a, b):
 def style_for(kind, key, text, box, lang, index, lines):
     """The style and alignment of a line, by what it says and where it is."""
     heads = ['Dry for %@', 'Dry for %lld min', 'Rain for %@', 'Rain stops in %lld min', 'Dry until %@', 'Rain until %@']
-    titles = ['Location Not Set', 'Location Expired', 'Location Off', 'Location Not Found', 'Forecast Unavailable',
+    titles = ['Location Not Set', 'Permission Expired', 'Location Off', 'Location Not Found', 'Forecast Unavailable',
               'No Forecast Here', 'No Recent Forecast']
     if kind == 'app':
         if key in ('Forecast Unavailable', 'No Recent Forecast'): return 'cuvTitle', 'center'
         if key in titles: return 'cuvTitleBold', 'center'
-        if key in ('To keep your watch face up to date, choose Allow While Using App.', 'Last forecast %@') or key and key.startswith('Open Settings'):
+        if key in ('Your location was allowed once. To keep your watch face up to date, choose Allow While Using App.', 'Last forecast %@') or key and key.startswith('Open Settings'):
             return 'cuvDetail', 'center'
         if key == 'To see the rain where you are, choose Allow While Using App.': return 'intro', 'left'
         if key in ('Try Again', 'Choose a Place', 'Continue'): return 'button', 'center'
@@ -111,7 +111,7 @@ def style_for(kind, key, text, box, lang, index, lines):
         if key in heads: return 'headline', 'left'
         if key in ('Heavy', 'Light'): return 'axis', 'right'
         if key in ('Now',) or (key == 'clock time' and box[3] - box[1] < 22): return 'axis', 'left'
-        if key in ('Made by KNMI at %@', 'Source: KNMI', 'Legal') or box[1] > 430: return 'credit', 'left'
+        if key in ('KNMI forecast made %@', 'Source: KNMI', 'Legal') or box[1] > 430: return 'credit', 'left'
         return 'detail', 'left'
     # face
     if box[1] > 390: return 'circle', 'center'
@@ -212,7 +212,7 @@ def html_for(capdir, lang, kind, state, asset_dir):
             continue
         if re.match(r'^\S+ \d', text) and identify(text.split(' ')[0], lang):
             name = f"{identify(text.split(' ')[0], lang)} · times"
-        if '\uf8ff' in text or 'Weather' in text and kind == 'app':
+        if kind == 'app' and 'Weather' in text:
             # Apple's mark is a picture; the time and Legal are words.
             text = text.split('Weather', 1)[1].strip()
             name = 'Legal · with the time'
@@ -221,6 +221,7 @@ def html_for(capdir, lang, kind, state, asset_dir):
             continue
         if kind == 'face' and 'Weather' in text:
             text = '\uf8ff' + text[text.index('Weather'):]
+            name = 'Apple Weather mark' if text.endswith('Weather') else name
         width = None
         if o['lines'] > 1:
             width = 372 if align == 'center' else 356
@@ -285,14 +286,18 @@ def circle_parts(capdir, lang, state, headline=None):
     cx, cy, side = disc(f'{capdir}-notext/face-{state}.png')
     words = circle_words(capdir, lang, state)
     lead = None
-    if headline and len(words) >= 3 and not (word_is_dry := any(w.lower() in ('dry', 'droog') for w in words)):
+    # Rain in sight means a lead word ("IN", "FOR"); only "Dry for …" has none. Vision misses some
+    # of the circle's small words, so the headline decides.
+    if headline and headline not in ('Dry for %@',) and not any(w.lower() in ('dry', 'droog', 'no', 'geen') for w in words):
         lead = {'en': {True: 'IN', False: 'FOR'}, 'nl': {True: 'OVER', False: 'NOG'}}[lang][headline.startswith('Dry')]
-        words = [lead] + words[1:]
+        words = [lead] + [w for w in words if w.upper() not in LEADS]
     unit = next((w for w in words if w.upper() in UNITS and w != lead), None)
     value = next((w for w in words if re.match(r'^[<\d][\d+]*\+?$', w)), None)
     if value is None and lang == 'nl':
         # Vision misses some small Dutch circles; the English capture of the same state has the same number.
         value = next((w for w in circle_words(capdir.replace('raw-nl', 'raw'), 'en', state) if re.match(r'^[<\d][\d+]*\+?$', w)), None)
+    if value is None and headline in ('Dry until %@', 'Rain until %@') and lead:
+        value = '<1' if headline == 'Dry until %@' else '1+'
     if unit is None and value and lang == 'nl':
         unit = 'UUR' if value.startswith('<') or value.endswith('+') else 'MIN'
     word = lambda w: next((x for x in words if x.lower() == w.lower()), None)
@@ -319,7 +324,7 @@ def circle_parts(capdir, lang, state, headline=None):
     keys_nl = {'OVER': 'IN', 'NOG': 'FOR', 'UUR': 'HRS', 'Geen': 'No', 'PLEK': 'PLACE', 'Droog': 'Dry'}
     keyof = lambda w: keys_nl.get(w, w) if lang == 'nl' else w
     if lead:
-        place(keyof(lead), lead, cy - side * 0.15, side * (0.15 if len(lead) > 3 else 0.18), blue)
+        place(keyof(lead), lead, cy - side * (0.13 if len(lead) > 3 else 0.15), side * (0.14 if len(lead) > 3 else 0.18), blue)
         place('value: circle number', value, cy + side * 0.05, side * (0.22 if len(value) > 2 else 0.27), white)
         place('HR' if value.startswith('<') else keyof(unit), unit, cy + side * 0.3, side * 0.243, blue)
     elif word('No') or word('Geen'):
