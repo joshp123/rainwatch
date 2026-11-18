@@ -1,0 +1,66 @@
+<!doctype html>
+<!-- Written by AI on 2026.11.18 by model claude fable 5.2. A design prototype of RainWatch for iPhone: one
+     screen, with real KNMI data. It is a picture to use, not app code. See README.md beside it. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>RainWatch</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main class="phone" id="phone">
+  <div class="statusbar" id="statusbar"><span>9:41</span></div>
+
+  <header class="top">
+    <label class="place">
+      <svg class="arrow" id="arrow" viewBox="0 0 16 16" width="15" height="15"><path d="M14.6 1.4 1.9 6.7c-.5.2-.4.9.1 1l5 1.3 1.3 5c.1.5.8.6 1 .1L14.6 1.4Z" fill="currentColor"/></svg>
+      <span id="place"></span>
+      <svg viewBox="0 0 12 8" width="11" height="8" class="chevron"><path d="M1.5 1.5 6 6l4.5-4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <select id="places" aria-label="Place"></select>
+    </label>
+    <button class="round" id="info" aria-label="About">
+      <svg viewBox="0 0 20 20" width="20" height="20"><circle cx="10" cy="10" r="8.2" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="10" cy="6.3" r="1.1" fill="currentColor"/><path d="M10 9.2v5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+    </button>
+  </header>
+
+  <section class="say">
+    <h1 id="headline"></h1>
+    <p id="detail"></p>
+  </section>
+
+  <section class="ring" id="ring"></section>
+
+  <section class="graph" id="graph"></section>
+  <p class="credit" id="credit"></p>
+
+  <section class="map" id="map">
+    <img id="mapPicture" alt="">
+    <canvas id="rain"></canvas>
+    <div class="dot" id="dot"></div>
+    <div class="moment" id="moment"></div>
+    <button class="round glass play" id="play" aria-label="Play">
+      <svg viewBox="0 0 20 20" width="20" height="20" id="playIcon"></svg>
+    </button>
+    <button class="round glass zoom" id="zoom" aria-label="Zoom">
+      <svg viewBox="0 0 20 20" width="20" height="20"><circle cx="8.5" cy="8.5" r="5.6" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="m13 13 4.5 4.5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><path id="zoomSign" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+    </button>
+    <div class="legal"><b> Maps</b> <u>Legal</u></div>
+  </section>
+
+  <button class="radarButton" id="radarButton">Radar</button>
+
+  <div class="sheet" id="sheet" hidden>
+    <div class="sheetBody">
+      <h2>Prototype</h2>
+      <p>This is a design prototype in a web page. The forecast and the rain on the map are real KNMI data; the map is Apple’s. Nothing here is the app.</p>
+      <div id="links"></div>
+      <button id="closeSheet">Done</button>
+    </div>
+  </div>
+</main>
+<script type="module" src="app.js"></script>
+</body>
+</html>
