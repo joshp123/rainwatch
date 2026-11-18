@@ -1,4 +1,4 @@
-<!-- Written by AI on 2026.11.18 by model claude fable 5.2, at Josh's request; updated 2026.11.18 by model claude opus 5.5 for the App Review fixes. -->
+<!-- Written by AI on 2026.11.18 by model claude fable 5.2, at Josh's request; updated 2026.11.18 by model claude opus 5.5 for the App Review fixes, and for Location Expired and the way to turn location on. -->
 
 # What RainWatch shows, and when
 
@@ -14,7 +14,8 @@ Three facts, each with a few values.
 |---|---|
 | A picked place | The wearer chose a town or postcode. It stays until they change it. |
 | Where you are | Location is allowed and the watch has a fix under an hour old. |
-| Not set | Location was never answered, or Allow Once has run out. The last fix is then forgotten, never used again. |
+| Not set | Location was never answered. |
+| Expired | Location was allowed, and watchOS will ask again: Allow Once has run out, or Ask Next Time was chosen in Settings. watchOS reports this as never answered, so RainWatch keeps a flag that location was allowed (`Place.wasAllowed`). The last fix is forgotten, never used again. |
 | Off | Location is refused or turned off, and no place is picked. |
 | Not found | Location is allowed, but there has been no fix for an hour. |
 
@@ -25,7 +26,7 @@ Three facts, each with a few values.
 | Age | Shown as |
 |---|---|
 | Under 20 minutes | The forecast, with what comes next on the second line. |
-| 20 to 60 minutes | The forecast, with "Forecast from 23:40" on the second line. |
+| 20 to 60 minutes | The forecast, with "Forecast made 23:40" on the second line. |
 | 60 minutes or more (120 for Apple's hourly) | No forecast: "No recent forecast", with its time. |
 
 An Apple forecast is deleted from the watch once it reaches that age: Apple's terms let its data be kept only for a while (Attachment 8, 1.6). A KNMI forecast is kept, to say when the last one was made.
@@ -40,19 +41,21 @@ An Apple forecast is deleted from the watch once it reaches that age: Apple's te
 6. No forecast is never shown as dry.
 7. The app and the face name a problem with the same words: the face's first line is the app's title.
 8. A fix is trusted for an hour, and not at all once Allow Once has run out. A picked place does not expire.
+9. Every location problem says how to fix it: Location Expired asks again, Location Off spells out the way to it in Settings (watchOS lets no app open Settings), and Location Off also offers a place by name. Location Expired has only Continue: Apple wants one button before its question.
 
 ## Every state
 
 | State | Face circle | Face, large slot | App |
 |---|---|---|---|
-| Forecast, no rain in it | Dry, 1+ HRS | Dry for 1+ hours | The same headline, no graph scale, black page |
+| Forecast, no rain in it | Dry, 1+ HRS | Dry for over an hour | The same headline, no graph scale, black page |
 | Forecast, dry now, rain coming | IN 36 MIN | Dry for 36 min | Headline, then "Drizzle 00:50–01:20" in blue |
 | Forecast, raining, stops within the hour | FOR 10 MIN | Rain stops in 10 min | Headline, then "Dry 00:25–01:20" in grey |
 | Forecast, raining for an hour or more | FOR 1+ HRS | Rain until 01:25 | Headline, then "Heaviest around 00:25" |
-| Forecast, 20 to 60 minutes old | as above | Headline, then "Forecast from 23:40" (Apple's: " Weather, from 23:40") | The same two lines ("Hourly forecast from 23:40" for Apple's hourly); "Source: KNMI" or Apple's mark under the graph |
-| Forecast, last fetch failed | as above | as above | Second line "Couldn't update"; "KNMI forecast from 00:05" under the graph; Try Again |
+| Forecast, 20 to 60 minutes old | as above | Headline, then "Forecast made 23:40" (Apple's: " Weather, made 23:40") | The same two lines ("Hourly forecast made 23:40" for Apple's hourly); "Source: KNMI" or Apple's mark under the graph |
+| Forecast, last fetch failed | as above | as above | Second line "Couldn't update"; "KNMI forecast made 00:05" under the graph; Try Again |
 | Location not set | No PLACE | Location not set / Tap to set up | The first-launch screen: one sentence, Continue |
-| Location off | No PLACE | Location off / Tap to choose a place | Location Off / Allow it in Settings. / Choose a Place |
+| Location expired | No PLACE | Location expired / Tap to allow again | Location Expired / "To keep your watch face up to date, choose Allow While Using App." / Continue, which opens the system's question again |
+| Location off | No PLACE | Location off / Tap to fix | Location Off / the way to it in Settings (watchOS lets no app open Settings) / Choose a Place |
 | Location not found | No PLACE | Location not found / Tap to try again | Location Not Found / Try Again, Choose a Place |
 | Forecast unavailable | No DATA | Forecast unavailable / Tap to try again | Forecast Unavailable / Try Again |
 | No forecast here | No DATA | No forecast here / Tap to try again | No Forecast Here / Try Again, Choose a Place |
@@ -69,11 +72,14 @@ Height means how hard it rains, on one scale in the circle, the large slot and t
 | Loading (the app, with no saved forecast under an hour old) | A fix under an hour old is at hand | Forecast for that place, after a fetch; then for the new fix too, if it is over 1.5 km away |
 | Location not set | Continue, then Allow While Using App or Allow Once | Forecast (after a fetch) |
 | Location not set | Continue, then Don't Allow | Location off |
+| Location expired | Continue, then Allow While Using App or Allow Once | Forecast (after a fetch) |
+| Location expired | Continue, then Don't Allow | Location off |
+| Location off | Location turned on in Settings, then back to the app | Forecast (the app refreshes as it comes to the front) |
 | Location off, not found, or no forecast here | Choose a Place, pick one | Forecast for that place |
 | A picked place | Change Place, Use My Location | Whatever the location answer gives |
 | Forecast | Location turned off in Settings | Location off: in the app when it is next opened, on the face at its next reload |
 | Forecast for where you are | An hour with no new fix | Location not found |
-| Forecast for where you are | Allow Once runs out | Location not set, at the face's next reload |
+| Forecast for where you are | Allow Once runs out | Location expired: in the app when it is next opened, on the face at its next reload |
 | Forecast | 20 minutes with no newer forecast | Forecast, 20 to 60 minutes old |
 | Forecast, any age | A newer forecast is fetched | Forecast, under 20 minutes old |
 | Forecast | The fetch fails; saved forecast is for here and under an hour old | Forecast, last fetch failed |
@@ -109,4 +115,8 @@ Every change of the app's screen is logged as "screen: A -> B (why)", and every 
 | The app on "loading" for two minutes with no refresh running | The first refresh started only when the scene turned active, and after a launch with the screen off it never did | The first refresh starts with the app |
 | The widgets asked to reload twice within a second, for a forecast they already had | Coming to the front started a second refresh as the first ended, and every refresh asked for a reload | A refresh that just ended is not repeated, and the widgets are asked to reload only for a forecast newly fetched |
 
-Not confirmed, so not changed: the face reads the app's permission through a flag the app writes (`Place.isRefused`), because watchOS does not always tell a widget its own permission. If a widget ever saw "refused" while the app is allowed, the face would say Location off until the app is opened. That needs a real watch to check.
+Checked on the watchOS 27.2 simulator, 18 November 2026:
+
+- **The face follows a permission changed in Settings by itself.** After Don't Allow the face said Location off; once location was allowed again, the widget's next reload (10 minutes later) read the new permission itself, cleared `Place.isRefused` and showed the forecast, without the app being opened.
+- **Allow Once lasts as long as RainWatch is in use.** With RainWatch on the face it lasted over 35 minutes (every widget reload counts as use) and ended when the watch restarted; the app then showed its question again. watchOS reports an ended Allow Once as never answered, so RainWatch keeps `Place.wasAllowed` to say Location Expired instead of showing the first launch.
+- **The way to turn location on.** Settings > Privacy & Security > Location Services lists RainWatch once location has been refused (not during Allow Once), with Never, Ask or When I Share and While Using the App; in Dutch Instellingen > Privacy en beveiliging > Locatievoorzieningen > BuienWatch > Bij gebruik van app. On the simulator, which has no paired iPhone, the three options were greyed out; Privacy & Security says some settings are shared with the iPhone. Not yet checked on a real watch.

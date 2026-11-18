@@ -94,9 +94,8 @@ struct RainProvider: TimelineProvider {
         let entries: [RainEntry]
         switch situation {
         case let .forecast(_, snapshot, _):
-            // After Allow Once the app has no permission left: the face then says so, not "not found".
-            let once = CLLocationManager().authorizationStatus == .notDetermined
-            entries = Situation.schedule(snapshot, now: now, placeExpires: placeExpires, withoutPlace: once ? .locationNotAsked : .locationNotFound)
+            // Once Allow Once has run out, the next reload finds no place and says Location Expired.
+            entries = Situation.schedule(snapshot, now: now, placeExpires: placeExpires)
                 .map { RainEntry(date: $0.date, situation: $0.situation) }
         case .problem:
             entries = [RainEntry(date: now, situation: situation)]
@@ -169,7 +168,7 @@ struct RainWidget: Widget {
             RainComplicationView(entry: entry)
         }
         .configurationDisplayName(Bundle.main.displayName)
-        .description(Text(localized("Rain for the next two hours.")))
+        .description(Text(localized("When the next rain starts or stops.")))
         .supportedFamilies([.accessoryCircular, .accessoryRectangular, .accessoryCorner, .accessoryInline])
     }
 }
@@ -184,12 +183,21 @@ struct RainComplicationView: View {
     }
 
     var body: some View {
-        if let forecast = entry.forecast {
-            view(for: forecast)
-        } else {
-            problem
+        Group {
+            if let forecast = entry.forecast {
+                view(for: forecast)
+            } else {
+                problem
+            }
         }
+        .hidesTextForDesign(Self.hidesText)
     }
+
+    #if DEBUG
+    static var hidesText: Bool { UserDefaults(suiteName: Place.appGroup)?.bool(forKey: "debugHideText") ?? false }
+    #else
+    static let hidesText = false
+    #endif
 
     @ViewBuilder private func view(for forecast: RainForecast) -> some View {
         switch family {

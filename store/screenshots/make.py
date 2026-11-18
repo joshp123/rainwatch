@@ -21,17 +21,17 @@ CASE_TOP = 163                        # first row of the case in the frame; the 
 # what its capture shows; the grey note says where it applies. No app name: the English one may change.
 SHOTS = {
     'en-GB': [
-        ('face-coming', 'Get there dry?', 'Glance at your wrist.', None),
-        ('app-uk', 'In the UK?', 'See the hour ahead.', 'From Apple Weather; hourly where it has no next hour'),
-        ('app-raining', 'Caught in a shower?', 'See when it stops.', 'Benelux and western Germany: up to two hours ahead'),
-        ('app-radar', 'Watch the shower', 'come in.', 'Radar map in the Benelux and western Germany'),
+        ('face-coming', 'The next rain,', 'on your watch face.', None),
+        ('app-uk', 'The next hour of rain,', 'in the UK too.', 'From Apple Weather; hour by hour in some countries'),
+        ('app-raining', 'When the rain stops,', 'and how hard it falls.', 'Benelux and western Germany: up to two hours ahead'),
+        ('app-radar', 'Turn the crown', 'to see the rain move.', 'Radar map in the Benelux and western Germany'),
         ('app-later', 'Free, with no ads.', 'No account needed.', None),
     ],
     'nl-NL': [
-        ('face-coming', 'Droog aankomen?', 'Kijk even op je pols.', None),
-        ('app-coming', 'Regen op komst?', 'Zie hoe hard en hoe lang.', 'KNMI-radar, tot twee uur vooruit'),
-        ('app-raining', 'Even schuilen?', 'Zie wanneer het ophoudt.', None),
-        ('app-radar', 'Zie de bui', 'aankomen.', 'Radarkaart van de Benelux en West-Duitsland'),
+        ('face-coming', 'De volgende bui,', 'op je wijzerplaat.', None),
+        ('app-coming', 'Wanneer het gaat regenen,', 'en hoe hard.', 'KNMI-radar, tot twee uur vooruit'),
+        ('app-raining', 'Wanneer de bui stopt,', 'en hoe hard het regent.', None),
+        ('app-radar', 'Draai aan de kroon', 'en zie de bui komen.', 'Radarkaart van de Benelux en West-Duitsland'),
         ('app-later', 'Gratis en zonder reclame.', 'Geen account nodig.', None),
     ],
 }
@@ -82,11 +82,14 @@ for locale, shots in SHOTS.items():
         os.remove(f'{HERE}/{locale}/{old}')
     for number, (capture, plain, marked, note) in enumerate(shots, 1):
         canvas = Image.new('RGBA', (W * S, H * S), 'black')
-        draw = ImageDraw.Draw(canvas)
-        headline(draw, 16, plain, marked)
         device = watch(f'{CAPTURES}/{locale}/{capture}.png')
         top = (106 if note is None else 122) - round(40 * SCALE)
         canvas.alpha_composite(device, ((W * S - device.width) // 2, top * S))
+        if os.environ.get('WORDLESS'):
+            # The design file lays the headline over this as editable text.
+            canvas.convert('RGB').resize((W, H), Image.LANCZOS).save(f"{os.environ['WORDLESS']}/{locale}-{number}-{capture}.png")
+        draw = ImageDraw.Draw(canvas)
+        headline(draw, 16, plain, marked)
         if note:
             small = font(15, 'Semibold')
             if draw.textlength(note, font=small) > (W - 24) * S:

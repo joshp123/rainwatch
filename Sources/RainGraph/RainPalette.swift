@@ -90,3 +90,15 @@ public enum RainFont {
         }
     }
 }
+
+/// Draws no text: debug builds use it for the design file's pictures, which have the words laid
+/// over them as editable text (`design/README.md`).
+struct NoText: TextRenderer {
+    func draw(layout: Text.Layout, in context: inout GraphicsContext) {}
+}
+
+extension View {
+    @ViewBuilder public func hidesTextForDesign(_ hides: Bool) -> some View {
+        if hides { textRenderer(NoText()) } else { self }
+    }
+}

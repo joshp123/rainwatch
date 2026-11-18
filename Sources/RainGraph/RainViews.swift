@@ -49,7 +49,7 @@ public struct RectangularRainView: View {
                 // one line of words, as on Modular Ultra, it takes the place of the hour labels.
                 // Apple's data keeps its name there too.
                 if isOld, let issued {
-                    Text(credit.map { localized("\($0), from \(RainCopy.clock(issued))") } ?? localized("Forecast from \(RainCopy.clock(issued))"))
+                    Text(credit.map { localized("\($0), made \(RainCopy.clock(issued))") } ?? localized("Forecast made \(RainCopy.clock(issued))"))
                         .font(RainFont.rounded(13.5, .medium))
                         .foregroundStyle(palette.secondary)
                         .minimumScaleFactor(0.8)
@@ -288,8 +288,7 @@ public struct CircularRainGauge: View {
     /// Read top to bottom as one phrase: the lead word inside the arc, the number in the middle,
     /// the unit in the gap at the bottom where Apple's gauges put their labels. Sizes are fractions
     /// of the slot, measured on Josh's watch so that the number is as tall as "07:59" beside it
-    /// and the unit as tall as "SF" (the Mac draws this font smaller than the watch does, so only
-    /// the real face is a fair ruler). Without an arc, the two lines sit as one
+    /// and the unit as tall as "SF". Without an arc, the two lines sit as one
     /// block in the middle, as theirs do.
     private func centre(side: CGFloat, copy: RainCopy) -> some View {
         let (lead, value, unit) = copy.circular

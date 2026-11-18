@@ -11,8 +11,11 @@ public enum Place {
 
     /// Why there is no place to forecast for.
     public enum Failure: Error, Equatable {
-        /// Location was never answered, or Allow Once has run out.
+        /// Location was never answered.
         case notAsked
+        /// Location was allowed, and the system will ask again: Allow Once has run out, or the
+        /// wearer chose Ask Next Time in Settings.
+        case expired
         /// Location is refused or turned off.
         case off
         /// Location is allowed, but no fix has come for an hour.
@@ -113,23 +116,14 @@ public enum Place {
         }
         let status = CLLocationManager().authorizationStatus
         Log.event("location permission: \(name(status))")
-        switch status {
-        case .denied, .restricted: noteRefused(true)
-        case .authorizedAlways, .authorizedWhenInUse: noteRefused(false)
-        default: break
-        }
-        if isRefused {
-            Log.event("place: none, location is off")
-            throw Failure.off
-        }
-        // Never answered, or Allow Once has run out: the last fix was given for that one use, so it
+        note(status)
+        // Not answered, or Allow Once has run out: the last fix was given for that one use, so it
         // is forgotten, not used again.
-        if status == .notDetermined {
-            forgetFix()
-            if !mayAsk {
-                Log.event("place: none, location not answered")
-                throw Failure.notAsked
-            }
+        if status == .notDetermined { forgetFix() }
+        if let failure = failure(status: status, refused: isRefused, allowedBefore: wasAllowed),
+           failure == .off || !mayAsk {
+            Log.event("place: none, \(failure)")
+            throw failure
         }
         if let saved, let at = savedAt, Date.now.timeIntervalSince(at) < reuseFor {
             Log.event("place: saved fix reused, \(Log.age(of: at))")
@@ -142,7 +136,7 @@ public enum Place {
             Log.event("place: new fix after \(Log.seconds(since: start))")
             return Found(coordinate: fix, isLive: true, at: .now)
         case .refused:
-            noteRefused(true)
+            note(.denied)
             Log.event("place: none, location refused")
             throw Failure.off
         case .none:
@@ -170,6 +164,41 @@ public enum Place {
         }
     }
 
+    /// Why a permission gives no place, before any fix is tried; nil when location may be used.
+    /// `refused` and `allowedBefore` are what the app or a widget last saw (`isRefused`,
+    /// `wasAllowed`): watchOS does not always tell a widget its own permission, and once Allow Once
+    /// has run out the status reads as never answered.
+    public static func failure(status: CLAuthorizationStatus, refused: Bool, allowedBefore: Bool) -> Failure? {
+        switch status {
+        case .denied, .restricted: .off
+        case .authorizedAlways, .authorizedWhenInUse: nil
+        default: refused ? .off : allowedBefore ? .expired : .notAsked
+        }
+    }
+
+    /// Keeps what the permission says for the face, which may not see it itself.
+    public static func note(_ status: CLAuthorizationStatus) {
+        switch status {
+        case .denied, .restricted:
+            noteRefused(true)
+            noteAllowed(false)
+        case .authorizedAlways, .authorizedWhenInUse:
+            noteRefused(false)
+            noteAllowed(true)
+        default:
+            break
+        }
+    }
+
+    /// Location was allowed, by Allow Once or Allow While Using App, and not refused since.
+    public static var wasAllowed: Bool {
+        UserDefaults(suiteName: appGroup)?.bool(forKey: "locationAllowed") ?? false
+    }
+
+    static func noteAllowed(_ allowed: Bool) {
+        UserDefaults(suiteName: appGroup)?.set(allowed, forKey: "locationAllowed")
+    }
+
     /// Location was refused, as the app or a widget last saw. Kept in the app group because watchOS
     /// does not always tell a widget its own permission: the app sees it, and the face follows.
     public static var isRefused: Bool {
@@ -184,7 +213,7 @@ public enum Place {
     public static func forget() {
         forgetFix()
         let defaults = UserDefaults(suiteName: appGroup)
-        for key in ["chosenPlace", "locationRefused"] { defaults?.removeObject(forKey: key) }
+        for key in ["chosenPlace", "locationRefused", "locationAllowed"] { defaults?.removeObject(forKey: key) }
     }
 
     private static func forgetFix() {

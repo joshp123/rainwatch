@@ -23,7 +23,7 @@ public struct ForecastDetailView: View {
     public var body: some View {
         let copy = RainCopy(forecast)
         VStack(alignment: .leading, spacing: 2) {
-            // One line, as on the face: the longest headline, "Heavy rain for 2+ hours", is a few
+            // One line, as on the face: the longest headline, "Rain for over an hour", is a few
             // points wider than the screen at this size, so it may shrink that little.
             Text(copy.headline)
                 .font(.title3.weight(.semibold))
@@ -37,8 +37,8 @@ public struct ForecastDetailView: View {
                     .foregroundStyle(.secondary)
             } else if isOld {
                 // An hourly forecast stays labelled as one: its times are whole hours.
-                Text(forecast.resolution == .hourly ? localized("Hourly forecast from \(RainCopy.clock(issued))")
-                     : localized("Forecast from \(RainCopy.clock(issued))"))
+                Text(forecast.resolution == .hourly ? localized("Hourly forecast made \(RainCopy.clock(issued))")
+                     : localized("Forecast made \(RainCopy.clock(issued))"))
                     .font(.body)
                     .foregroundStyle(.secondary)
             } else if let detail = copy.detail {

@@ -27,7 +27,7 @@ final class RainUITests: XCTestCase {
     /// Rotterdam is in KNMI's area: its forecast comes from the server, with KNMI named.
     func testForecastPage() {
         XCTAssertTrue(headline.waitForExistence(timeout: 30), "The forecast should show")
-        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label BEGINSWITH 'KNMI forecast from'")).firstMatch.exists,
+        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label BEGINSWITH 'KNMI forecast made'")).firstMatch.exists,
                       "KNMI's forecast should name KNMI and say when it was made")
         XCTAssertTrue(app.buttons["Radar"].exists, "KNMI's area has the radar")
         XCTAssertTrue(app.staticTexts["My Location"].exists, "The page should say it is for where you are")
@@ -109,7 +109,7 @@ final class RainUITests: XCTestCase {
         app.launchArguments = server + ["-scenario", "spainHourly", "-age", "40"]
         app.launch()
         XCTAssertTrue(headline.waitForExistence(timeout: 15))
-        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label BEGINSWITH 'Hourly forecast from'")).firstMatch.exists,
+        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label BEGINSWITH 'Hourly forecast made'")).firstMatch.exists,
                       "An old hourly forecast should stay labelled hourly")
         keep("page-spainHourly-old")
         // Apple's legal link opens its legal text in the app: the watch has no browser for it.
@@ -285,7 +285,7 @@ final class RainUITests: XCTestCase {
     func testChoosePlaceWithoutLocation() {
         app.launchArguments = server + ["-freshInstall", "YES"]
         app.launch()
-        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label BEGINSWITH 'To see live rain data'")).firstMatch.waitForExistence(timeout: 15),
+        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label BEGINSWITH 'To see the rain where you are'")).firstMatch.waitForExistence(timeout: 15),
                       "A first launch should say which answer to choose before the system asks")
         keep("place-intro")
         app.buttons["Continue"].tap()
@@ -295,14 +295,9 @@ final class RainUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Location Off"].waitForExistence(timeout: 30), "Refusing location should say so")
         let choose = app.buttons["Choose a Place"].firstMatch
         XCTAssertTrue(choose.exists, "Refusing location should offer a place instead")
+        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label BEGINSWITH 'Open Settings, then Privacy'")).firstMatch.exists,
+                      "Location Off should say how to turn it on: watchOS lets no app open Settings")
         keep("place-location-refused")
-        // The privacy policy is in reach here too, before any place is picked.
-        app.buttons["About"].firstMatch.tap()
-        XCTAssertTrue(app.links.containing(NSPredicate(format: "label BEGINSWITH 'Privacy Policy'")).firstMatch.waitForExistence(timeout: 5),
-                      "About should be in reach with location off")
-        keep("place-about")
-        app.navigationBars.buttons.firstMatch.tap()
-        XCTAssertTrue(choose.waitForExistence(timeout: 5))
         choose.tap()
         let field = app.textFields["Town or postcode"].firstMatch
         XCTAssertTrue(field.waitForExistence(timeout: 5))

@@ -15,15 +15,15 @@ public struct RainCopy: Sendable {
     private var lastsWholeForecast: Bool { spells.count == 1 }
     private var hourly: Bool { forecast.resolution == .hourly }
 
-    /// How far the forecast reaches, said no further than it does: "2+ hours" only when it covers
-    /// two hours. A KNMI run covers two hours from its radar time, so a forecast a few minutes old
-    /// says "1+ hours".
+    /// How far the forecast reaches, said no further than it does: "over 2 hours" only when it
+    /// covers two hours. A KNMI run covers two hours from its radar time, so a forecast a few minutes
+    /// old says "over an hour".
     private var reach: (words: String, value: String, unit: String) {
         let minutes = forecast.minutesKnown
-        if minutes >= 120 { return (localized("2+ hours"), "2+", localized("HRS")) }
-        if minutes >= 60 { return (localized("1+ hours"), "1+", localized("HRS")) }
+        if minutes >= 120 { return (localized("over 2 hours"), "2+", localized("HRS")) }
+        if minutes >= 60 { return (localized("over an hour"), "1+", localized("HRS")) }
         let five = max(5, minutes / 5 * 5)
-        return (localized("\(five)+ min"), "\(five)+", localized("MIN"))
+        return (localized("over \(five) min"), "\(five)+", localized("MIN"))
     }
 
     /// Minutes the current state lasts, nil if it lasts as far as the forecast reaches.

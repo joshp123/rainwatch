@@ -8,6 +8,8 @@
 # them as a second guard, and this script fails if any of them played anything.
 # SIM_LANGUAGE=nl captures in Dutch, into captures/raw-nl: the simulator's language is switched for
 # the run and put back after it.
+# NO_TEXT=1 also captures each state without RainWatch's own words, into a "-notext" folder beside
+# it: the design file lays its editable words over those pictures.
 # The build must exist: xcodebuild ... -destination 'generic/platform=watchOS Simulator' build
 set -e
 cd "$(dirname "$0")"
@@ -15,7 +17,7 @@ U="$1"; shift
 APP=../App/build/Build/Products/Debug-watchsimulator/Rain.app
 RAW=captures/raw
 PORT=${PORT:-8765}
-STATES="${*:-dry coming raining stopping ageing not-updated abroad picked first-launch location-off location-not-found forecast-unavailable no-forecast-here too-old}"
+STATES="${*:-dry coming raining stopping ageing not-updated abroad hourly picked radar first-launch location-expired location-off location-not-found forecast-unavailable no-forecast-here too-old}"
 
 options() {
   case "$1" in
@@ -26,10 +28,12 @@ options() {
     ageing) echo "-scenario showerComing -age 32" ;;
     not-updated) echo "-scenario rainingEasing -couldNotUpdate YES" ;;
     abroad) echo "-scenario ukNextHour" ;;
+    hourly) echo "-scenario spainHourly" ;;
     picked) echo "-scenario rainComing -pickedPlace Utrecht" ;;
     # The radar page, from the copy of the server's files the UI tests use (App/test.sh).
     radar) echo "-scenario rainComing -radar YES -server http://127.0.0.1:$PORT" ;;
     first-launch) echo "-failure notAsked" ;;
+    location-expired) echo "-failure expired" ;;
     location-off) echo "-failure noLocation" ;;
     location-not-found) echo "-failure locationNotFound" ;;
     forecast-unavailable) echo "-failure offline" ;;
@@ -64,22 +68,36 @@ if [ -n "$SIM_LANGUAGE" ]; then
 fi
 swiftc -O listen.swift -o "$LISTEN/listen"
 COUNT=$(echo $STATES | wc -w)
-"$LISTEN/listen" $((COUNT * 16 + 240)) CoreSimulator mute > "$LISTEN/log" 2>&1 &
+"$LISTEN/listen" $((COUNT * 90 + 240)) CoreSimulator mute > "$LISTEN/log" 2>&1 &
 METER=$!
 sleep 1
 xcrun simctl boot "$U" 2>/dev/null || true
 xcrun simctl bootstatus "$U" >/dev/null
 xcrun simctl install "$U" "$APP"
 for STATE in $STATES; do
+  # With NO_TEXT both pictures of a state are taken within one minute, so the forecast, the
+  # clock and the face are the same in each.
+  if [ -n "$NO_TEXT" ]; then while [ "$(date +%S)" -gt 1 ]; do sleep 1; done; fi
   # shellcheck disable=SC2046
   xcrun simctl launch "$U" nl.jjp.rain.watchkitapp $(options "$STATE") -freshInstall YES >/dev/null
-  sleep 5
+  sleep 8
   # The radar fetches its squares and waits for the map.
   if [ "$STATE" = radar ]; then sleep 12; fi
   xcrun simctl io "$U" screenshot --type=png "$RAW/app-$STATE.png" >/dev/null 2>&1
   xcrun simctl terminate "$U" nl.jjp.rain.watchkitapp
   sleep 7
   xcrun simctl io "$U" screenshot --type=png "$RAW/face-$STATE.png" >/dev/null 2>&1
+  if [ -n "$NO_TEXT" ]; then
+    mkdir -p "$RAW-notext"
+    # shellcheck disable=SC2046
+    xcrun simctl launch "$U" nl.jjp.rain.watchkitapp $(options "$STATE") -freshInstall YES -hideText YES >/dev/null
+    sleep 8
+    if [ "$STATE" = radar ]; then sleep 12; fi
+    xcrun simctl io "$U" screenshot --type=png "$RAW-notext/app-$STATE.png" >/dev/null 2>&1
+    xcrun simctl terminate "$U" nl.jjp.rain.watchkitapp
+    sleep 7
+    xcrun simctl io "$U" screenshot --type=png "$RAW-notext/face-$STATE.png" >/dev/null 2>&1
+  fi
 done
 xcrun simctl shutdown "$U"
 if [ -n "$SIM_LANGUAGE" ]; then cp "$LISTEN/prefs" "$PREFS"; fi

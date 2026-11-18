@@ -21,6 +21,9 @@ struct RainApp: App {
         shared?.set(UserDefaults.standard.string(forKey: "server"), forKey: "debugServer")
         // `-age 32` makes the saved forecast that many minutes old, on the face too.
         shared?.set(UserDefaults.standard.integer(forKey: "age"), forKey: "debugAge")
+        // `-hideText YES` draws no words of RainWatch's own, on the face too: the design file lays
+        // its editable words over these pictures.
+        shared?.set(UserDefaults.standard.bool(forKey: "hideText"), forKey: "debugHideText")
         // `-freshInstall YES` starts as a new install would, for the path Apple's reviewer takes.
         if UserDefaults.standard.bool(forKey: "freshInstall") {
             Place.forget()
@@ -39,9 +42,16 @@ struct RainApp: App {
     }
     #endif
 
+    #if DEBUG
+    static let hidesText = UserDefaults.standard.bool(forKey: "hideText")
+    #else
+    static let hidesText = false
+    #endif
+
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .hidesTextForDesign(Self.hidesText)
         }
     }
 
@@ -121,23 +131,17 @@ struct ContentView: View {
                 // Apple's rule for a screen before a permission question: one button, which opens
                 // the question. Choosing a place is offered after a refusal instead.
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(localized("To see live rain data where you are, choose Allow While Using App."))
+                    Text(localized("To see the rain where you are, choose Allow While Using App."))
                     Spacer(minLength: 0)
-                    Button(localized("Continue")) {
-                        move(to: .loading, because: "Continue")
-                        askedForLocation = true
-                        Task { await refresh("Continue") }
-                    }
+                    Button(localized("Continue")) { askForLocation() }
                     .buttonStyle(.borderedProminent)
                     .tint(RainPalette.buienradarBlue)
                 }
                 .scenePadding(.horizontal)
-                .toolbar { aboutButton }
             case .loading:
                 ProgressView()
             case let .failed(failure):
                 failed(failure)
-                    .toolbar { aboutButton }
             case let .ready(forecast, issued, source, place):
                 ScrollView {
                     ForecastDetailView(forecast: forecast, issued: issued, couldNotUpdate: couldNotUpdate)
@@ -235,20 +239,12 @@ struct ContentView: View {
         }
     }
 
-    /// The privacy policy and the data's terms, in the corner of screens with no page to scroll.
-    private var aboutButton: some ToolbarContent {
-        ToolbarItem(placement: .topBarLeading) {
-            NavigationLink { AboutPage() } label: {
-                Label(localized("About"), systemImage: "info")
-            }
-        }
-    }
-
     /// A problem in Apple's empty-state layout, in the words the face uses for it too (`Problem`).
     private func failed(_ problem: Problem) -> some View {
         ContentUnavailableView {
-            // With two buttons the symbol goes: with it, the second button runs off the screen.
-            if problem.actions.count > 1 {
+            // The symbol goes where its room is needed: with two buttons the second runs off the
+            // screen, and a sentence of steps pushes the button out of view.
+            if problem.actions.count > 1 || (problem.detail?.count ?? 0) > 40 {
                 Text(problem.title).font(.title3.bold())
             } else {
                 Label(problem.title, systemImage: problem.symbol)
@@ -257,13 +253,22 @@ struct ContentView: View {
             if let detail = problem.detail { Text(detail) }
         } actions: {
             ForEach(problem.actions.indices, id: \.self) { index in
-                let button = switch problem.actions[index] {
-                case .tryAgain: Button(localized("Try Again")) { Task { await refresh("Try Again") } }
-                case .choosePlace: Button(localized("Choose a Place")) { picking = true }
-                }
                 // Without a line of description the title sits on the first button.
-                button.padding(.top, index == 0 && problem.detail == nil ? 8 : 0)
+                button(problem.actions[index])
+                    .padding(.top, index == 0 && problem.detail == nil ? 8 : 0)
             }
+        }
+    }
+
+    @ViewBuilder private func button(_ action: Problem.Action) -> some View {
+        switch action {
+        case .tryAgain: Button(localized("Try Again")) { Task { await refresh("Try Again") } }
+        case .choosePlace: Button(localized("Choose a Place")) { picking = true }
+        // Blue, as on the first launch: the button that opens the system's question.
+        case .allowLocation:
+            Button(localized("Continue")) { askForLocation() }
+                .buttonStyle(.borderedProminent)
+                .tint(RainPalette.buienradarBlue)
         }
     }
 
@@ -277,8 +282,21 @@ struct ContentView: View {
 
     /// The intro before location has ever been asked; else the saved forecast; else a spinner.
     private static var firstScreen: Load {
-        if Place.chosen == nil, CLLocationManager().authorizationStatus == .notDetermined { return .intro }
+        if Place.chosen == nil, CLLocationManager().authorizationStatus == .notDetermined { return askScreen }
         return saved ?? .loading
+    }
+
+    /// The screen before the system's location question: the intro the first time, and once Allow
+    /// Once has run out, the reason it is asked again.
+    private static var askScreen: Load {
+        Place.wasAllowed ? .failed(.locationExpired) : .intro
+    }
+
+    /// Opens the system's location question: Continue on the intro, and on Location Expired.
+    private func askForLocation() {
+        move(to: .loading, because: "Continue")
+        askedForLocation = true
+        Task { await refresh("Continue") }
     }
 
     private static var saved: Load? {
@@ -355,13 +373,13 @@ struct ContentView: View {
         let status = CLLocationManager().authorizationStatus
         if chosen == nil, status == .denied || status == .restricted {
             // The face must stop showing the last place too.
-            Place.noteRefused(true)
+            Place.note(status)
             reloadWidgets(because: "location is off")
             move(to: .failed(.locationOff), because: "location is refused or off")
             return
         }
         if chosen == nil, status == .notDetermined, !askedForLocation {
-            move(to: .intro, because: "location was never answered")
+            move(to: Self.askScreen, because: Place.wasAllowed ? "location was allowed, and must be asked again" : "location was never answered")
             return
         }
         session = chosen == nil ? CLServiceSession(authorization: .whenInUse) : nil
@@ -388,7 +406,7 @@ struct ContentView: View {
             // The question went unanswered: back to the screen that asks it.
             if error as? Place.Failure == .notAsked {
                 askedForLocation = false
-                move(to: .intro, because: "location still not answered")
+                move(to: Self.askScreen, because: "location still not answered")
                 return
             }
             move(to: .failed(Problem(error as? Place.Failure ?? .notFound)), because: "no place")
@@ -454,7 +472,7 @@ struct Credit: View {
             .buttonStyle(.plain)
             .task { if apple == nil { apple = await AppleWeatherCredit.load() } }
         } else {
-            Text(showsTime ? localized("KNMI forecast from \(RainCopy.clock(issued))") : localized("Source: KNMI"))
+            Text(showsTime ? localized("KNMI forecast made \(RainCopy.clock(issued))") : localized("Source: KNMI"))
                 .font(.footnote)
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity, alignment: .leading)

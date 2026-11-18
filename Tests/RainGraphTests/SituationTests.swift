@@ -100,8 +100,36 @@ struct SituationTests {
     @Test func theFaceAndTheAppNameAProblemAlike() {
         #expect(Problem.locationNotFound.faceHeadline == "Location not found")
         #expect(Problem.forecastTooOld(since: Self.run).faceHeadline == "No recent forecast")
-        #expect(Problem.locationOff.faceHint == "Tap to choose a place")
+        #expect(Problem.locationExpired.faceHeadline == "Location expired")
+        #expect(Problem.locationOff.faceHint == "Tap to fix")
+        #expect(Problem.locationExpired.faceHint == "Tap to allow again")
         #expect(Problem.forecastUnavailable.circleWord == "DATA")
         #expect(Problem.locationOff.circleWord == "PLACE")
+        #expect(Problem.locationExpired.circleWord == "PLACE")
+    }
+
+    /// Allow Once, then it runs out: watchOS reports the question as never answered, and RainWatch
+    /// says Location Expired and asks again, not the first-launch words.
+    @Test func allowOnceRunningOutIsNotAFirstLaunch() {
+        #expect(Place.failure(status: .notDetermined, refused: false, allowedBefore: false) == .notAsked)
+        #expect(Place.failure(status: .authorizedAlways, refused: false, allowedBefore: false) == nil)
+        #expect(Place.failure(status: .notDetermined, refused: false, allowedBefore: true) == .expired)
+        #expect(Problem(.expired) == .locationExpired)
+        #expect(Problem.locationExpired.actions == [.allowLocation])
+    }
+
+    /// Don't Allow, after Allow Once or not: Location Off, whatever was allowed before. A widget that
+    /// cannot read the permission follows what the app last saw.
+    @Test func dontAllowIsLocationOff() {
+        #expect(Place.failure(status: .denied, refused: true, allowedBefore: true) == .off)
+        #expect(Place.failure(status: .notDetermined, refused: true, allowedBefore: false) == .off)
+        #expect(Problem.locationOff.actions == [.choosePlace])
+    }
+
+    /// The headline says how far the forecast reaches in words, never "1+".
+    @Test func aDryForecastSaysHowFarInWords() throws {
+        let forecast = try #require(Self.knmi(run: Self.run).forecast(at: Self.run.addingTimeInterval(15 * 60)))
+        let dry = RainForecast.at(forecast.now, from: forecast.samples.map { RainSample(date: $0.date, rate: 0) })!
+        #expect(RainCopy(dry).headline == "Dry for over an hour")
     }
 }

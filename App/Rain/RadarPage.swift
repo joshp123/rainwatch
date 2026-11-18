@@ -308,11 +308,14 @@ struct RadarStrip: View {
                 ForEach(ticks, id: \.self) { tick in
                     Rectangle().fill(.white.opacity(tick == now ? 0.8 : 0.35)).frame(width: 1, height: 4)
                         .position(x: x(tick), y: plot + 1)
-                    Text(tick == now ? localized("Now") : RainCopy.clock(tick))
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(.secondary)
-                        .fixedSize()
-                        .position(x: min(max(x(tick), 12), width - 14), y: plot + 8)
+                    // An hour near the right end has no label: the Ultra's rounded corner cuts it off.
+                    if tick == now || x(tick) <= width - 24 {
+                        Text(tick == now ? localized("Now") : RainCopy.clock(tick))
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundStyle(.secondary)
+                            .fixedSize()
+                            .position(x: min(max(x(tick), 12), width - 14), y: plot + 8)
+                    }
                 }
                 Capsule()
                     .fill(.white)

@@ -6,3 +6,6 @@ xcuserdata/
 App/build-device/
 design/captures/screens/
 design/captures/framed/
+design/paper/__pycache__/
+design/captures/raw-notext/
+design/captures/raw-nl-notext/

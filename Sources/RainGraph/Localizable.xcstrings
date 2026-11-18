@@ -12,17 +12,6 @@
         }
       }
     },
-    "%@, from %@": {
-      "comment": "Face, second line with Apple's data once it is 20 minutes old: Apple Weather, from 23:40",
-      "localizations": {
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%1$@, van %2$@"
-          }
-        }
-      }
-    },
     "%@, hourly": {
       "comment": "Face, second line with Apple's hourly data: Apple Weather, hourly",
       "localizations": {
@@ -30,6 +19,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "%@, per uur"
+          }
+        }
+      }
+    },
+    "%@, made %@": {
+      "comment": "Face, second line with Apple's data once it is 20 minutes old: Weather, made 23:40",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@, van %2$@"
           }
         }
       }
@@ -45,39 +45,6 @@
         }
       }
     },
-    "%lld+ min": {
-      "comment": "How far a short forecast reaches, in a headline",
-      "localizations": {
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld+ min"
-          }
-        }
-      }
-    },
-    "1+ hours": {
-      "comment": "How far the forecast reaches, in a headline",
-      "localizations": {
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "1+ uur"
-          }
-        }
-      }
-    },
-    "2+ hours": {
-      "comment": "How far the forecast reaches, in a headline",
-      "localizations": {
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "2+ uur"
-          }
-        }
-      }
-    },
     "About": {
       "comment": "Button and page title: privacy policy and the data's terms",
       "localizations": {
@@ -85,17 +52,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Info"
-          }
-        }
-      }
-    },
-    "Allow it in Settings.": {
-      "comment": "Under Location Off",
-      "localizations": {
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sta dit toe in Instellingen."
           }
         }
       }
@@ -189,12 +145,12 @@
       }
     },
     "Dry for %@": {
-      "comment": "Headline, no rain as far as the forecast reaches: Dry for 1+ hours",
+      "comment": "Headline, no rain as far as the forecast reaches: Dry for over an hour",
       "localizations": {
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nog %@ droog"
+            "value": "%@ droog"
           }
         }
       }
@@ -254,8 +210,8 @@
         }
       }
     },
-    "Forecast from %@": {
-      "comment": "Second line once the forecast is 20 minutes old",
+    "Forecast made %@": {
+      "comment": "Second line once the forecast is 20 minutes old: when it was made",
       "localizations": {
         "nl": {
           "stringUnit": {
@@ -293,7 +249,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Hardst rond %@"
+            "value": "Het hardst rond %@"
           }
         }
       }
@@ -331,8 +287,8 @@
         }
       }
     },
-    "Hourly forecast from %@": {
-      "comment": "Second line of an hourly forecast once it is 20 minutes old",
+    "Hourly forecast made %@": {
+      "comment": "Second line of an hourly forecast once it is 20 minutes old: when it was made",
       "localizations": {
         "nl": {
           "stringUnit": {
@@ -353,8 +309,8 @@
         }
       }
     },
-    "KNMI forecast from %@": {
-      "comment": "Credit under the app's graph",
+    "KNMI forecast made %@": {
+      "comment": "Credit under the app's graph: whose forecast, and when it was made",
       "localizations": {
         "nl": {
           "stringUnit": {
@@ -404,6 +360,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Lichte regen"
+          }
+        }
+      }
+    },
+    "Location Expired": {
+      "comment": "Problem title: Allow Once has run out, so the system must ask again",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Locatie verlopen"
           }
         }
       }
@@ -518,6 +485,17 @@
         }
       }
     },
+    "Open Settings, then Privacy & Security > Location Services > %@ > While Using the App.": {
+      "comment": "Under Location Off: the way to turn location on, in watchOS's own words (Settings on the watch, watchOS 27). watchOS lets no app open Settings; %@ is the app's name",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open Instellingen, dan Privacy en beveiliging > Locatievoorzieningen > %@ > Bij gebruik van app."
+          }
+        }
+      }
+    },
     "PLACE": {
       "comment": "Circle without a place, second line",
       "localizations": {
@@ -618,23 +596,12 @@
       }
     },
     "Rain for %@": {
-      "comment": "Headline, rain as far as the forecast reaches: Rain for 1+ hours",
+      "comment": "Headline, rain as far as the forecast reaches: Rain for over an hour",
       "localizations": {
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nog %@ regen"
-          }
-        }
-      }
-    },
-    "Rain for the next two hours.": {
-      "comment": "The widget's description when adding it to a face",
-      "localizations": {
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Regen in de komende twee uur."
+            "value": "%@ regen"
           }
         }
       }
@@ -672,6 +639,17 @@
         }
       }
     },
+    "Tap to allow again": {
+      "comment": "Face, second line of Location expired",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tik om weer toe te staan"
+          }
+        }
+      }
+    },
     "Tap to choose a place": {
       "comment": "Face, second line of a problem",
       "localizations": {
@@ -679,6 +657,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tik om een plaats te kiezen"
+          }
+        }
+      }
+    },
+    "Tap to fix": {
+      "comment": "Face, second line of Location off",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tik om op te lossen"
           }
         }
       }
@@ -705,13 +694,24 @@
         }
       }
     },
-    "To see live rain data where you are, choose Allow While Using App.": {
-      "comment": "First launch. The quoted words are watchOS's own Dutch button",
+    "To keep your watch face up to date, choose Allow While Using App.": {
+      "comment": "Under Location Expired, before the system's location question. The quoted words are watchOS's own button",
       "localizations": {
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kies ‘Sta toe bij gebruik van app’ voor live regendata waar je bent."
+            "value": "Kies ‘Bij gebruik van app’ om je wijzerplaat bij te houden."
+          }
+        }
+      }
+    },
+    "To see the rain where you are, choose Allow While Using App.": {
+      "comment": "First launch, before the system's location question. The quoted words are watchOS's own button",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kies ‘Bij gebruik van app’ om de regen te zien waar je bent."
           }
         }
       }
@@ -749,6 +749,17 @@
         }
       }
     },
+    "When the next rain starts or stops.": {
+      "comment": "The widget's description when adding it to a face",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wanneer de volgende bui begint of stopt."
+          }
+        }
+      }
+    },
     "Zoom in": {
       "comment": "Radar button",
       "localizations": {
@@ -778,6 +789,39 @@
           "stringUnit": {
             "state": "translated",
             "value": "over %lld min"
+          }
+        }
+      }
+    },
+    "over %lld min": {
+      "comment": "How far a short forecast reaches, ending a headline: Dry for over 50 min. Dutch starts the headline with it.",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ruim %lld min"
+          }
+        }
+      }
+    },
+    "over 2 hours": {
+      "comment": "How far the forecast reaches, ending a headline: Dry for over 2 hours. Dutch starts the headline with it.",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ruim 2 uur"
+          }
+        }
+      }
+    },
+    "over an hour": {
+      "comment": "How far the forecast reaches, ending a headline: Dry for over an hour. Dutch starts the headline with it.",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ruim een uur"
           }
         }
       }
