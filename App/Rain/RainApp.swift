@@ -294,8 +294,11 @@ struct ContentView: View {
     /// promises.
     private static func town(at place: CLLocationCoordinate2D) async -> String? {
         let rounded = CLLocation(latitude: (place.latitude * 100).rounded() / 100, longitude: (place.longitude * 100).rounded() / 100)
-        return try? await MKReverseGeocodingRequest(location: rounded)?
+        let name = try? await MKReverseGeocodingRequest(location: rounded)?
             .mapItems.first?.addressRepresentations?.cityName
+        // Apple names some places with their region, "City of Westminster, London": the first
+        // part is the town, and all the title has room for.
+        return name?.split(separator: ",").first.map(String.init)
     }
 
     private func refresh(_ trigger: String) async {

@@ -16,7 +16,7 @@ Decided by Josh on 14 November:
 
 Open:
 - **The English store name.** Bare "RainWatch" is taken. "RainWatch: Rain Forecast" and "RainWatch – Rain Forecast" were both accepted; any other "RainWatch …" name up to 30 characters can be tried with one command.
-- **The server.** `server/DESIGN.md` waits for Josh's go, the address and the WeatherKit limit (its last section).
+- **The support email address** that the privacy policy and the support page show to the public (item 15).
 
 ## 2. The list
 
@@ -37,16 +37,16 @@ Who does it: Claude (or another agent), unless it says Josh. "Josh" means only w
 | # | Task | Who | Status |
 |---|---|---|---|
 | 6 | App icon, an Icon Composer file at `App/Rain/AppIcon.icon` | Claude, from Fable's review | Done; checked in the watch's app grid |
-| 7 | Server: once per KNMI run, the forecast becomes a pack of 32 km squares and a contents list on AWS (`server/DESIGN.md`) | Claude | Design signed by Fable and Astra and reviewed cold; waits for Josh's go |
-| 8 | The app reads the server: its own 32 km square for the line (one range request in rain, none when dry), the squares under the map for the radar page | Claude | Done 16 Nov, against `server/job.py`'s files from live KNMI served on the Mac; the Swift reader matched `watch_client.py` on 310 values. The radar draws KNMI's frames on the watch. Goes live when 7 publishes at `rain.jjpcodes.com` |
+| 7 | Server: once per KNMI run, the forecast becomes a pack of 32 km squares and a contents list on AWS (`server/DESIGN.md`) | Claude | Live: `https://rain.jjpcodes.com/latest` answers with a run under ten minutes old (checked 18 Nov) |
+| 8 | The app reads the server: its own 32 km square for the line (one range request in rain, none when dry), the squares under the map for the radar page | Claude | Done 16 Nov; reads the live server since it went up. On Josh's watch on 18 Nov `latest` took 0.5 to 1.7 s and a square 0.4 s (the event log, `README.md`) |
 | 9 | Credit and error messages name the real source ("Source: KNMI"); today they say Buienradar | Claude | Done 16 Nov: "Source: KNMI" on the forecast page and the radar, Apple's mark and legal link for its data; no Buienradar code or words left in the app |
-| 10 | Outside KNMI's area: WeatherKit on the watch. Minute by minute for an hour in the UK, Ireland, the US, Australia and Japan, hourly elsewhere. Apple's Weather mark and legal link shown, hourly data fetched at most once an hour | Claude | Built 16 Nov; the refused-call state works. WeatherKit capability on both App IDs (by `xcodebuild -allowProvisioningUpdates`), but Apple still refuses its token (HTTP 401): WeatherKit must also be on in the App ID's "App Services" tab, which neither the App Store Connect API nor `asc` can set. Needs Josh |
+| 10 | Outside KNMI's area: WeatherKit on the watch. Minute by minute for an hour in the UK, Ireland, the US, Australia and Japan, hourly elsewhere. Apple's Weather mark and legal link shown, hourly data fetched at most once an hour | Claude | Done. The "App Services" switch, the capability `WEATHER_KIT`, was turned on from the shell on 18 Nov (`AGENTS.md`); the live test for London and Madrid passes |
 | 11 | Europe outside KNMI's area: OPERA's open radar composite and our own forecast, 2 hours in 5-minute steps (`research/radar-sota.md`) | Claude | On hold. On one day of light showers OPERA saw 5% of the rain KNMI saw over the Netherlands and Belgium, and its rain-rate product almost none (`research/opera-check.md`). Needs a check in heavier rain, against a second national radar, before we promise anything. WeatherKit covers Europe at launch |
 | 12 | Choose a Place, for anyone who refuses location (Apple Guideline 5.1.1(iv)) | Claude | Done, with a UI test of the reviewer's route |
 | 13 | iPhone wrapper, the only form App Store Connect accepts | Claude | Done; signs, and is accepted for App Store export |
-| 14 | Dutch translation of every word in the app and of the location prompt | Claude writes, Josh reads | To do |
-| 15 | Privacy policy and support page on Josh's website, linked from the app (Guideline 5.1.1(i)) | Claude writes; Josh approves the text before it is published | To do |
-| 16 | Version 1.0.0, build 1 | Claude | With the first upload |
+| 14 | Dutch translation of every word in the app and of the location prompt | Claude writes, Josh reads | Done 18 Nov: `Sources/RainGraph/Localizable.xcstrings` and `App/Shared/InfoPlist.xcstrings`, checked on the simulator in Dutch in every state. `store/dutch.md` lists every string for Josh to read |
+| 15 | Privacy policy and support page on Josh's website, linked from the app (Guideline 5.1.1(i)) | Claude writes; Josh approves the text before it is published | Drafted 18 Nov in `~/code/website/sites/jjpcodes-home/drafts/rainwatch/`, in English and Dutch, not published. Waits for Josh to approve the text and give the support email address. The listing already points at `https://jjpcodes.com/rainwatch/privacy` and `/support` |
+| 16 | Version 1.0.0, build 1 | Claude | Done: 1.0.0, build 3, uploaded 18 Nov with `App/upload.sh` |
 | 17 | Real-watch pass: every forecast state, Always On, Night Mode, VoiceOver, larger text, offline, and a day's refresh log | Claude, with Josh wearing it | To do |
 | 18 | Josh moves his complication from the old Rain app to BuienWatch; then the old app is removed | Josh, then Claude | BuienWatch is installed next to Rain |
 | 19a | Record Buienradar's forecasts at the 64 Dutch grid points for a month, to compare them with KNMI's over many rainy days: Buienradar keeps no archive, so it could only be scored on the one day its forecasts were saved (13 November) | Claude | Recording since 14 Nov 18:46 on mini-server-1, every 15 minutes (`/var/lib/buienradar-recorder`) |
@@ -56,17 +56,17 @@ Who does it: Claude (or another agent), unless it says Josh. "Josh" means only w
 
 | # | Task | Who | Status |
 |---|---|---|---|
-| 20 | Subtitle, keywords and description, in English and Dutch. "buien" and "regen" go in the Dutch keywords. No "Buienradar", "real-time", "accurate" or "best" | Claude; Josh reads before it goes live | Drafts in `research/launch-runbook.md` (C5) |
-| 21 | Five screenshots at 422 × 514, from the real watch, in English and Dutch, each with a headline of eight words or fewer ("Will I get wet?") | Claude | To do |
+| 20 | Subtitle, keywords and description, in English and Dutch. "buien" and "regen" go in the Dutch keywords. No "Buienradar", "real-time", "accurate" or "best" | Claude; Josh reads before it goes live | Written 18 Nov in `store/metadata/` and applied to the draft listing with `asc metadata apply`; nothing is live until the app is submitted. Josh reads it first |
+| 21 | Five screenshots at 422 × 514, from the real watch, in English and Dutch, each with a headline of eight words or fewer ("Will I get wet?") | Claude | Done 18 Nov: `store/screenshots/`, made by `make.py` from silent simulator captures, uploaded to the draft listing in both languages |
 | 22 | App Privacy answers: coarse location, for app functionality, not linked to the person, no tracking | Claude | Applied 14 Nov from `store/privacy.json`, not yet published; recheck once the server design is settled |
-| 23 | Category (Weather), age rating, copyright | Claude | After 3 |
-| 24 | Notes for the reviewer: watch-only, Choose a Place, the data sources; a 60-second demo video | Claude | Before 27 |
+| 23 | Category (Weather), age rating, copyright | Claude | Done 18 Nov: Weather, every age-rating answer "none", copyright "2026 Josh Palmer", manual release |
+| 24 | Notes for the reviewer: watch-only, Choose a Place, the data sources; a 60-second demo video | Claude | Notes written (`store/metadata/review-information.json`) and set on the draft with Josh's contact details, which are not in this repo. The demo video is still to do: the UI tests record one of the reviewer's route (`App/test.sh`) |
 
 **D. Testing and release**
 
 | # | Task | Who | Status |
 |---|---|---|---|
-| 25 | Upload builds; internal TestFlight on Josh's watch | Claude | Build 1.0.0 (1) uploaded 14 Nov through Xcode. The data server and WeatherKit come before external testing |
+| 25 | Upload builds; internal TestFlight on Josh's watch | Claude | Build 1.0.0 (3) uploaded 18 Nov from the command line (`App/upload.sh`) and added to the internal group "Internal". Josh installs it from TestFlight on his iPhone |
 | 26 | External TestFlight: 5 to 10 Dutch testers for two weeks | Josh picks the testers and approves the invitation; Claude runs it | After 25 |
 | 27 | Nominate for featuring when external testing starts, three weeks or more before release | Claude | With 26 |
 | 28 | Submit for review. Allow two weeks. After a rejection over the listing, resubmit the same build | Claude | After 26 |
