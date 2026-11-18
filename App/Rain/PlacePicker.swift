@@ -16,13 +16,13 @@ struct PlacePicker: View {
             List {
                 // A plain field, always in view with its prompt. Apple's search field (`searchable`)
                 // stays hidden above an empty list on the watch, so nothing said what to type.
-                TextField("Town or postcode", text: $query)
+                TextField(localized("Town or postcode"), text: $query)
                     .textContentType(.addressCity)
                     .onSubmit { Task { await search() } }
                 if searching {
                     ProgressView()
                 } else if let results, results.isEmpty {
-                    Text("No places found")
+                    Text(localized("No places found"))
                         .foregroundStyle(.secondary)
                 }
                 ForEach(results ?? [], id: \.self) { place in
@@ -39,11 +39,11 @@ struct PlacePicker: View {
                 }
                 if Place.chosen != nil {
                     Button { pick(nil) } label: {
-                        Label("Use My Location", systemImage: "location.fill")
+                        Label(localized("Use My Location"), systemImage: "location.fill")
                     }
                 }
             }
-            .navigationTitle("Place")
+            .navigationTitle(localized("Place"))
         }
     }
 

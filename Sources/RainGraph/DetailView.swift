@@ -32,11 +32,11 @@ public struct ForecastDetailView: View {
             // One line under the headline: that the update failed, else the forecast's time once
             // it is old, else what comes next. Blue only when it is about rain.
             if couldNotUpdate {
-                Label("Couldn’t update", systemImage: "exclamationmark.triangle.fill")
+                Label(localized("Couldn’t update"), systemImage: "exclamationmark.triangle.fill")
                     .font(.body)
                     .foregroundStyle(.secondary)
             } else if isOld {
-                Text("Forecast from \(RainCopy.clock(issued))")
+                Text(localized("Forecast from \(RainCopy.clock(issued))"))
                     .font(.body)
                     .foregroundStyle(.secondary)
             } else if let detail = copy.detail {
@@ -66,7 +66,7 @@ public struct ForecastChart: View {
     public var body: some View {
         // The same height as the complications, so one shower has one shape. The Heavy line is
         // full height there, so the plot runs a little higher to keep room for its label.
-        let runs = RainCurve.wetRuns(forecast, scale: .rate)
+        let runs = RainCurve.wetRuns(forecast)
         Chart {
             ForEach(runs.indices, id: \.self) { run in
                 ForEach(runs[run].indices, id: \.self) { index in
@@ -99,7 +99,7 @@ public struct ForecastChart: View {
                 AxisTick(length: 4, stroke: StrokeStyle(lineWidth: 1))
                 if let date = value.as(Date.self) {
                     if date == forecast.start {
-                        AxisValueLabel(anchor: .topLeading, collisionResolution: .disabled) { Text("Now").font(Self.labelFont).fixedSize() }
+                        AxisValueLabel(anchor: .topLeading, collisionResolution: .disabled) { Text(localized("Now")).font(Self.labelFont).fixedSize() }
                     } else if labelledHours.contains(date) {
                         AxisValueLabel(anchor: forecast.end.timeIntervalSince(date) < 20 * 60 ? .topTrailing : .top) {
                             Text(RainCopy.clock(date)).font(Self.labelFont)
@@ -115,7 +115,7 @@ public struct ForecastChart: View {
                 AxisGridLine(stroke: StrokeStyle(lineWidth: 1, dash: [2, 3]))
                 // Above its rule, so the label never breaks the dashed line.
                 AxisValueLabel(anchor: .bottomTrailing) {
-                    Text(value.as(Double.self) == Self.scaleLines[0] ? "Light" : "Heavy").font(Self.labelFont)
+                    Text(value.as(Double.self) == Self.scaleLines[0] ? localized("Light") : localized("Heavy")).font(Self.labelFont)
                 }
             }
         }

@@ -32,20 +32,20 @@ public enum Problem: Equatable, Sendable {
     /// The app's title for the problem.
     public var title: String {
         switch self {
-        case .locationNotAsked: "Location Not Set"
-        case .locationOff: "Location Off"
-        case .locationNotFound: "Location Not Found"
-        case .forecastUnavailable: "Forecast Unavailable"
-        case .noForecastHere: "No Forecast Here"
-        case .forecastTooOld: "No Recent Forecast"
+        case .locationNotAsked: localized("Location Not Set")
+        case .locationOff: localized("Location Off")
+        case .locationNotFound: localized("Location Not Found")
+        case .forecastUnavailable: localized("Forecast Unavailable")
+        case .noForecastHere: localized("No Forecast Here")
+        case .forecastTooOld: localized("No Recent Forecast")
         }
     }
 
     /// The one line the app adds under its title, where there is something to add.
     public var detail: String? {
         switch self {
-        case .locationOff: "Allow it in Settings."
-        case let .forecastTooOld(since): "Last forecast \(RainCopy.clock(since))"
+        case .locationOff: localized("Allow it in Settings.")
+        case let .forecastTooOld(since): localized("Last forecast \(RainCopy.clock(since))")
         default: nil
         }
     }
@@ -80,17 +80,17 @@ public enum Problem: Equatable, Sendable {
     public var faceHint: String {
         if let detail, case .forecastTooOld = self { return detail }
         switch actions.first {
-        case .tryAgain: return "Tap to try again"
-        case .choosePlace: return "Tap to choose a place"
-        case nil: return "Tap to set up"
+        case .tryAgain: return localized("Tap to try again")
+        case .choosePlace: return localized("Tap to choose a place")
+        case nil: return localized("Tap to set up")
         }
     }
 
     /// The face's circle says "No" over this: what is missing, a place or the data.
     public var circleWord: String {
         switch self {
-        case .locationNotAsked, .locationOff, .locationNotFound: "PLACE"
-        case .forecastUnavailable, .noForecastHere, .forecastTooOld: "DATA"
+        case .locationNotAsked, .locationOff, .locationNotFound: localized("PLACE")
+        case .forecastUnavailable, .noForecastHere, .forecastTooOld: localized("DATA")
         }
     }
 

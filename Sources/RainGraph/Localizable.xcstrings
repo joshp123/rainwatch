@@ -1,0 +1,710 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "%@ from %@": {
+      "comment": "Second line, rain that lasts as far as the forecast reaches: Drizzle from 01:20",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ vanaf %2$@"
+          }
+        }
+      }
+    },
+    "%@, hourly": {
+      "comment": "Face, second line with Apple's hourly data: Apple Weather, hourly",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@, per uur"
+          }
+        }
+      }
+    },
+    "%lld min ago": {
+      "comment": "Radar, a frame in the past",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld min geleden"
+          }
+        }
+      }
+    },
+    "%lld+ min": {
+      "comment": "How far a short forecast reaches, in a headline",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld+ min"
+          }
+        }
+      }
+    },
+    "1+ hours": {
+      "comment": "How far the forecast reaches, in a headline",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1+ uur"
+          }
+        }
+      }
+    },
+    "2+ hours": {
+      "comment": "How far the forecast reaches, in a headline",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "2+ uur"
+          }
+        }
+      }
+    },
+    "Allow it in Settings.": {
+      "comment": "Under Location Off",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sta dit toe in Instellingen."
+          }
+        }
+      }
+    },
+    "Change Place": {
+      "comment": "Button at the end of a picked place's forecast",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wijzig plaats"
+          }
+        }
+      }
+    },
+    "Choose a Place": {
+      "comment": "Button",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kies een plaats"
+          }
+        }
+      }
+    },
+    "Continue": {
+      "comment": "First launch button",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ga door"
+          }
+        }
+      }
+    },
+    "Couldn’t update": {
+      "comment": "Second line in the app after a refresh failed",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bijwerken mislukt"
+          }
+        }
+      }
+    },
+    "DATA": {
+      "comment": "Circle without a forecast, second line",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DATA"
+          }
+        }
+      }
+    },
+    "Drizzle": {
+      "comment": "How hard, second line",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Motregen"
+          }
+        }
+      }
+    },
+    "Dry": {
+      "comment": "The circle with no rain forecast, and the second line: Dry 00:25–01:20",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Droog"
+          }
+        }
+      }
+    },
+    "Dry for %@": {
+      "comment": "Headline, no rain as far as the forecast reaches: Dry for 1+ hours",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nog %@ droog"
+          }
+        }
+      }
+    },
+    "Dry for %lld min": {
+      "comment": "Headline, rain starts within the hour",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nog %lld min droog"
+          }
+        }
+      }
+    },
+    "Dry from %@": {
+      "comment": "Second line, dry as far as the forecast reaches",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Droog vanaf %@"
+          }
+        }
+      }
+    },
+    "Dry until %@": {
+      "comment": "Headline, dry for an hour or more: Dry until 15:10",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Droog tot %@"
+          }
+        }
+      }
+    },
+    "FOR": {
+      "comment": "Circle, above the number, raining now: rain FOR 14 MIN more",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NOG"
+          }
+        }
+      }
+    },
+    "Forecast Unavailable": {
+      "comment": "Problem title",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Geen verwachting"
+          }
+        }
+      }
+    },
+    "Forecast from %@": {
+      "comment": "Second line once the forecast is 20 minutes old",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verwachting van %@"
+          }
+        }
+      }
+    },
+    "HR": {
+      "comment": "Circle, under the number, hourly forecast: <1 HR",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "UUR"
+          }
+        }
+      }
+    },
+    "HRS": {
+      "comment": "Circle, under the number: 1+ HRS",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "UUR"
+          }
+        }
+      }
+    },
+    "Heaviest around %@": {
+      "comment": "Second line while it rains for an hour or more",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hardst rond %@"
+          }
+        }
+      }
+    },
+    "Heavy": {
+      "comment": "Scale line in the app's graph",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zwaar"
+          }
+        }
+      }
+    },
+    "Heavy rain": {
+      "comment": "How hard, second line",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zware regen"
+          }
+        }
+      }
+    },
+    "Hourly forecast": {
+      "comment": "Second line, where Apple has only an hourly forecast",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verwachting per uur"
+          }
+        }
+      }
+    },
+    "IN": {
+      "comment": "Circle, above the number, dry now: rain IN 39 MIN",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "IN"
+          }
+        }
+      }
+    },
+    "KNMI forecast from %@": {
+      "comment": "Credit under the app's graph",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "KNMI-data van %@"
+          }
+        }
+      }
+    },
+    "Last forecast %@": {
+      "comment": "Under No Recent Forecast, and on the face",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Laatste verwachting %@"
+          }
+        }
+      }
+    },
+    "Legal": {
+      "comment": "Apple Weather's legal link",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Juridisch"
+          }
+        }
+      }
+    },
+    "Light": {
+      "comment": "Scale line in the app's graph",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Licht"
+          }
+        }
+      }
+    },
+    "Light rain": {
+      "comment": "How hard, second line",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lichte regen"
+          }
+        }
+      }
+    },
+    "Location Not Found": {
+      "comment": "Problem title",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Locatie niet gevonden"
+          }
+        }
+      }
+    },
+    "Location Not Set": {
+      "comment": "Problem title",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Locatie niet ingesteld"
+          }
+        }
+      }
+    },
+    "Location Off": {
+      "comment": "Problem title",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Locatie uit"
+          }
+        }
+      }
+    },
+    "MIN": {
+      "comment": "Circle, under the number",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MIN"
+          }
+        }
+      }
+    },
+    "No": {
+      "comment": "Circle without a forecast, first line: No PLACE, No DATA",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Geen"
+          }
+        }
+      }
+    },
+    "No Forecast Here": {
+      "comment": "Problem title",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hier geen verwachting"
+          }
+        }
+      }
+    },
+    "No Recent Forecast": {
+      "comment": "Problem title, forecast over an hour old",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verwachting te oud"
+          }
+        }
+      }
+    },
+    "No places found": {
+      "comment": "Place search with no results",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Geen plaatsen gevonden"
+          }
+        }
+      }
+    },
+    "Now": {
+      "comment": "Start of the time axis, and the radar's present frame",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nu"
+          }
+        }
+      }
+    },
+    "PLACE": {
+      "comment": "Circle without a place, second line",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PLEK"
+          }
+        }
+      }
+    },
+    "Pause": {
+      "comment": "Radar button, for VoiceOver",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pauzeer"
+          }
+        }
+      }
+    },
+    "Place": {
+      "comment": "Title of the place search",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plaats"
+          }
+        }
+      }
+    },
+    "Play": {
+      "comment": "Radar button, for VoiceOver",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Speel af"
+          }
+        }
+      }
+    },
+    "Radar": {
+      "comment": "Button and page title",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Radar"
+          }
+        }
+      }
+    },
+    "Radar Unavailable": {
+      "comment": "Radar page when it can't load",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Radar niet beschikbaar"
+          }
+        }
+      }
+    },
+    "Rain": {
+      "comment": "How hard, second line: moderate rain",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Regen"
+          }
+        }
+      }
+    },
+    "Rain for %@": {
+      "comment": "Headline, rain as far as the forecast reaches: Rain for 1+ hours",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nog %@ regen"
+          }
+        }
+      }
+    },
+    "Rain for the next two hours.": {
+      "comment": "The widget's description when adding it to a face",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Regen in de komende twee uur."
+          }
+        }
+      }
+    },
+    "Rain stops in %lld min": {
+      "comment": "Headline, rain stops within the hour",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nog %lld min regen"
+          }
+        }
+      }
+    },
+    "Rain until %@": {
+      "comment": "Headline, rain for an hour or more: Rain until 15:10",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Regen tot %@"
+          }
+        }
+      }
+    },
+    "Source: KNMI": {
+      "comment": "Credit under an old forecast, and on the radar",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bron: KNMI"
+          }
+        }
+      }
+    },
+    "Tap to choose a place": {
+      "comment": "Face, second line of a problem",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tik om een plaats te kiezen"
+          }
+        }
+      }
+    },
+    "Tap to set up": {
+      "comment": "Face, second line before the first launch",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tik om in te stellen"
+          }
+        }
+      }
+    },
+    "Tap to try again": {
+      "comment": "Face, second line of a problem",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tik om opnieuw te proberen"
+          }
+        }
+      }
+    },
+    "To see live rain data where you are, choose Allow While Using App.": {
+      "comment": "First launch. The quoted words are watchOS's own Dutch button",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kies ‘Sta toe bij gebruik van app’ voor live regendata waar je bent."
+          }
+        }
+      }
+    },
+    "Town or postcode": {
+      "comment": "Prompt in the place search field",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plaats of postcode"
+          }
+        }
+      }
+    },
+    "Try Again": {
+      "comment": "Button",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Probeer opnieuw"
+          }
+        }
+      }
+    },
+    "Use My Location": {
+      "comment": "Button in the place search",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gebruik mijn locatie"
+          }
+        }
+      }
+    },
+    "Zoom in": {
+      "comment": "Radar button",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zoom in"
+          }
+        }
+      }
+    },
+    "Zoom out": {
+      "comment": "Radar button",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zoom uit"
+          }
+        }
+      }
+    },
+    "in %lld min": {
+      "comment": "Radar, a frame in the future",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "over %lld min"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

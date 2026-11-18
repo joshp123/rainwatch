@@ -11,9 +11,6 @@ public struct RainPalette: Sendable {
     public var secondary: Color
     public var baseline: Color
     public var grid: Color
-    /// The top of heavy rain where the arc is shaded: lighter than `rain`, by lightness only, so it
-    /// survives tinted faces and Night Mode.
-    public var rainBright: Color { rain.mix(with: .white, by: 0.55) }
     /// Stand-in for `AccessoryWidgetBackground` and the Smart Stack background.
     public var plate: Color
     public var stack: Color

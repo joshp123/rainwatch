@@ -52,10 +52,10 @@ public enum Intensity: Int, Comparable, Sendable {
     /// Sentence start, as in "Light rain 14:10–14:45".
     public var phrase: String {
         switch self {
-        case .drizzle: "Drizzle"
-        case .light: "Light rain"
-        case .moderate: "Rain"
-        case .heavy: "Heavy rain"
+        case .drizzle: localized("Drizzle")
+        case .light: localized("Light rain")
+        case .moderate: localized("Rain")
+        case .heavy: localized("Heavy rain")
         }
     }
 }

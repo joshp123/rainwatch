@@ -13,11 +13,7 @@ public struct RectangularRainView: View {
     /// Set for Apple's data, whose terms want its mark wherever it is shown.
     let appleWeather: Bool
 
-    /// The same height scale as the circle beside it.
-    var scale = RainCurve.Scale.rate
-
-    public init(forecast: RainForecast, palette: RainPalette, issued: Date? = nil, appleWeather: Bool = false, scale: RainCurve.Scale = .rate) {
-        self.scale = scale
+    public init(forecast: RainForecast, palette: RainPalette, issued: Date? = nil, appleWeather: Bool = false) {
         self.forecast = forecast
         self.palette = palette
         self.issued = issued
@@ -33,7 +29,7 @@ public struct RectangularRainView: View {
     /// still shows it.
     private var credit: String? {
         guard appleWeather else { return nil }
-        return forecast.resolution == .hourly ? "\u{F8FF}Weather, hourly" : "\u{F8FF}Weather"
+        return forecast.resolution == .hourly ? localized("\("\u{F8FF}Weather"), hourly") : "\u{F8FF}Weather"
     }
 
     public var body: some View {
@@ -52,7 +48,7 @@ public struct RectangularRainView: View {
                 // An old forecast always says its time, in any slot: where there is room for only
                 // one line of words, as on Modular Ultra, it takes the place of the hour labels.
                 if isOld, let issued {
-                    Text("Forecast from \(RainCopy.clock(issued))")
+                    Text(localized("Forecast from \(RainCopy.clock(issued))"))
                         .font(RainFont.rounded(13.5, .medium))
                         .foregroundStyle(palette.secondary)
                 } else if roomy, let credit {
@@ -69,7 +65,7 @@ public struct RectangularRainView: View {
                         .font(RainFont.rounded(13.5, .medium))
                         .foregroundStyle(palette.secondary)
                 }
-                RainChart(forecast: forecast, palette: palette, scale: scale)
+                RainChart(forecast: forecast, palette: palette)
                     .padding(.top, 3)
                 if roomy || !isOld {
                     TimeAxis(forecast: forecast, palette: palette)
@@ -90,7 +86,6 @@ public struct RectangularRainView: View {
 struct RainChart: View {
     let forecast: RainForecast
     let palette: RainPalette
-    var scale: RainCurve.Scale = .rate
 
     var body: some View {
         GeometryReader { proxy in
@@ -99,7 +94,7 @@ struct RainChart: View {
                 // Under 24 points the three lines merge into a band that reads as a ruler.
                 ForEach(size.height >= 24 ? RainForecast.scaleLines : [], id: \.self) { line in
                     Path { path in
-                        let y = size.height * (1 - RainCurve.display(line, scale))
+                        let y = size.height * (1 - RainCurve.display(line))
                         path.move(to: CGPoint(x: 0, y: y))
                         path.addLine(to: CGPoint(x: size.width, y: y))
                     }
@@ -108,11 +103,11 @@ struct RainChart: View {
                 let dot = RainCopy(forecast).change.map { CGPoint(x: size.width * forecast.position(of: $0), y: size.height) }
                 // The dot's radius plus 2 points.
                 let hole = dot.map { Path.disc($0, radius: 4.5) }
-                RainArea(forecast: forecast, scale: scale)
+                RainArea(forecast: forecast)
                     .cut(hole)
                     .fill(palette.rain.opacity(0.55))
                     .accentable()
-                RainEdge(forecast: forecast, scale: scale)
+                RainEdge(forecast: forecast)
                     .cut(hole, stroke: StrokeStyle(lineWidth: 1.5, lineCap: .round, lineJoin: .round))
                     .fill(palette.rain)
                     .accentable()
@@ -164,7 +159,7 @@ struct TimeAxis: View {
     var body: some View {
         GeometryReader { proxy in
             ZStack(alignment: .leading) {
-                Text("Now")
+                Text(localized("Now"))
                 ForEach(forecast.hourMarks, id: \.self) { hour in
                     let x = proxy.size.width * forecast.position(of: hour)
                     // "Now" ends about 22 points in; an hour label any closer reads as "Now 14:00".
@@ -199,37 +194,6 @@ struct TimeAxis: View {
 /// colour the label (World Clock's "SF" is orange). Here the number is white and the words around
 /// it are in Buienradar's blue. Text is never boxed smaller than its line height, which would make
 /// the system shrink it.
-/// Ways to draw the circle's arc, to compare on the face (design/README.md).
-public struct ArcStyle: Sendable {
-    public var scale: RainCurve.Scale = .rate
-    /// The track sits further in and is thinner, and the lead word is smaller, so the rain has a
-    /// quarter more depth to rise through.
-    public var deep = false
-    /// Heavy rain is drawn lighter as well as taller. By lightness only, so it survives tinted
-    /// faces and Night Mode.
-    public var bright = false
-    /// One bar for each five minutes, not a smooth area.
-    public var bars = false
-
-    /// The numbers the app's `-arcStyle` option takes. The first is the arc as it is on `main`.
-    public static let options: [ArcStyle] = [
-        ArcStyle(scale: .squareRoot),
-        ArcStyle(),
-        ArcStyle(deep: true),
-        ArcStyle(deep: true, bright: true),
-        ArcStyle(deep: true, bars: true),
-    ]
-    public static let chosen = options[2]
-}
-
-/// The circle's three words.
-public enum CircleWords: String, Sendable {
-    /// "IN 39 MIN" until rain when it is dry, "FOR 14 MIN" while it lasts when it is raining.
-    case countdown
-    /// "DRY 39 MIN" and "RAIN 14 MIN": a proposal Josh has not taken.
-    case state
-}
-
 public struct CircularRainGauge: View {
     public enum Middle: Sendable {
         /// Minutes until the change at the dot.
@@ -243,18 +207,16 @@ public struct CircularRainGauge: View {
     let middle: Middle
     /// Draw the disc. The widget leaves it to `AccessoryWidgetBackground`.
     let plate: Bool
-    var style = ArcStyle.chosen
-    var words = CircleWords.countdown
 
     static let start = Angle.degrees(150)
     static let sweep = Angle.degrees(240)
-    /// Radii as fractions of the slot's radius; the disc behind fills the slot.
+    /// Radii as fractions of the slot's radius; the disc behind fills the slot. The track is
+    /// thin and well inside the rim, so heavy rain has room to stand clear of light rain; the
+    /// words inside it leave it no further in.
     static let rim = 0.98
-    static let track = 0.66
+    static let track = 0.6
 
-    public init(forecast: RainForecast, palette: RainPalette, middle: Middle = .minutes, plate: Bool = false, style: ArcStyle = .chosen, words: CircleWords = .countdown) {
-        self.style = style
-        self.words = words
+    public init(forecast: RainForecast, palette: RainPalette, middle: Middle = .minutes, plate: Bool = false) {
         self.forecast = forecast
         self.palette = palette
         self.middle = middle
@@ -265,17 +227,10 @@ public struct CircularRainGauge: View {
         GeometryReader { proxy in
             let side = min(proxy.size.width, proxy.size.height)
             let half = side / 2
-            // Apple's minimum line weight is 2 points; the deep style trades that for depth.
-            let stroke = style.deep ? side * 0.03 : max(2, side * 0.045)
+            // Thinner than Apple's 2 point minimum for lines: the rain needs the depth.
+            let stroke = side * 0.03
             let halfStroke = stroke / side
-            let track = middle == .minutes ? (style.deep ? 0.6 : Self.track) : 0.42
-            // Dim at the track, the rain's own blue half way up, and lighter than that at the rim.
-            let rain: AnyShapeStyle = style.bright
-                ? AnyShapeStyle(RadialGradient(stops: [.init(color: palette.rain, location: 0),
-                                                       .init(color: palette.rain, location: 0.3),
-                                                       .init(color: palette.rainBright, location: 0.9)],
-                                               center: .center, startRadius: half * (track + halfStroke), endRadius: half * Self.rim))
-                : AnyShapeStyle(palette.rain)
+            let track = middle == .minutes ? Self.track : 0.42
             let copy = RainCopy(forecast)
             ZStack {
                 if plate {
@@ -306,20 +261,11 @@ public struct CircularRainGauge: View {
                                roundEnd: (forecast.samples.last?.height ?? 0) == 0)
                         .cut(dot.map { Path.disc($0, radius: hole) })
                         .fill(palette.baseline)
-                    if style.bars {
-                        RadialRainBars(forecast: forecast, startAngle: Self.start, sweep: Self.sweep,
-                                       baseline: track + halfStroke, full: Self.rim, scale: style.scale)
-                            .cut(wedge)
-                            .fill(rain)
-                            .accentable()
-                    } else {
-                        RadialRainArea(forecast: forecast, startAngle: Self.start, sweep: Self.sweep,
-                                       baseline: track - halfStroke, full: Self.rim, floorAtBaseline: track + halfStroke,
-                                       scale: style.scale)
-                            .cut(wedge)
-                            .fill(rain)
-                            .accentable()
-                    }
+                    RadialRainArea(forecast: forecast, startAngle: Self.start, sweep: Self.sweep,
+                                   baseline: track - halfStroke, full: Self.rim, floorAtBaseline: track + halfStroke)
+                        .cut(wedge)
+                        .fill(palette.rain)
+                        .accentable()
                     if let dot {
                         ChangeDot(palette: palette, diameter: side * 0.1).position(dot)
                     }
@@ -342,15 +288,14 @@ public struct CircularRainGauge: View {
     /// the real face is a fair ruler). Without an arc, the two lines sit as one
     /// block in the middle, as theirs do.
     private func centre(side: CGFloat, copy: RainCopy) -> some View {
-        let (lead, value, unit) = copy.circular(words)
+        let (lead, value, unit) = copy.circular
         let mid = side / 2
         return ZStack {
             if forecast.hasRain {
                 // Three lines at the neighbours' sizes don't fit inside the arc on a 45 point
                 // disc, so the lead word is smaller; the number and the unit match theirs.
                 if let lead {
-                    // Four letters at the three-letter size would touch the arc.
-                    word(lead, side: side, size: style.deep || lead.count > 3 ? 0.18 : 0.2)
+                    word(lead, side: side, size: 0.18)
                         .position(x: mid, y: mid - side * 0.15)
                 }
                 // Three characters at the two-character size would touch the arc.
@@ -379,12 +324,12 @@ public struct CircularRainGauge: View {
         .frame(width: side, height: side)
     }
 
-    /// The words round the number. Blue means rain, so they are blue only while it rains; when it
-    /// is dry they are grey, and a circle with no blue in it means no rain within two hours.
+    /// The words round the number. They count to the rain ("IN 39 MIN" until it starts, "FOR 14
+    /// MIN" while it lasts), so they are blue, as the rain is. With no rain in two hours they are
+    /// grey: a circle with no blue in it means no rain.
     @ViewBuilder private func word(_ text: String, side: CGFloat, size: CGFloat = 0.243) -> some View {
         let label = Text(text).font(RainFont.rounded(side * size, .semibold))
-        // "IN 39 MIN" is about the rain to come, so it is blue too; "DRY 39 MIN" is not.
-        if forecast.hasRain, words == .countdown || RainCopy(forecast).isRainingNow {
+        if forecast.hasRain {
             label.foregroundStyle(palette.rain).accentable().fixedSize()
         } else {
             label.foregroundStyle(palette.secondary).fixedSize()

@@ -5,34 +5,27 @@ import SwiftUI
 /// above a real peak.
 public enum RainCurve {
     /// Any rain gets at least this fraction of full height, so drizzle never looks dry.
-    static let traceFloor = 0.16
+    static let traceFloor = 0.06
 
-    public enum Scale: Sendable {
-        /// The square root of Buienradar's graph height, as the app has drawn rain until now. It
-        /// lifts drizzle off the baseline, but Buienradar's height flattens above 2 mm/h, so a
-        /// downpour stands little taller than light rain.
-        case squareRoot
-        /// Rain in mm/h, a little compressed, full height at Buienradar's Heavy line (11.3 mm/h).
-        /// Drizzle is a thin band, light rain a fifth of the height, moderate rain half: the
-        /// steps of `Intensity`, so the height agrees with the words.
-        case rate
-    }
-
-    public static func display(_ height: Double, _ scale: Scale = .rate) -> Double {
+    /// The drawn height, 0 to 1, for a height on Buienradar's graph scale: rain in mm/h, a little
+    /// compressed, full height at Buienradar's Heavy line (11.3 mm/h). Drizzle is a thin band,
+    /// light rain a fifth of the height and moderate rain half: the steps of `Intensity`, so the
+    /// height agrees with the words, and a burst of heavy rain stands clear of light rain. The
+    /// circle, the large slot and the app's graph all use it, so one shower has one shape.
+    /// (Until November 2026 it was the square root of Buienradar's height, which flattens above
+    /// 2 mm/h: light and heavy rain looked alike in the circle.)
+    public static func display(_ height: Double) -> Double {
         guard height > 0 else { return 0 }
-        switch scale {
-        case .squareRoot: return max(traceFloor, (min(height, 100) / 100).squareRoot())
-        case .rate: return max(0.06, pow(min(1, RainScale.rate(height: height) / RainScale.rate(height: 75)), 0.75))
-        }
+        return max(traceFloor, pow(min(1, RainScale.rate(height: height) / RainScale.rate(height: 75)), 0.75))
     }
 
     /// Points along the curve as (time 0…1, height 0…1).
-    static func points(_ forecast: RainForecast, scale: Scale = .rate, subdivisions: Int = 10) -> [(t: Double, v: Double)] {
+    static func points(_ forecast: RainForecast, subdivisions: Int = 10) -> [(t: Double, v: Double)] {
         // Each sample covers the five minutes after it, so it is drawn at the middle of them: the
         // line then rises around the moment rain starts, where the dot is, not before it.
         // Only the steps before the forecast stops: the last one marks where it ends.
         let steps = forecast.samples.filter { $0.date < forecast.forecastEnd }
-        let values = steps.map { display($0.height, scale) }
+        let values = steps.map { display($0.height) }
         let times = steps.map { forecast.position(of: $0.date.addingTimeInterval(RainForecast.step / 2)) }
         guard values.count > 1 else {
             return values.isEmpty ? [] : [(0, values[0]), (min(1, forecast.position(of: forecast.forecastEnd)), values[0])]
@@ -79,11 +72,11 @@ public enum RainCurve {
 extension RainCurve {
     /// The curve cut into its wet stretches, each starting and ending on the baseline, so dry time
     /// draws nothing at all (a zero-height area leaves a coloured hairline along the baseline).
-    static func wetRuns(_ forecast: RainForecast, scale: Scale) -> [[(t: Double, v: Double)]] {
+    static func wetRuns(_ forecast: RainForecast) -> [[(t: Double, v: Double)]] {
         var runs: [[(t: Double, v: Double)]] = []
         var run: [(t: Double, v: Double)] = []
         var lastDry: (t: Double, v: Double)?
-        for point in points(forecast, scale: scale) {
+        for point in points(forecast) {
             if point.v > 0.0005 {
                 if run.isEmpty { run.append((lastDry?.t ?? point.t, 0)) }
                 run.append(point)
@@ -104,16 +97,14 @@ extension RainCurve {
 /// Filled rain area over a straight time axis, wet stretches only.
 public struct RainArea: Shape {
     let forecast: RainForecast
-    var scale: RainCurve.Scale = .rate
 
-    public init(forecast: RainForecast, scale: RainCurve.Scale = .rate) {
+    public init(forecast: RainForecast) {
         self.forecast = forecast
-        self.scale = scale
     }
 
     public func path(in rect: CGRect) -> Path {
         Path { path in
-            for run in RainCurve.wetRuns(forecast, scale: scale) {
+            for run in RainCurve.wetRuns(forecast) {
                 for (index, point) in run.enumerated() {
                     let p = CGPoint(x: rect.minX + point.t * rect.width, y: rect.maxY - point.v * rect.height)
                     index == 0 ? path.move(to: p) : path.addLine(to: p)
@@ -128,16 +119,14 @@ public struct RainArea: Shape {
 /// intensity", as Josh put it. A bright edge reads better at wrist distance than a flat fill.
 public struct RainEdge: Shape {
     let forecast: RainForecast
-    var scale: RainCurve.Scale = .rate
 
-    public init(forecast: RainForecast, scale: RainCurve.Scale = .rate) {
+    public init(forecast: RainForecast) {
         self.forecast = forecast
-        self.scale = scale
     }
 
     public func path(in rect: CGRect) -> Path {
         Path { path in
-            for run in RainCurve.wetRuns(forecast, scale: scale) {
+            for run in RainCurve.wetRuns(forecast) {
                 for (index, point) in run.dropFirst().dropLast().enumerated() {
                     let p = CGPoint(x: rect.minX + point.t * rect.width, y: rect.maxY - point.v * rect.height)
                     index == 0 ? path.move(to: p) : path.addLine(to: p)
@@ -158,17 +147,15 @@ public struct RadialRainArea: Shape {
     var baseline: Double
     var full: Double
     var rainFloor: Double?
-    var scale: RainCurve.Scale
 
     public init(forecast: RainForecast, startAngle: Angle, sweep: Angle, baseline: Double, full: Double,
-                floorAtBaseline rainFloor: Double? = nil, scale: RainCurve.Scale = .rate) {
+                floorAtBaseline rainFloor: Double? = nil) {
         self.forecast = forecast
         self.startAngle = startAngle
         self.sweep = sweep
         self.baseline = baseline
         self.full = full
         self.rainFloor = rainFloor
-        self.scale = scale
     }
 
     public func path(in rect: CGRect) -> Path {
@@ -181,41 +168,11 @@ public struct RadialRainArea: Shape {
             return CGPoint(x: centre.x + radius * cos(angle), y: centre.y + radius * sin(angle))
         }
         return Path { path in
-            let curve = RainCurve.points(forecast, scale: scale)
+            let curve = RainCurve.points(forecast)
             path.move(to: point(0, 0))
             for p in curve { path.addLine(to: point(p.t, p.v)) }
             for p in curve.reversed() { path.addLine(to: point(p.t, 0)) }
             path.closeSubpath()
-        }
-    }
-}
-
-/// The rain as one bar for each five minutes, standing on the arc: a tall bar among short ones is
-/// a burst of heavy rain.
-public struct RadialRainBars: Shape {
-    let forecast: RainForecast
-    var startAngle: Angle
-    var sweep: Angle
-    var baseline: Double
-    var full: Double
-    var scale: RainCurve.Scale
-    /// The part of each five minutes the bar fills; the rest is the gap between bars.
-    var fill = 0.62
-
-    public func path(in rect: CGRect) -> Path {
-        let centre = CGPoint(x: rect.midX, y: rect.midY)
-        let half = min(rect.width, rect.height) / 2
-        return Path { path in
-            for sample in forecast.samples where sample.date < forecast.forecastEnd && sample.height > 0 {
-                let t = forecast.position(of: sample.date)
-                let width = RainForecast.step / forecast.span
-                let from = startAngle + sweep * (t + width * (1 - fill) / 2)
-                let to = startAngle + sweep * min(1, t + width * (1 + fill) / 2)
-                let outer = half * (baseline + RainCurve.display(sample.height, scale) * (full - baseline))
-                path.addArc(center: centre, radius: outer, startAngle: from, endAngle: to, clockwise: false)
-                path.addArc(center: centre, radius: half * baseline, startAngle: to, endAngle: from, clockwise: true)
-                path.closeSubpath()
-            }
         }
     }
 }

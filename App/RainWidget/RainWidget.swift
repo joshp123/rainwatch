@@ -150,7 +150,7 @@ struct RainWidget: Widget {
             RainComplicationView(entry: entry)
         }
         .configurationDisplayName(Bundle.main.displayName)
-        .description("Rain for the next two hours.")
+        .description(Text(localized("Rain for the next two hours.")))
         .supportedFamilies([.accessoryCircular, .accessoryRectangular, .accessoryCorner, .accessoryInline])
     }
 }
@@ -159,27 +159,6 @@ struct RainComplicationView: View {
     @Environment(\.widgetFamily) private var family
     @Environment(\.widgetRenderingMode) private var renderingMode
     let entry: RainEntry
-
-    /// The circle's style and words under comparison (`-arcStyle 0`, `-circleWords state`), in
-    /// debug builds only.
-    private var arcStyle: ArcStyle {
-        #if DEBUG
-        if let index = UserDefaults(suiteName: Place.appGroup)?.string(forKey: "debugArcStyle").flatMap(Int.init),
-           ArcStyle.options.indices.contains(index) {
-            return ArcStyle.options[index]
-        }
-        #endif
-        return .chosen
-    }
-
-    private var circleWords: CircleWords {
-        #if DEBUG
-        if let words = UserDefaults(suiteName: Place.appGroup)?.string(forKey: "debugCircleWords").flatMap(CircleWords.init) {
-            return words
-        }
-        #endif
-        return .countdown
-    }
 
     private var palette: RainPalette {
         renderingMode == .fullColor ? .fullColour : .tinted(.white)
@@ -199,11 +178,11 @@ struct RainComplicationView: View {
             // The grey disc Apple's own complications sit on, so Rain's edge is as clear as theirs.
             ZStack {
                 AccessoryWidgetBackground()
-                CircularRainGauge(forecast: forecast, palette: palette, style: arcStyle, words: circleWords)
+                CircularRainGauge(forecast: forecast, palette: palette)
             }
             .containerBackground(for: .widget) { Color.clear }
         case .accessoryRectangular:
-            RectangularRainView(forecast: forecast, palette: palette, issued: entry.issued, appleWeather: entry.source?.isApple ?? false, scale: arcStyle.scale)
+            RectangularRainView(forecast: forecast, palette: palette, issued: entry.issued, appleWeather: entry.source?.isApple ?? false)
                 .containerBackground(for: .widget) { forecast.hasRain ? palette.stack : palette.stackDry }
         case .accessoryCorner:
             // Words along the edge; a drop in the corner, filled when rain is due.
@@ -228,10 +207,10 @@ struct RainComplicationView: View {
             ZStack {
                 AccessoryWidgetBackground()
                 VStack(spacing: 0) {
-                    Text("No")
+                    Text(localized("No"))
                         .font(.system(size: 15, weight: .semibold, design: .rounded))
                     // Grey, not blue: blue means rain, and nothing is known about rain here.
-                    Text(short ?? "DATA")
+                    Text(short ?? localized("DATA"))
                         .font(.system(size: 13, weight: .semibold, design: .rounded))
                         .foregroundStyle(palette.secondary)
                 }

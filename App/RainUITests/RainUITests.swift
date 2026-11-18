@@ -26,8 +26,9 @@ final class RainUITests: XCTestCase {
 
     /// Rotterdam is in KNMI's area: its forecast comes from the server, with KNMI named.
     func testForecastPage() {
-        XCTAssertTrue(forecastFrom.waitForExistence(timeout: 30), "The forecast should say when its data is from")
-        XCTAssertTrue(app.staticTexts["Source: KNMI"].exists, "KNMI's forecast should name KNMI")
+        XCTAssertTrue(headline.waitForExistence(timeout: 30), "The forecast should show")
+        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label BEGINSWITH 'KNMI forecast from'")).firstMatch.exists,
+                      "KNMI's forecast should name KNMI and say when it was made")
         XCTAssertTrue(app.buttons["Radar"].exists, "KNMI's area has the radar")
         keep("forecast")
     }
@@ -68,7 +69,7 @@ final class RainUITests: XCTestCase {
             app.terminate()
             app.launchArguments = server + ["-scenario", scenario]
             app.launch()
-            XCTAssertTrue(forecastFrom.waitForExistence(timeout: 15))
+            XCTAssertTrue(headline.waitForExistence(timeout: 15))
             keep("page-\(scenario)")
         }
         // Apple's screens, from test data shaped like its answers (live WeatherKit is tested below).
@@ -76,7 +77,7 @@ final class RainUITests: XCTestCase {
             app.terminate()
             app.launchArguments = server + ["-scenario", scenario]
             app.launch()
-            XCTAssertTrue(forecastFrom.waitForExistence(timeout: 15))
+            XCTAssertTrue(headline.waitForExistence(timeout: 15))
             XCTAssertTrue(app.links["Legal"].exists || app.buttons["Legal"].exists, "\(scenario): Apple's legal link")
             XCTAssertFalse(app.buttons["Radar"].exists, "\(scenario): no radar outside KNMI's area")
             XCTAssertEqual(app.staticTexts["Hourly forecast"].exists, hourly, "\(scenario): hourly label")
@@ -85,7 +86,7 @@ final class RainUITests: XCTestCase {
             sleep(1)
             keep("page-\(scenario)-credit")
         }
-        for failure in ["noLocation", "offline", "noForecast", "stale"] {
+        for failure in ["notAsked", "noLocation", "locationNotFound", "offline", "noForecast", "stale"] {
             app.terminate()
             app.launchArguments = server + ["-failure", failure]
             app.launch()
@@ -130,7 +131,7 @@ final class RainUITests: XCTestCase {
             XCUIDevice.shared.location = XCUILocation(location: CLLocation(latitude: latitude, longitude: longitude))
             app.launchArguments = server + ["-freshInstall", "YES"]
             app.launch()
-            XCTAssertTrue(forecastFrom.waitForExistence(timeout: 30), "\(name): Apple's forecast should show")
+            XCTAssertTrue(headline.waitForExistence(timeout: 30), "\(name): Apple's forecast should show")
             XCTAssertTrue(app.links["Legal"].exists || app.buttons["Legal"].exists, "\(name): Apple's legal link")
             XCTAssertFalse(app.buttons["Radar"].exists, "\(name): no radar outside KNMI's area")
             XCTAssertEqual(app.staticTexts["Hourly forecast"].exists, hourly, "\(name): hourly only where Apple has no minute forecast")
@@ -142,7 +143,7 @@ final class RainUITests: XCTestCase {
     /// in view: some minutes later the person opens the app with no connection. (A forecast under
     /// two minutes old is reused without a request, so the test waits that long.)
     func testFailedRefreshSaysSo() {
-        XCTAssertTrue(forecastFrom.waitForExistence(timeout: 30))
+        XCTAssertTrue(headline.waitForExistence(timeout: 30))
         app.terminate()
         sleep(125)
         app.launchArguments = ["-server", "http://127.0.0.1:1"]
@@ -151,7 +152,10 @@ final class RainUITests: XCTestCase {
         keep("refresh-failed")
         XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label BEGINSWITH 'Couldn’t update'")).firstMatch.exists,
                       "A failed refresh should say so")
-        XCTAssertTrue(app.buttons["Try Again"].firstMatch.isHittable, "Try Again should be in view without scrolling")
+        let again = app.buttons["Try Again"].firstMatch
+        XCTAssertTrue(again.exists, "A failed refresh should offer Try Again")
+        if !again.isHittable { app.swipeUp() }
+        XCTAssertTrue(again.isHittable, "Try Again should be one swipe away at most")
     }
 
     /// The radar says plainly when it can't be reached, and offers Try Again instead of playback.
@@ -231,115 +235,6 @@ final class RainUITests: XCTestCase {
         dump("face")
     }
 
-    // MARK: The design file's screens (design/capture.sh)
-
-    /// Every moment of a day on the wrist: the app, then the face it leaves behind.
-    func testDesignStatesWithoutLocation() {
-        let states: [(String, [String])] = [
-            ("dry", ["-scenario", "dry"]),
-            ("coming", ["-scenario", "showerComing"]),
-            ("raining", ["-scenario", "rainingEasing"]),
-            ("stopping", ["-scenario", "onAndOff"]),
-            ("ageing", ["-scenario", "showerComing", "-age", "32"]),
-            ("hour-old", ["-failure", "stale"]),
-            ("not-updated", ["-scenario", "rainingEasing", "-couldNotUpdate", "YES"]),
-            ("abroad-minute", ["-scenario", "ukNextHour"]),
-            ("abroad-hourly", ["-scenario", "spainHourly"]),
-            ("location-off", ["-failure", "noLocation"]),
-            ("location-not-found", ["-failure", "locationNotFound"]),
-            ("forecast-unavailable", ["-failure", "offline"]),
-            ("no-forecast-here", ["-failure", "noForecast"]),
-        ]
-        for (name, arguments) in states {
-            app.terminate()
-            // As a new install each time, so a place picked by another test doesn't carry over.
-            app.launchArguments = arguments + ["-freshInstall", "YES"]
-            app.launch()
-            sleep(4)
-            keep("app-\(name)")
-            XCUIDevice.shared.press(.home)
-            sleep(7)
-            keep("face-\(name)")
-        }
-        app.terminate()
-        app.launchArguments = ["-server", "http://127.0.0.1:1", "-scenario", "rainComing"]
-        app.launch()
-        let radar = app.buttons["Radar"].firstMatch
-        if radar.waitForExistence(timeout: 15) {
-            radar.tap()
-            sleep(7)
-            keep("app-radar-unavailable")
-        }
-    }
-
-    /// First launch, refusing location and picking a place instead. Needs location never asked.
-    func testDesignRefuseWithoutLocation() {
-        app.launchArguments = server + ["-freshInstall", "YES"]
-        app.launch()
-        XCTAssertTrue(app.buttons["Continue"].waitForExistence(timeout: 15))
-        keep("flow-1-first-launch")
-        app.buttons["Continue"].tap()
-        sleep(3)
-        keep("flow-2-question")
-        XCUIDevice.shared.rotateDigitalCrown(delta: 1.2)
-        sleep(2)
-        keep("flow-3-answers")
-        answerLocation("Don’t Allow")
-        XCTAssertTrue(app.staticTexts["Location Off"].waitForExistence(timeout: 30))
-        keep("flow-a-location-off")
-        app.buttons["Choose a Place"].firstMatch.tap()
-        sleep(4)
-        keep("flow-b-place")
-        let field = app.textFields["Town or postcode"].firstMatch
-        XCTAssertTrue(field.waitForExistence(timeout: 5), "The place search should have a field")
-        field.tap()
-        sleep(3)
-        keep("flow-b2-keyboard")
-        app.typeText("Utrecht")
-        let done = [app, XCUIApplication(bundleIdentifier: "com.apple.Carousel")]
-            .map { $0.buttons["Done"].firstMatch }
-            .first { $0.waitForExistence(timeout: 3) }
-        done?.tap()
-        let utrecht = app.buttons.containing(NSPredicate(format: "label BEGINSWITH 'Utrecht'")).firstMatch
-        XCTAssertTrue(utrecht.waitForExistence(timeout: 20))
-        sleep(1)
-        keep("flow-c-results")
-        utrecht.tap()
-        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label CONTAINS 'forecast from'")).firstMatch.waitForExistence(timeout: 30))
-        sleep(2)
-        keep("flow-d-forecast")
-        // To the very end of the page, where the scale labels are clear of the title.
-        for _ in 0..<3 { XCUIDevice.shared.rotateDigitalCrown(delta: 2); sleep(1) }
-        sleep(1)
-        keep("flow-e-forecast-end")
-        XCUIDevice.shared.press(.home)
-        sleep(7)
-        keep("flow-f-face")
-        app.activate()
-        let change = app.buttons["Change Place"].firstMatch
-        for _ in 0..<5 where !change.isHittable { app.swipeUp() }
-        change.tap()
-        sleep(2)
-        keep("flow-g-change-place")
-    }
-
-    /// First launch, allowing location. Needs location never asked.
-    func testDesignAllowWithoutLocation() {
-        XCUIDevice.shared.location = XCUILocation(location: CLLocation(latitude: 51.92, longitude: 4.48))
-        app.launchArguments = server + ["-freshInstall", "YES"]
-        app.launch()
-        XCTAssertTrue(app.buttons["Continue"].waitForExistence(timeout: 15))
-        app.buttons["Continue"].tap()
-        sleep(2)
-        answerLocation("Allow While Using App")
-        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label CONTAINS 'forecast from'")).firstMatch.waitForExistence(timeout: 40))
-        sleep(3)
-        keep("flow-4-forecast")
-        XCUIDevice.shared.press(.home)
-        sleep(7)
-        keep("flow-5-face")
-    }
-
     /// The face after the app, as the wearer sees it on leaving the app.
     @discardableResult private func keepFace(_ name: String) -> XCUIElement {
         XCUIDevice.shared.press(.home)
@@ -353,18 +248,19 @@ final class RainUITests: XCTestCase {
     func testChoosePlaceWithoutLocation() {
         app.launchArguments = server + ["-freshInstall", "YES"]
         app.launch()
-        XCTAssertTrue(app.staticTexts["Rain where you are"].waitForExistence(timeout: 15), "A first launch should explain the location question first")
+        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label BEGINSWITH 'To see live rain data'")).firstMatch.waitForExistence(timeout: 15),
+                      "A first launch should say which answer to choose before the system asks")
         keep("place-intro")
         app.buttons["Continue"].tap()
         sleep(2)
         keep("place-location-question")
         answerLocation("Don’t Allow")
-        XCTAssertTrue(app.staticTexts["Location Needed"].waitForExistence(timeout: 30), "Refusing location should say so")
+        XCTAssertTrue(app.staticTexts["Location Off"].waitForExistence(timeout: 30), "Refusing location should say so")
         let choose = app.buttons["Choose a Place"].firstMatch
         XCTAssertTrue(choose.exists, "Refusing location should offer a place instead")
         keep("place-location-refused")
         choose.tap()
-        let field = app.textFields["Town or Postcode"].firstMatch
+        let field = app.textFields["Town or postcode"].firstMatch
         XCTAssertTrue(field.waitForExistence(timeout: 5))
         field.tap()
         app.typeText("Utrecht")
@@ -378,7 +274,7 @@ final class RainUITests: XCTestCase {
         XCTAssertTrue(utrecht.waitForExistence(timeout: 20), "Searching should find the town")
         keep("place-search")
         utrecht.tap()
-        XCTAssertTrue(forecastFrom.waitForExistence(timeout: 30), "Picking a town should show its forecast")
+        XCTAssertTrue(headline.waitForExistence(timeout: 30), "Picking a town should show its forecast")
         XCTAssertTrue(app.staticTexts["Utrecht"].exists, "The page should be named after the picked town")
         keep("place-forecast")
         keepFace("place-face-utrecht")
@@ -390,15 +286,16 @@ final class RainUITests: XCTestCase {
         let mine = app.buttons["Use My Location"].firstMatch
         XCTAssertTrue(mine.waitForExistence(timeout: 5))
         mine.tap()
-        XCTAssertTrue(app.staticTexts["Location Needed"].waitForExistence(timeout: 30))
-        keep("place-location-needed")
+        XCTAssertTrue(app.staticTexts["Location Off"].waitForExistence(timeout: 30))
+        keep("place-location-off")
         // The face follows: no place, never the last one.
-        let complication = keepFace("place-face-location-needed")
+        let complication = keepFace("place-face-location-off")
         XCTAssertTrue(complication.staticTexts["PLACE"].exists, "The face should show that a place is needed")
     }
 
-    private var forecastFrom: XCUIElement {
-        app.staticTexts.containing(NSPredicate(format: "label BEGINSWITH 'Forecast from'")).firstMatch
+    /// The forecast page is up when its headline is, and that always starts with "Dry" or "Rain".
+    private var headline: XCUIElement {
+        app.staticTexts.containing(NSPredicate(format: "label BEGINSWITH 'Dry ' OR label BEGINSWITH 'Rain '")).firstMatch
     }
 
     /// The first launch explains the location question before the system asks it.

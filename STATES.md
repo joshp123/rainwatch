@@ -58,7 +58,7 @@ Three facts, each with a few values.
 
 Blue means rain: the line, the arc, and words about rain. The circle's words count to the rain ("IN 36 MIN" until it starts, "FOR 10 MIN" while it lasts), so they are blue whenever rain is forecast. White is the answer (the number, the headline, the dot). Grey is everything else. The white dot is the moment the weather changes: when rain starts, or when it stops. The number counts down to it.
 
-Height means how hard it rains, on one scale in the circle, the large slot and the app's graph (`RainCurve.Scale.rate`): rain in mm/h, a little compressed, full height at Buienradar's Heavy line (11.3 mm/h). Drizzle is a thin band, light rain a fifth of the height and moderate rain half, so a burst of heavy rain stands clear of the light rain round it.
+Height means how hard it rains, on one scale in the circle, the large slot and the app's graph (`RainCurve.display`): rain in mm/h, a little compressed, full height at Buienradar's Heavy line (11.3 mm/h). Drizzle is a thin band, light rain a fifth of the height and moderate rain half, so a burst of heavy rain stands clear of the light rain round it.
 
 ## What moves it from one state to another
 

@@ -22,10 +22,6 @@ struct RainApp: App {
         shared?.set(UserDefaults.standard.string(forKey: "server"), forKey: "debugServer")
         // `-age 32` makes the saved forecast that many minutes old, on the face too.
         shared?.set(UserDefaults.standard.integer(forKey: "age"), forKey: "debugAge")
-        // `-arcStyle 0` draws the face's circle in one of the styles under comparison, and
-        // `-circleWords state` gives it the words "DRY 39 MIN" and "RAIN 14 MIN".
-        shared?.set(UserDefaults.standard.string(forKey: "arcStyle"), forKey: "debugArcStyle")
-        shared?.set(UserDefaults.standard.string(forKey: "circleWords"), forKey: "debugCircleWords")
         // `-freshInstall YES` starts as a new install would, for the path Apple's reviewer takes.
         if UserDefaults.standard.bool(forKey: "freshInstall") {
             Place.forget()
@@ -64,6 +60,8 @@ struct ContentView: View {
     @State private var placeName: String?
     @State private var session: CLServiceSession?
     @State private var picking = false
+    /// The radar page is open. Debug builds can start on it (`-radar YES`), for screenshots.
+    @State private var showsRadar = ContentView.startsOnRadar
     /// Set once Continue is tapped on the intro, so the system's question comes when it's expected.
     @State private var askedForLocation = false
     /// Counts refreshes, so one that a newer one has overtaken cannot write its result: opening the
@@ -78,9 +76,9 @@ struct ContentView: View {
                 // Apple's rule for a screen before a permission question: one button, which opens
                 // the question. Choosing a place is offered after a refusal instead.
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("To see live rain data where you are, choose Allow While Using App.")
+                    Text(localized("To see live rain data where you are, choose Allow While Using App."))
                     Spacer(minLength: 0)
-                    Button("Continue") {
+                    Button(localized("Continue")) {
                         load = .loading
                         askedForLocation = true
                         Task { await refresh() }
@@ -103,7 +101,7 @@ struct ContentView: View {
                         .scenePadding(.horizontal)
                         .padding(.top, 4)
                     if couldNotUpdate {
-                        Button("Try Again") {
+                        Button(localized("Try Again")) {
                             couldNotUpdate = false
                             Task { await refresh() }
                         }
@@ -112,7 +110,7 @@ struct ContentView: View {
                     // With a location there is nothing to choose. A picked place can be changed.
                     if Place.chosen != nil {
                         Button { picking = true } label: {
-                            Label("Change Place", systemImage: "mappin.and.ellipse")
+                            Label(localized("Change Place"), systemImage: "mappin.and.ellipse")
                         }
                         .padding(.top, 10)
                     }
@@ -134,13 +132,14 @@ struct ContentView: View {
                     // It draws KNMI's radar, so it is there only where KNMI's forecast is used.
                     if source == .knmi {
                         ToolbarItem(placement: .topBarLeading) {
-                            NavigationLink {
-                                RadarPage(place: place, forecast: forecast)
-                            } label: {
-                                Label("Radar", systemImage: "map")
+                            Button { showsRadar = true } label: {
+                                Label(localized("Radar"), systemImage: "map")
                             }
                         }
                     }
+                }
+                .navigationDestination(isPresented: $showsRadar) {
+                    RadarPage(place: place, forecast: forecast)
                 }
             }
         }
@@ -181,13 +180,21 @@ struct ContentView: View {
         } actions: {
             ForEach(problem.actions.indices, id: \.self) { index in
                 let button = switch problem.actions[index] {
-                case .tryAgain: Button("Try Again") { Task { await refresh() } }
-                case .choosePlace: Button("Choose a Place") { picking = true }
+                case .tryAgain: Button(localized("Try Again")) { Task { await refresh() } }
+                case .choosePlace: Button(localized("Choose a Place")) { picking = true }
                 }
                 // Without a line of description the title sits on the first button.
                 button.padding(.top, index == 0 && problem.detail == nil ? 8 : 0)
             }
         }
+    }
+
+    private static var startsOnRadar: Bool {
+        #if DEBUG
+        UserDefaults.standard.bool(forKey: "radar")
+        #else
+        false
+        #endif
     }
 
     /// The intro before location has ever been asked; else the saved forecast; else a spinner.
@@ -340,7 +347,7 @@ struct Credit: View {
                         .foregroundStyle(.secondary)
                 }
                 // Blue means rain, so the link is underlined instead.
-                Link("Legal", destination: apple?.legalPage ?? AppleWeatherCredit.fallbackLegalPage)
+                Link(localized("Legal"), destination: apple?.legalPage ?? AppleWeatherCredit.fallbackLegalPage)
                     .buttonStyle(.plain)
                     .foregroundStyle(.secondary)
                     .underline()
@@ -349,7 +356,7 @@ struct Credit: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .task { if apple == nil { apple = await AppleWeatherCredit.load() } }
         } else {
-            Text(showsTime ? "KNMI forecast from \(RainCopy.clock(issued))" : "Source: KNMI")
+            Text(showsTime ? localized("KNMI forecast from \(RainCopy.clock(issued))") : localized("Source: KNMI"))
                 .font(.footnote)
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity, alignment: .leading)

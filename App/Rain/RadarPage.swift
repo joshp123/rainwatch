@@ -48,9 +48,9 @@ struct RadarPage: View {
             // Nothing to play, so no playback controls: say so, and offer to try again, which loads
             // the radar afresh.
             ContentUnavailableView {
-                Label("Radar Unavailable", systemImage: "map")
+                Label(localized("Radar Unavailable"), systemImage: "map")
             } actions: {
-                Button("Try Again") { problem = false }
+                Button(localized("Try Again")) { problem = false }
                     .padding(.top, 8)
             }
         } else {
@@ -81,7 +81,7 @@ struct RadarPage: View {
                     zoom = zoom == .near ? .region : .near
                     withAnimation(.easeInOut(duration: 0.4)) { camera = Self.camera(place, zoom) }
                 } label: {
-                    Label(zoom == .near ? "Zoom out" : "Zoom in",
+                    Label(zoom == .near ? localized("Zoom out") : localized("Zoom in"),
                           systemImage: zoom == .near ? "minus.magnifyingglass" : "plus.magnifyingglass")
                 }
             }
@@ -119,7 +119,7 @@ struct RadarPage: View {
                 }
                 .buttonStyle(.plain)
                 .handGestureShortcut(.primaryAction)
-                .accessibilityLabel(playing ? "Pause" : "Play")
+                .accessibilityLabel(playing ? localized("Pause") : localized("Play"))
                 Text(timeLabel)
                     .font(.headline.monospacedDigit())
                     .contentTransition(.identity)
@@ -127,7 +127,7 @@ struct RadarPage: View {
                 Spacer(minLength: 4)
                 // KNMI's licence (CC BY 4.0) asks for its name with its data. It sits on the black
                 // band, where no map label can run under it.
-                Text("Source: KNMI")
+                Text(localized("Source: KNMI"))
                     .font(.system(size: 10, weight: .medium))
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
@@ -163,10 +163,10 @@ struct RadarPage: View {
 
     /// Relative to now, so it can't be mistaken for the watch's own clock above it.
     private var timeLabel: String {
-        guard let date = frames[safe: index]?.date else { return "Radar" }
-        if date == nowFrameDate { return "Now" }
+        guard let date = frames[safe: index]?.date else { return localized("Radar") }
+        if date == nowFrameDate { return localized("Now") }
         let minutes = Int((date.timeIntervalSince(nowFrameDate ?? .now) / 60).rounded())
-        return minutes > 0 ? "in \(minutes) min" : "\(-minutes) min ago"
+        return minutes > 0 ? localized("in \(minutes) min") : localized("\(-minutes) min ago")
     }
 
     private static func camera(_ place: CLLocationCoordinate2D, _ zoom: Zoom) -> MapCameraPosition {
@@ -287,7 +287,7 @@ struct RadarStrip: View {
                 ForEach(ticks, id: \.self) { tick in
                     Rectangle().fill(.white.opacity(tick == now ? 0.8 : 0.35)).frame(width: 1, height: 4)
                         .position(x: x(tick), y: plot + 1)
-                    Text(tick == now ? "Now" : RainCopy.clock(tick))
+                    Text(tick == now ? localized("Now") : RainCopy.clock(tick))
                         .font(.system(size: 11, weight: .medium))
                         .foregroundStyle(.secondary)
                         .fixedSize()

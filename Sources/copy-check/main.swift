@@ -2,7 +2,7 @@ import RainGraph
 
 for scenario in Scenario.allCases {
     let copy = RainCopy(scenario.forecast)
-    let (lead, value, unit) = copy.circular()
+    let (lead, value, unit) = copy.circular
     let label = [lead, value, unit].compactMap { $0 }.joined(separator: " ")
     print(scenario.rawValue.padding(toLength: 34, withPad: " ", startingAt: 0),
           "| \(label)".padding(toLength: 12, withPad: " ", startingAt: 0),
