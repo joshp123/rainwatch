@@ -1,0 +1,51 @@
+export type Lang = "en" | "nl";
+
+/** Every word on screen. Each line is short enough to read in the time it is up. */
+export const copy = {
+  en: {
+    name: "RainWatch",
+    hook: ["Soaked", "again?"],
+    pain: ["Phone out.", "Open the app.", "Find the radar."],
+    turn: "Not any more.",
+    look: ["Just look", "at your wrist."],
+    promise: ["Rain, two hours ahead.", "On your watch face."],
+    lapse: "Time-lapse of the real app",
+    places: ["In the wide slot.", "In the circle.", "And in the Smart Stack."],
+    radar: ["Radar.", "Two hours ahead."],
+    crown: "Turn the crown to scrub.",
+    question: ["Rain on your", "watch face?"],
+    rivals: [
+      { name: "Buienradar", note: "complication only opens the app" },
+      { name: "Buienalarm", note: "no complication" },
+    ],
+    others: { name: "The usual way", note: "open an app, find the radar" },
+    ours: "the rain line, always in view",
+    asOf: "Checked November 2026",
+    end: ["Free.", "No ads.", "No account."],
+    store: "For Apple Watch",
+    credit: "Rain data: KNMI",
+  },
+  nl: {
+    name: "BuienWatch",
+    hook: ["Alweer", "nat?"],
+    pain: ["Telefoon pakken.", "App openen.", "Radar zoeken."],
+    turn: "Nooit meer.",
+    look: ["Kijk gewoon", "op je pols."],
+    promise: ["Regen, twee uur vooruit.", "Op je wijzerplaat."],
+    lapse: "Timelapse van de echte app",
+    places: ["In het brede vak.", "In het rondje.", "En in de Smart Stack."],
+    radar: ["Radar.", "Twee uur vooruit."],
+    crown: "Draai aan de Digital Crown.",
+    question: ["Regen op je", "wijzerplaat?"],
+    rivals: [
+      { name: "Buienradar", note: "complicatie opent alleen de app" },
+      { name: "Buienalarm", note: "geen complicatie" },
+    ],
+    others: { name: "Zoals het nu gaat", note: "app openen, radar zoeken" },
+    ours: "de regenlijn, altijd in beeld",
+    asOf: "Gecontroleerd in november 2026",
+    end: ["Gratis.", "Geen reclame.", "Geen account."],
+    store: "Voor Apple Watch",
+    credit: "Regendata: KNMI",
+  },
+} as const;
