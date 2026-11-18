@@ -22,7 +22,7 @@ CASE_TOP = 163                        # first row of the case in the frame; the 
 SHOTS = {
     'en-GB': [
         ('face-coming', 'Get there dry?', 'Glance at your wrist.', None),
-        ('app-london', 'In the UK?', 'See the hour ahead.', 'From Apple Weather; hourly where it has no next hour'),
+        ('app-uk', 'In the UK?', 'See the hour ahead.', 'From Apple Weather; hourly where it has no next hour'),
         ('app-raining', 'Caught in a shower?', 'See when it stops.', 'Benelux and western Germany: up to two hours ahead'),
         ('app-radar', 'Watch the shower', 'come in.', 'Radar map in the Benelux and western Germany'),
         ('app-later', 'Free, with no ads.', 'No account needed.', None),

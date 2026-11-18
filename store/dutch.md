@@ -22,7 +22,7 @@ Choices worth a look:
 | No | Geen | Circle without a forecast, first line: No PLACE, No DATA |
 | DATA | DATA | Circle without a forecast, second line |
 | PLACE | PLEK | Circle without a place, second line |
-| IN | IN | Circle, above the number, dry now: rain IN 39 MIN |
+| IN | OVER | Circle, above the number, dry now: rain IN 39 MIN |
 | FOR | NOG | Circle, above the number, raining now: rain FOR 14 MIN more |
 | MIN | MIN | Circle, under the number |
 | HR | UUR | Circle, under the number, hourly forecast: <1 HR |

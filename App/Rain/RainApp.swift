@@ -440,11 +440,12 @@ struct Credit: View {
                         Text(RainCopy.clock(issued))
                             .foregroundStyle(.secondary)
                     }
-                    Spacer(minLength: 0)
-                    // Blue means rain, so the link is underlined instead.
+                    // Blue means rain, so the link is underlined instead. It follows the time
+                    // rather than the trailing edge, where the Ultra's rounded corner cuts it off.
                     Text(localized("Legal"))
                         .foregroundStyle(.secondary)
                         .underline()
+                    Spacer(minLength: 0)
                 }
                 .font(.footnote)
                 .frame(minHeight: 32)

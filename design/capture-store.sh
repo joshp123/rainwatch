@@ -1,7 +1,7 @@
 #!/bin/sh
 # The store screenshots' captures: the real app in the "Rain Ultra 3" simulator, at the real clock,
 # showing a real KNMI run (18 November 2026, 03:40 CET, a heavy shower crossing Friesland) and the
-# live Apple Weather forecast for London. Run it on the Mac mini, whose sound is muted (AGENTS.md):
+# live Apple Weather forecast for a place in the UK. Run it on the Mac mini, whose sound is muted (AGENTS.md):
 #   design/capture-store.sh <simulator udid>
 # The saved run in captures/store/run is served locally with its run time moved to ten minutes ago,
 # as capture.sh does for the radar, so the app, the face and the radar all read it as a fresh run.
@@ -68,6 +68,7 @@ for LOCALE in en-GB nl-NL; do
     sleep 1.5
   done
   xcrun simctl terminate "$U" $ID
-  if [ $LOCALE = en-GB ]; then shoot "$OUT" london 51.51,-0.13; fi   # Apple Weather, live
+  # Apple Weather, live, for a UK place where it rains at the time: UK=52.49,-1.91 is Birmingham.
+  if [ $LOCALE = en-GB ]; then shoot "$OUT" uk "${UK:-51.51,-0.13}"; fi
 done
 echo done
