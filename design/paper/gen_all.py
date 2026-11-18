@@ -106,7 +106,8 @@ def style_for(kind, key, text, box, lang, index, lines):
             return 'cuvDetail', 'center'
         if key == 'To see the rain where you are, choose Allow While Using App.': return 'intro', 'left'
         if key in ('Try Again', 'Choose a Place', 'Continue'): return 'button', 'center'
-        if key in ('About', 'Change Place'): return 'button', 'left'
+        if key == 'About': return 'credit', 'left'
+        if key == 'Change Place': return 'button', 'left'
         if key in ('My Location',) or (box[1] < 125 and box[0] > 130): return 'nav', 'right'
         if key in heads: return 'headline', 'left'
         if key in ('Heavy', 'Light'): return 'axis', 'right'
@@ -217,7 +218,9 @@ def html_for(capdir, lang, kind, state, asset_dir):
             text = text.split('Weather', 1)[1].strip()
             name = 'Legal · with the time'
             box = o['box']
-            parts.append(text_html(name, text, style, box, o['colour'], 'left'))
+            html = text_html(name, text, style, box, o['colour'], 'left')
+            word = text.split(' ', 1)[1] if ' ' in text else text
+            parts.append(html.replace(f'>{text}</div>', f'>{text.split(" ")[0]}  <span style="text-decoration: underline">{word}</span></div>'))
             continue
         if kind == 'face' and 'Weather' in text:
             text = '\uf8ff' + text[text.index('Weather'):]
@@ -225,8 +228,11 @@ def html_for(capdir, lang, kind, state, asset_dir):
         width = None
         if o['lines'] > 1:
             width = 372 if align == 'center' else 356
-        parts.append(text_html(name, text, style, o['first'] if o['lines'] > 1 else o['box'], o['colour'], align, width,
-                               round(o['pitch'], 2) if o['pitch'] else None))
+        html = text_html(name, text, style, o['first'] if o['lines'] > 1 else o['box'], o['colour'], align, width,
+                         round(o['pitch'], 2) if o['pitch'] else None)
+        if o['key'] == 'About':
+            html = html.replace('white-space:pre', 'white-space:pre;text-decoration:underline')
+        parts.append(html)
     if kind == 'face':
         heads = [o['key'] for o in out if o['key'] and (o['key'].startswith('Dry') or o['key'].startswith('Rain'))]
         circle, _ = circle_parts(capdir, lang, state, heads[0] if heads else None)
