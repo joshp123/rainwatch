@@ -46,7 +46,7 @@ Who does it: Claude (or another agent), unless it says Josh. "Josh" means only w
 | 13 | iPhone wrapper, the only form App Store Connect accepts | Claude | Done; signs, and is accepted for App Store export |
 | 14 | Dutch translation of every word in the app and of the location prompt | Claude writes, Josh reads | Done 18 Nov: `Sources/RainGraph/Localizable.xcstrings` and `App/Shared/InfoPlist.xcstrings`, checked on the simulator in Dutch in every state. `store/dutch.md` lists every string for Josh to read |
 | 15 | Privacy policy and support page on Josh's website, linked from the app (Guideline 5.1.1(i)) | Claude writes; Josh approves the text before it is published | Done 18 Nov: both pages are live at `https://jjpcodes.com/rainwatch/privacy` and `/support`, in English and Dutch. Privacy is three lines ("collects nothing"); support is two, with GitHub Issues for problems and no email address |
-| 16 | Version 1.0.0, build 1 | Claude | Done: 1.0.0, build 9, uploaded 18 Nov: the rewritten copy, Permission Expired and Location Off each with their steps, About only as a quiet link at the end of the forecast page |
+| 16 | Version 1.0.0, build 1 | Claude | Done: 1.0.0, build 10, uploaded 18 Nov: the town's name back beside the location arrow (from Apple Maps, Josh's call; if App Review objects, resubmit with "My Location"), full-width buttons on the problem screens, and Location Off steps that point to the iPhone (checked on paired simulators only) |
 | 17 | Real-watch pass: every forecast state, Always On, Night Mode, VoiceOver, larger text, offline, and a day's refresh log | Claude, with Josh wearing it | To do |
 | 18 | Josh moves his complication from the old Rain app to BuienWatch; then the old app is removed | Josh, then Claude | BuienWatch is installed next to Rain |
 | 19a | Record Buienradar's forecasts at the 64 Dutch grid points for a month, to compare them with KNMI's over many rainy days: Buienradar keeps no archive, so it could only be scored on the one day its forecasts were saved (13 November) | Claude | Recording since 14 Nov 18:46 on mini-server-1, every 15 minutes (`/var/lib/buienradar-recorder`) |
@@ -57,7 +57,7 @@ Who does it: Claude (or another agent), unless it says Josh. "Josh" means only w
 | # | Task | Who | Status |
 |---|---|---|---|
 | 20 | Subtitle, keywords, promotional text and description, in English and Dutch, by the rules in Josh's saved App Store posts (Paul Solt, designerants) and Apple's: no other app's name, no "real-time", "accurate", "best" or "minute by minute", every promise of two hours or radar tied to KNMI's area, no keyword repeated in the name, subtitle or other language | Claude; Josh reads before it goes live | Rewritten again 18 Nov in `store/metadata/` (Dutch subtitle "Buien op je wijzerplaat"); the App Store Connect draft still has the earlier text until Josh approves the words in Paper |
-| 21 | Five screenshots at 422 × 514 per language: a two-line headline of eight words or fewer, the real app in Apple's Ultra 3 frame, the face first and then four app screens (Guideline 2.3.3), no app name in the artwork | Claude | Retaken 18 Nov from build 8 with new captions, in `store/screenshots/`; not yet on the draft, which still has build 5's set |
+| 21 | Five screenshots at 422 × 514 per language: a two-line headline of eight words or fewer, the real app in Apple's Ultra 3 frame, the face first and then four app screens (Guideline 2.3.3), no app name in the artwork | Claude | Retaken 18 Nov from build 10 with new captions, in `store/screenshots/`; not yet on the draft, which still has build 5's set |
 | 22 | App Privacy answers: Data Not Collected (Apple excludes what Apple collects, and requests the server does not keep) | Claude | Done 18 Nov: applied from `store/privacy.json` and published with `asc web privacy`; read back as Data Not Collected, published |
 | 23 | Category (Weather), age rating, copyright | Claude | Done 18 Nov: Weather, every age-rating answer "none", copyright "2026 Josh Palmer", manual release |
 | 23a | Custom licence agreement: Apple's standard one, word for word, with WeatherKit's notice added (Agreement, Attachment 8, 1.2 and 2.2) | Claude | Done 18 Nov with `asc eula create`, for all 175 territories; the text is `store/eula.txt`. A territory Apple adds later gets the standard one until the agreement is updated |
@@ -67,7 +67,7 @@ Who does it: Claude (or another agent), unless it says Josh. "Josh" means only w
 
 | # | Task | Who | Status |
 |---|---|---|---|
-| 25 | Upload builds; internal TestFlight on Josh's watch | Claude | Build 1.0.0 (9) uploaded 18 Nov and in the internal group "Internal". Josh installs it from TestFlight on his iPhone |
+| 25 | Upload builds; internal TestFlight on Josh's watch | Claude | Build 1.0.0 (10) uploaded 18 Nov, processed, and in the internal group "Internal". Josh installs it from TestFlight on his iPhone |
 | 26 | External TestFlight: 5 to 10 Dutch testers for two weeks | Josh picks the testers and approves the invitation; Claude runs it | After 25 |
 | 27 | Nominate for featuring when external testing starts, three weeks or more before release | Claude | With 26 |
 | 28 | Submit for review. Allow two weeks. After a rejection over the listing, resubmit the same build | Claude | After 26 |
