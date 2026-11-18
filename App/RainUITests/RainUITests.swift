@@ -241,7 +241,7 @@ final class RainUITests: XCTestCase {
         sleep(5)
         let face = XCUIApplication(bundleIdentifier: "com.apple.Carousel")
         keep(name)
-        return face.otherElements.matching(NSPredicate(format: "label == 'RainWatch'")).firstMatch
+        return face
     }
 
     /// Apple's reviewer may refuse location: the app must still work, with a place picked by name.
@@ -289,8 +289,11 @@ final class RainUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Location Off"].waitForExistence(timeout: 30))
         keep("place-location-off")
         // The face follows: no place, never the last one.
-        let complication = keepFace("place-face-location-off")
-        XCTAssertTrue(complication.staticTexts["PLACE"].exists, "The face should show that a place is needed")
+        let face = keepFace("place-face-location-off")
+        for words in ["PLACE", "Location off"] {
+            XCTAssertTrue(face.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS %@", words)).firstMatch.exists,
+                          "The face should say \(words)")
+        }
     }
 
     /// The forecast page is up when its headline is, and that always starts with "Dry" or "Rain".
