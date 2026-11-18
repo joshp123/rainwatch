@@ -18,6 +18,7 @@ OCR = os.path.join(WORK, 'ocr')
 STYLES.update({
     'cuvDetail': ('SF Compact Display', 400, 'SF-Compact-Display-Regular.otf', 30.25, 0.0034),
     'intro': ('SF Compact Text', 400, 'SF-Compact-Text-Regular.otf', 33.75, -0.0034),
+    'cuvBody': ('SF Compact Text', 400, 'SF-Compact-Text-Regular.otf', 33.25, -0.0024),
     'cuvTitleBold': ('SF Compact Display', 600, 'SF-Compact-Display-Semibold.otf', 40, 0),
     'faceProblem': ('SF Compact Rounded', 600, 'SF-Compact-Rounded-Semibold.otf', 28.5, 0),
     'faceHint': ('SF Compact Rounded', 500, 'SF-Compact-Rounded-Medium.otf', 24, 0),
@@ -100,10 +101,9 @@ def style_for(kind, key, text, box, lang, index, lines):
     titles = ['Location Not Set', 'Permission Expired', 'Location Off', 'Location Not Found', 'Forecast Unavailable',
               'No Forecast Here', 'No Recent Forecast']
     if kind == 'app':
-        if key in ('Forecast Unavailable', 'No Recent Forecast'): return 'cuvTitle', 'center'
         if key in titles: return 'cuvTitleBold', 'center'
-        if key in ('To keep your watch face up to date, choose Allow While Using App.', 'Last forecast %@') or key and key.startswith('Open Settings'):
-            return 'cuvDetail', 'center'
+        if key in ('To keep your watch face up to date, choose Allow While Using App.', 'Last forecast %@') or key and key.startswith('On your iPhone'):
+            return 'cuvBody', 'center'
         if key == 'To see the rain where you are, choose Allow While Using App.': return 'intro', 'left'
         if key in ('Try Again', 'Choose a Place', 'Continue'): return 'button', 'center'
         if key == 'About': return 'credit', 'left'
@@ -151,7 +151,7 @@ def screen(capdir, lang, kind, state):
     while i < len(rows):
         joined, j, key = rows[i][1], i, identify(rows[i][1], lang)
         k = i
-        while key is None and k + 1 < len(rows) and k - i < 4 and kind == 'app' and rows[i][0][1] > 90:
+        while key is None and k + 1 < len(rows) and k - i < 7 and kind == 'app' and rows[i][0][1] > 90:
             k += 1
             joined = joined + ' ' + rows[k][1]
             key = identify(joined, lang)
@@ -208,7 +208,10 @@ def html_for(capdir, lang, kind, state, asset_dir):
         style, align = style_for(kind, o['key'], o['text'], o['box'], lang, 0, out)
         o['text'] = re.sub(r'^[^\wÀ-ÿ<]+\s*', '', o['text'])
         text = canonical(o, lang)
-        name = o['key'] if o['key'] and o['key'] != 'clock time' else f'value: {text}'
+        if style == 'nav':
+            # Vision reads Apple's location arrow as a character before the town's name.
+            text = re.sub(r'^\S\s+', '', text) if re.match(r'^\S\s+\S', text) and len(text.split(' ')[0]) == 1 else text
+        name = o['key'] if o['key'] and o['key'] != 'clock time' else (f'town: {text}' if style == 'nav' else f'value: {text}')
         if style == 'circle':
             continue
         if re.match(r'^\S+ \d', text) and identify(text.split(' ')[0], lang):
@@ -227,7 +230,7 @@ def html_for(capdir, lang, kind, state, asset_dir):
             name = 'Apple Weather mark' if text.endswith('Weather') else name
         width = None
         if o['lines'] > 1:
-            width = 372 if align == 'center' else 356
+            width = 386 if align == 'center' else 356
         html = text_html(name, text, style, o['first'] if o['lines'] > 1 else o['box'], o['colour'], align, width,
                          round(o['pitch'], 2) if o['pitch'] else None)
         if o['key'] == 'About':
