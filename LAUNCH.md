@@ -50,7 +50,7 @@ Who does it: Claude (or another agent), unless it says Josh. "Josh" means only w
 | 17 | Real-watch pass: every forecast state, Always On, Night Mode, VoiceOver, larger text, offline, and a day's refresh log | Claude, with Josh wearing it | To do |
 | 18 | Josh moves his complication from the old Rain app to BuienWatch; then the old app is removed | Josh, then Claude | BuienWatch is installed next to Rain |
 | 19a | Record Buienradar's forecasts at the 64 Dutch grid points for a month, to compare them with KNMI's over many rainy days: Buienradar keeps no archive, so it could only be scored on the one day its forecasts were saved (13 November) | Claude | Recording since 14 Nov 18:46 on mini-server-1, every 15 minutes (`/var/lib/buienradar-recorder`) |
-| 19 | Score KNMI's plain forecast against its blended one over a season | Claude | Done. The blend is live again from 18 Nov, read from KNMI's small probabilities file (`research/verification/probabilities.md`): plain to +30 minutes, the blend from +35 when the file is there in time, plain for the whole run when it is not. Three live runs checked both paths; each built in under 6 seconds |
+| 19 | Score KNMI's plain forecast against its blended one over a season | Claude | Done. The blend is live from KNMI's small probabilities file (`research/verification/probabilities.md`): the newest plain forecast to +60 minutes, then the previous run's blend from +65 to +120, fetched once two minutes ahead by its own sandboxed unit; a missing file means a plain run, on time. On 18 Nov, in widespread rain, 8 of 8 runs carried it after the fix (1 of 8 before); each built in about 6 seconds |
 
 **C. The store page**
 
