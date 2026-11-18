@@ -249,22 +249,38 @@ struct ContentView: View {
     }
 
     /// A problem in Apple's empty-state layout, in the words the face uses for it too (`Problem`).
+    /// A problem in the layout of Apple's empty state (`ContentUnavailableView`), drawn here because
+    /// that view sizes its buttons to their words and does not scroll: the buttons span the screen,
+    /// as Apple's watchOS guidance asks for primary actions, and a long sentence of steps scrolls.
     private func failed(_ problem: Problem) -> some View {
-        ContentUnavailableView {
-            // The symbol goes where its room is needed: with two buttons the second runs off the
-            // screen, and a sentence of steps pushes the button out of view.
-            if problem.actions.count > 1 || (problem.detail?.count ?? 0) > 40 {
-                Text(problem.title).font(.title3.bold())
-            } else {
-                Label(problem.title, systemImage: problem.symbol)
-            }
-        } description: {
-            if let detail = problem.detail { Text(detail) }
-        } actions: {
-            ForEach(problem.actions.indices, id: \.self) { index in
-                // Without a line of description the title sits on the first button.
-                button(problem.actions[index])
-                    .padding(.top, index == 0 && problem.detail == nil ? 8 : 0)
+        GeometryReader { proxy in
+            ScrollView {
+                VStack(spacing: 4) {
+                    // The symbol goes where its room is needed: with two buttons, or a sentence of
+                    // steps, it would push the buttons out of view.
+                    if problem.actions.count < 2, (problem.detail?.count ?? 0) <= 40 {
+                        Image(systemName: problem.symbol)
+                            .font(.title3)
+                            .foregroundStyle(.secondary)
+                            .padding(.bottom, 4)
+                    }
+                    Text(problem.title)
+                        .font(.title3.bold())
+                    if let detail = problem.detail {
+                        Text(detail)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    VStack(spacing: 6) {
+                        ForEach(problem.actions.indices, id: \.self) { index in
+                            button(problem.actions[index])
+                        }
+                    }
+                    .scenePadding(.horizontal)
+                    .padding(.top, 10)
+                }
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity, minHeight: proxy.size.height)
             }
         }
     }

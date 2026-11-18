@@ -41,13 +41,13 @@ def pattern(text):
 
 
 def normal(s):
-    return (s.replace('А', 'A').replace('О', 'O').replace('’', "'").replace('‘', "'")
+    return (s.replace('\u00a0', ' ').replace('А', 'A').replace('О', 'O').replace('’', "'").replace('‘', "'")
             .replace('—', '–').replace('-', '–').strip())
 
 
 PARAGRAPHS = {'To see the rain where you are, choose Allow While Using App.',
               'To keep your watch face up to date, choose Allow While Using App.',
-              'On your iPhone, open Settings, then Privacy & Security > Location Services > %@ > While Using the App.',
+              'On your iPhone, open Settings, then Privacy & Security > Location Services > %@ > While Using the App.',
               'Location Not Found', 'No Forecast Here', 'Location Not Set', 'Permission Expired', 'Location Off',
               'Forecast Unavailable', 'No Recent Forecast'}  # face problem headlines are the app titles in sentence case
 
