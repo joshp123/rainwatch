@@ -36,7 +36,9 @@ public struct ForecastDetailView: View {
                     .font(.body)
                     .foregroundStyle(.secondary)
             } else if isOld {
-                Text(localized("Forecast from \(RainCopy.clock(issued))"))
+                // An hourly forecast stays labelled as one: its times are whole hours.
+                Text(forecast.resolution == .hourly ? localized("Hourly forecast from \(RainCopy.clock(issued))")
+                     : localized("Forecast from \(RainCopy.clock(issued))"))
                     .font(.body)
                     .foregroundStyle(.secondary)
             } else if let detail = copy.detail {

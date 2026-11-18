@@ -136,7 +136,7 @@ struct RainProvider: TimelineProvider {
             return forecast.map { RainEntry(date: now, forecast: $0, issued: run, source: .knmi) }
         }
         if let scenario = AppleScenario.allCases.first(where: { "\($0)" == name }), let forecast = scenario.forecast(at: now) {
-            return RainEntry(date: now, forecast: forecast, issued: now.addingTimeInterval(-5 * 60),
+            return RainEntry(date: now, forecast: forecast, issued: now.addingTimeInterval(-Double(max(5, age)) * 60),
                              source: scenario.resolution == .hourly ? .appleHourly : .appleMinute)
         }
         return nil

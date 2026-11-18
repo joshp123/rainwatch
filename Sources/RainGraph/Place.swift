@@ -30,18 +30,20 @@ public enum Place {
 
     /// A place picked by name instead of the wearer's location. Apple requires a way in for people
     /// who don't share their location, and it also lets anyone watch the rain somewhere else.
+    ///
+    /// Apple's Maps terms allow its search results to be kept only for a while (Attachment 6, 2.5),
+    /// and towns have no Place ID, the one thing they let an app keep. So only the words the wearer
+    /// typed are kept, with the position rounded to the 0.01 degrees the forecast is asked for.
     public struct Chosen: Codable, Hashable, Sendable {
+        /// What the wearer typed, never Apple's name for the place.
         public let name: String
-        /// Region and country, to tell apart places with the same name.
-        public let detail: String
         public let latitude: Double
         public let longitude: Double
 
-        public init(name: String, detail: String, latitude: Double, longitude: Double) {
+        public init(name: String, latitude: Double, longitude: Double) {
             self.name = name
-            self.detail = detail
-            self.latitude = latitude
-            self.longitude = longitude
+            self.latitude = (latitude * 100).rounded() / 100
+            self.longitude = (longitude * 100).rounded() / 100
         }
 
         public var coordinate: CLLocationCoordinate2D {
@@ -69,9 +71,9 @@ public enum Place {
     static let reuseFor: TimeInterval = 5 * 60
 
     /// A saved fix is where the wearer was. A complication that cannot get its own fix may stand on
-    /// it for an hour, as it may stand on an hour-old forecast; after that there is no place. So
-    /// after Allow Once, or with a watch that cannot find itself, the face never goes on showing a
-    /// town the wearer left this morning.
+    /// it for an hour, as it may stand on an hour-old forecast; after that there is no place. So a
+    /// watch that cannot find itself never goes on showing a town the wearer left this morning.
+    /// Once Allow Once has run out the fix is not used at all.
     public static let trustFor: TimeInterval = 60 * 60
 
     private static var trustedSaved: (CLLocationCoordinate2D, Date)? {
@@ -108,13 +110,14 @@ public enum Place {
             Log.event("place: none, location is off")
             throw Failure.off
         }
-        if !mayAsk, status == .notDetermined {
-            guard let (saved, at) = trustedSaved else {
-                Log.event("place: none, location never answered")
+        // Never answered, or Allow Once has run out: the last fix was given for that one use, so it
+        // is forgotten, not used again.
+        if status == .notDetermined {
+            forgetFix()
+            if !mayAsk {
+                Log.event("place: none, location not answered")
                 throw Failure.notAsked
             }
-            Log.event("place: saved fix, \(Log.age(of: at)) (location not answered)")
-            return Found(coordinate: saved, isLive: false, at: at)
         }
         if let saved, let at = savedAt, Date.now.timeIntervalSince(at) < reuseFor {
             Log.event("place: saved fix reused, \(Log.age(of: at))")
@@ -131,6 +134,10 @@ public enum Place {
             Log.event("place: none, location refused")
             throw Failure.off
         case .none:
+            if CLLocationManager().authorizationStatus == .notDetermined {
+                Log.event("place: none, location still not answered after \(Log.seconds(since: start))")
+                throw Failure.notAsked
+            }
             if let (saved, at) = trustedSaved {
                 Log.event("place: no fix in \(Log.seconds(since: start)), saved fix stands in, \(Log.age(of: at))")
                 return Found(coordinate: saved, isLive: false, at: at)
@@ -163,8 +170,14 @@ public enum Place {
 
     /// Forgets the saved fix and any picked place, as a new install would.
     public static func forget() {
+        forgetFix()
         let defaults = UserDefaults(suiteName: appGroup)
-        for key in ["latitude", "longitude", "fixedAt", "chosenPlace", "locationRefused"] { defaults?.removeObject(forKey: key) }
+        for key in ["chosenPlace", "locationRefused"] { defaults?.removeObject(forKey: key) }
+    }
+
+    private static func forgetFix() {
+        let defaults = UserDefaults(suiteName: appGroup)
+        for key in ["latitude", "longitude", "fixedAt"] { defaults?.removeObject(forKey: key) }
     }
 
     public static var savedAt: Date? {

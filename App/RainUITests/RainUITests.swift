@@ -30,7 +30,24 @@ final class RainUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label BEGINSWITH 'KNMI forecast from'")).firstMatch.exists,
                       "KNMI's forecast should name KNMI and say when it was made")
         XCTAssertTrue(app.buttons["Radar"].exists, "KNMI's area has the radar")
+        XCTAssertTrue(app.staticTexts["My Location"].exists, "The page should say it is for where you are")
         keep("forecast")
+        audit("forecast")
+        // The privacy policy and KNMI's licence, at the end of the page.
+        let about = app.buttons["About"].firstMatch
+        for _ in 0..<5 where !about.isHittable { app.swipeUp() }
+        about.tap()
+        XCTAssertTrue(app.links.containing(NSPredicate(format: "label BEGINSWITH 'Privacy Policy'")).firstMatch.waitForExistence(timeout: 5),
+                      "About should link the privacy policy")
+        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label BEGINSWITH 'Rain data from KNMI under CC BY 4.0'")).firstMatch.exists,
+                      "About should give KNMI's licence")
+        keep("about")
+        audit("about")
+        XCUIDevice.shared.rotateDigitalCrown(delta: 0.4)
+        sleep(1)
+        keep("about-knmi")
+        app.swipeUp()
+        keep("about-apple")
     }
 
     /// The radar opens on the present and plays; the crown pauses it and steps through time; the
@@ -45,6 +62,7 @@ final class RainUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Source: KNMI"].exists, "The radar should name KNMI")
         sleep(1)
         keep("radar-opening")
+        audit("radar")
         // A small turn may not cross a detent, as on the real crown; a person turns again.
         XCUIDevice.shared.rotateDigitalCrown(delta: 0.5)
         if !app.buttons["Play"].waitForExistence(timeout: 3) {
@@ -78,7 +96,7 @@ final class RainUITests: XCTestCase {
             app.launchArguments = server + ["-scenario", scenario]
             app.launch()
             XCTAssertTrue(headline.waitForExistence(timeout: 15))
-            XCTAssertTrue(app.links["Legal"].exists || app.buttons["Legal"].exists, "\(scenario): Apple's legal link")
+            XCTAssertTrue(appleLegal.exists, "\(scenario): Apple's legal link")
             XCTAssertFalse(app.buttons["Radar"].exists, "\(scenario): no radar outside KNMI's area")
             XCTAssertEqual(app.staticTexts["Hourly forecast"].exists, hourly, "\(scenario): hourly label")
             keep("page-\(scenario)")
@@ -86,6 +104,23 @@ final class RainUITests: XCTestCase {
             sleep(1)
             keep("page-\(scenario)-credit")
         }
+        // Apple's hourly forecast, 40 minutes old: still labelled hourly, with its time.
+        app.terminate()
+        app.launchArguments = server + ["-scenario", "spainHourly", "-age", "40"]
+        app.launch()
+        XCTAssertTrue(headline.waitForExistence(timeout: 15))
+        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label BEGINSWITH 'Hourly forecast from'")).firstMatch.exists,
+                      "An old hourly forecast should stay labelled hourly")
+        keep("page-spainHourly-old")
+        // Apple's legal link opens its legal text in the app: the watch has no browser for it.
+        for _ in 0..<5 where !appleLegal.isHittable { app.swipeUp() }
+        appleLegal.tap()
+        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label BEGINSWITH 'Changed by'")).firstMatch.waitForExistence(timeout: 10),
+                      "Apple's legal link should open on the note that Apple's data was changed")
+        sleep(3)
+        keep("about-from-legal")
+        app.swipeUp()
+        keep("about-from-legal-text")
         for failure in ["notAsked", "noLocation", "locationNotFound", "offline", "noForecast", "stale"] {
             app.terminate()
             app.launchArguments = server + ["-failure", failure]
@@ -132,10 +167,12 @@ final class RainUITests: XCTestCase {
             app.launchArguments = server + ["-freshInstall", "YES"]
             app.launch()
             XCTAssertTrue(headline.waitForExistence(timeout: 30), "\(name): Apple's forecast should show")
-            XCTAssertTrue(app.links["Legal"].exists || app.buttons["Legal"].exists, "\(name): Apple's legal link")
+            XCTAssertTrue(appleLegal.exists, "\(name): Apple's legal link")
             XCTAssertFalse(app.buttons["Radar"].exists, "\(name): no radar outside KNMI's area")
-            XCTAssertEqual(app.staticTexts["Hourly forecast"].exists, hourly, "\(name): hourly only where Apple has no minute forecast")
+            XCTAssertEqual(app.staticTexts.containing(NSPredicate(format: "label BEGINSWITH 'Hourly forecast'")).firstMatch.exists, hourly,
+                           "\(name): hourly only where Apple has no minute forecast")
             keep("apple-\(name)")
+            audit("apple-\(name)")
         }
     }
 
@@ -259,6 +296,13 @@ final class RainUITests: XCTestCase {
         let choose = app.buttons["Choose a Place"].firstMatch
         XCTAssertTrue(choose.exists, "Refusing location should offer a place instead")
         keep("place-location-refused")
+        // The privacy policy is in reach here too, before any place is picked.
+        app.buttons["About"].firstMatch.tap()
+        XCTAssertTrue(app.links.containing(NSPredicate(format: "label BEGINSWITH 'Privacy Policy'")).firstMatch.waitForExistence(timeout: 5),
+                      "About should be in reach with location off")
+        keep("place-about")
+        app.navigationBars.buttons.firstMatch.tap()
+        XCTAssertTrue(choose.waitForExistence(timeout: 5))
         choose.tap()
         let field = app.textFields["Town or postcode"].firstMatch
         XCTAssertTrue(field.waitForExistence(timeout: 5))
@@ -272,7 +316,9 @@ final class RainUITests: XCTestCase {
         done?.tap()
         let utrecht = app.buttons.containing(NSPredicate(format: "label BEGINSWITH 'Utrecht'")).firstMatch
         XCTAssertTrue(utrecht.waitForExistence(timeout: 20), "Searching should find the town")
+        sleep(3)
         keep("place-search")
+        audit("place-search")
         utrecht.tap()
         XCTAssertTrue(headline.waitForExistence(timeout: 30), "Picking a town should show its forecast")
         XCTAssertTrue(app.staticTexts["Utrecht"].exists, "The page should be named after the picked town")
@@ -295,6 +341,26 @@ final class RainUITests: XCTestCase {
         for words in ["PLACE", "Location off"] {
             XCTAssertTrue(face.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS %@", words)).firstMatch.exists,
                           "The face should say \(words)")
+        }
+    }
+
+    /// Apple's line under its forecast, which opens its legal text.
+    private var appleLegal: XCUIElement {
+        app.buttons.containing(NSPredicate(format: "label CONTAINS 'Legal'")).firstMatch
+    }
+
+    /// Apple's accessibility audit of the screen. Every issue is printed; a control too small to hit
+    /// fails the test, except MapKit's own Legal link, which the Maps terms forbid changing
+    /// (Attachment 6, 2.1).
+    private func audit(_ screen: String) {
+        do {
+            try app.performAccessibilityAudit { issue in
+                let label = issue.element?.label ?? ""
+                print("AUDIT \(screen): \(issue.auditType) \(issue.compactDescription) [\(label)]")
+                return issue.auditType != .hitRegion || label == "Legal"
+            }
+        } catch {
+            XCTFail("\(screen): \(error)")
         }
     }
 

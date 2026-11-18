@@ -13,7 +13,7 @@ Choices worth a look:
 
 | English | Dutch | Where |
 |---|---|---|
-| Legal | Juridisch | Apple Weather's legal link |
+| Legal | Juridisch | Apple Weather's legal link, which opens the About page |
 | Choose a Place | Kies een plaats | Button |
 | Try Again | Probeer opnieuw | Button |
 | Radar | Radar | Button and page title |
@@ -71,6 +71,13 @@ Choices worth a look:
 | Dry from %@ | Droog vanaf %@ | Second line, dry as far as the forecast reaches |
 | %@ from %@ | %1$@ vanaf %2$@ | Second line, rain that lasts as far as the forecast reaches: Drizzle from 01:20 |
 | Hourly forecast | Verwachting per uur | Second line, where Apple has only an hourly forecast |
+| Hourly forecast from %@ | Verwachting per uur van %@ | Second line of an hourly forecast once it is 20 minutes old |
+| %@, from %@ | %1$@, van %2$@ | Face, second line with Apple's data once it is 20 minutes old:  Weather, from 23:40 |
+| My Location | Mijn locatie | Title of the forecast for where the wearer is, beside the location arrow |
+| About | Info | Button and page title: privacy policy and the data's terms |
+| Privacy Policy | Privacybeleid | Link on the About page |
+| Rain data from KNMI under CC BY 4.0, changed by %@. | Regendata van het KNMI onder CC BY 4.0, bewerkt door %@. | About page, KNMI's licence; %@ is the app's name |
+| Changed by %@ into rain or dry, in five-minute or hourly steps. | Door %@ omgezet in regen of droog, per vijf minuten of per uur. | About page, under Apple's Weather mark; %@ is the app's name |
 | Now | Nu | Start of the time axis, and the radar's present frame |
 | Dry | Droog | The circle with no rain forecast, and the second line: Dry 00:25–01:20 |
 | Rain for the next two hours. | Regen in de komende twee uur. | The widget's description when adding it to a face |

@@ -1,5 +1,4 @@
 import CoreLocation
-import MapKit
 import RainGraph
 import SwiftUI
 import WidgetKit
@@ -29,7 +28,7 @@ struct RainApp: App {
         }
         // `-pickedPlace Utrecht` shows the scenario as the forecast for a place picked by name.
         if let name = UserDefaults.standard.string(forKey: "pickedPlace") {
-            Place.choose(Place.Chosen(name: name, detail: "", latitude: 0, longitude: 0))
+            Place.choose(Place.Chosen(name: name, latitude: 0, longitude: 0))
         }
         WidgetCenter.shared.reloadAllTimelines()
         Log.event("launched: debug build \(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "?"), \(Self.sinceProcessStart) after the process started")
@@ -73,7 +72,6 @@ struct ContentView: View {
     @State private var load = ContentView.firstScreen
     /// The last refresh failed while an older forecast is on screen.
     @State private var couldNotUpdate = false
-    @State private var placeName: String?
     @State private var session: CLServiceSession?
     @State private var picking = false
     /// The radar page is open. Debug builds can start on it (`-radar YES`), for screenshots.
@@ -134,10 +132,12 @@ struct ContentView: View {
                     .tint(RainPalette.buienradarBlue)
                 }
                 .scenePadding(.horizontal)
+                .toolbar { aboutButton }
             case .loading:
                 ProgressView()
             case let .failed(failure):
                 failed(failure)
+                    .toolbar { aboutButton }
             case let .ready(forecast, issued, source, place):
                 ScrollView {
                     ForecastDetailView(forecast: forecast, issued: issued, couldNotUpdate: couldNotUpdate)
@@ -161,16 +161,22 @@ struct ContentView: View {
                         }
                         .padding(.top, 10)
                     }
+                    NavigationLink { AboutPage() } label: {
+                        Label(localized("About"), systemImage: "info.circle")
+                    }
+                    .padding(.top, 10)
                 }
-                // The arrow is Apple's mark for "where you are"; a picked place has none.
+                // The arrow is Apple's mark for "where you are"; a picked place has none. A town's
+                // name from Apple Maps would need its map beside it (Attachment 6, 2.4), so where you
+                // are is "My Location", and a picked place is called what the wearer typed.
                 .navigationTitle {
-                    // A long name, such as "City of Westminster", shrinks before it is cut short.
+                    // A long name shrinks before it is cut short.
                     Group {
-                        if Place.chosen == nil, let placeName {
-                            Label(placeName, systemImage: "location.fill")
-                                .labelStyle(.titleAndIcon)
+                        if let chosen = Place.chosen {
+                            Text(chosen.name)
                         } else {
-                            Text(placeName ?? Bundle.main.displayName)
+                            Label(localized("My Location"), systemImage: "location.fill")
+                                .labelStyle(.titleAndIcon)
                         }
                     }
                     .lineLimit(1)
@@ -199,7 +205,6 @@ struct ContentView: View {
             PlacePicker { place in
                 Place.choose(place)
                 picking = false
-                placeName = place?.name
                 move(to: .loading, because: place == nil ? "Use My Location" : "a place was picked")
                 couldNotUpdate = false
                 Task { await refresh("place changed") }
@@ -226,6 +231,15 @@ struct ContentView: View {
                 reloadWidgets(because: "app left the screen")
             default:
                 break
+            }
+        }
+    }
+
+    /// The privacy policy and the data's terms, in the corner of screens with no page to scroll.
+    private var aboutButton: some ToolbarContent {
+        ToolbarItem(placement: .topBarLeading) {
+            NavigationLink { AboutPage() } label: {
+                Label(localized("About"), systemImage: "info")
             }
         }
     }
@@ -290,17 +304,6 @@ struct ContentView: View {
         }
     }
 
-    /// The town's name, asked for with the position rounded to about 1 km, as the location question
-    /// promises.
-    private static func town(at place: CLLocationCoordinate2D) async -> String? {
-        let rounded = CLLocation(latitude: (place.latitude * 100).rounded() / 100, longitude: (place.longitude * 100).rounded() / 100)
-        let name = try? await MKReverseGeocodingRequest(location: rounded)?
-            .mapItems.first?.addressRepresentations?.cityName
-        // Apple names some places with their region, "City of Westminster, London": the first
-        // part is the town, and all the title has room for.
-        return name?.split(separator: ",").first.map(String.init)
-    }
-
     private func refresh(_ trigger: String) async {
         #if DEBUG
         // Screenshots of every state: `-scenario showerComing` shows a saved forecast instead of
@@ -321,17 +324,17 @@ struct ContentView: View {
             move(to: .ready(forecast, issued: run, source: .knmi,
                             place: CLLocationCoordinate2D(latitude: scenario.coordinate.latitude, longitude: scenario.coordinate.longitude)),
                  because: "-scenario option")
-            placeName = Place.chosen?.name ?? scenario.place
             couldNotUpdate = UserDefaults.standard.bool(forKey: "couldNotUpdate")
             return
         }
         if let name = UserDefaults.standard.string(forKey: "scenario"),
            let scenario = AppleScenario.allCases.first(where: { "\($0)" == name }),
            let forecast = scenario.forecast(at: .now) {
-            move(to: .ready(forecast, issued: .now.addingTimeInterval(-5 * 60), source: scenario.resolution == .hourly ? .appleHourly : .appleMinute,
+            // `-age 40` makes Apple's test forecast that many minutes old.
+            let age = Double(max(5, UserDefaults.standard.integer(forKey: "age"))) * 60
+            move(to: .ready(forecast, issued: .now.addingTimeInterval(-age), source: scenario.resolution == .hourly ? .appleHourly : .appleMinute,
                             place: CLLocationCoordinate2D(latitude: scenario.coordinate.latitude, longitude: scenario.coordinate.longitude)),
                  because: "-scenario option")
-            placeName = scenario.place
             return
         }
         #endif
@@ -361,16 +364,7 @@ struct ContentView: View {
             move(to: .intro, because: "location was never answered")
             return
         }
-        if let chosen {
-            placeName = chosen.name
-            session = nil
-        } else {
-            // Opened on the saved forecast: name its town at once rather than after the fetch.
-            if placeName == nil, case let .ready(_, _, _, saved) = load {
-                Task { if placeName == nil { placeName = await Self.town(at: saved) } }
-            }
-            session = CLServiceSession(authorization: .whenInUse)
-        }
+        session = chosen == nil ? CLServiceSession(authorization: .whenInUse) : nil
         // A place known within the hour is at hand without waiting, so its forecast goes on screen
         // at once. A new fix follows, and if it is somewhere else the forecast is fetched again.
         if chosen == nil, CLLocationManager().authorizationStatus != .notDetermined, let recent = Place.recent {
@@ -416,18 +410,13 @@ struct ContentView: View {
         // Free of the widget budget while the app is in front. A reused forecast is one the widgets
         // already have.
         if snapshot.requests > 0 { reloadWidgets(because: "new forecast") }
-        // The town's name follows; nothing waits for it.
-        if Place.chosen == nil {
-            Task {
-                if let town = await Log.stage("Town name", { await Self.town(at: place) }), mine == refreshes { placeName = town }
-            }
-        }
         return true
     }
 }
 
 /// Who made the forecast on screen. KNMI's licence (CC BY 4.0) asks for its name; Apple's terms ask
-/// for its Weather mark and a link to its legal page wherever its data is shown.
+/// for its Weather mark and a link to its legal page wherever its data is shown. On the watch that
+/// link opens the About page, which shows Apple's legal text.
 struct Credit: View {
     let source: Snapshot.Source
     /// When the forecast was made: one line says whose it is and how recent.
@@ -437,28 +426,25 @@ struct Credit: View {
 
     var body: some View {
         if source.isApple {
-            HStack(spacing: 6) {
-                if let apple, let mark = UIImage(contentsOfFile: apple.markFile.path) {
-                    Image(uiImage: mark)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(height: 12)
-                        .accessibilityLabel("Apple Weather")
-                } else {
-                    Text("\u{F8FF}Weather")
-                }
-                if showsTime {
-                    Text(RainCopy.clock(issued))
+            // The whole line is the link, so it is big enough to tap.
+            NavigationLink { AboutPage(showsApple: true) } label: {
+                HStack(spacing: 6) {
+                    AppleWeatherMark(credit: apple)
+                    if showsTime {
+                        Text(RainCopy.clock(issued))
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer(minLength: 0)
+                    // Blue means rain, so the link is underlined instead.
+                    Text(localized("Legal"))
                         .foregroundStyle(.secondary)
+                        .underline()
                 }
-                // Blue means rain, so the link is underlined instead.
-                Link(localized("Legal"), destination: apple?.legalPage ?? AppleWeatherCredit.fallbackLegalPage)
-                    .buttonStyle(.plain)
-                    .foregroundStyle(.secondary)
-                    .underline()
+                .font(.footnote)
+                .frame(minHeight: 32)
+                .contentShape(Rectangle())
             }
-            .font(.footnote)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .buttonStyle(.plain)
             .task { if apple == nil { apple = await AppleWeatherCredit.load() } }
         } else {
             Text(showsTime ? localized("KNMI forecast from \(RainCopy.clock(issued))") : localized("Source: KNMI"))

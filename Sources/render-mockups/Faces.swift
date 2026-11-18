@@ -63,9 +63,11 @@ struct RectangularMock: View {
     let forecast: RainForecast
     let palette: RainPalette
     var appleWeather = false
+    /// When the data was made; nil draws it fresh.
+    var issued: Date?
 
     var body: some View {
-        RectangularRainView(forecast: forecast, palette: palette, appleWeather: appleWeather)
+        RectangularRainView(forecast: forecast, palette: palette, issued: issued, appleWeather: appleWeather)
             .padding(.bottom, 1)
             .frame(width: Ultra3.rectangular.width, height: Ultra3.rectangular.height)
     }
@@ -75,9 +77,11 @@ struct SmartStackMock: View {
     let forecast: RainForecast
     let palette: RainPalette
     var appleWeather = false
+    /// When the data was made; nil draws it fresh.
+    var issued: Date?
 
     var body: some View {
-        RectangularRainView(forecast: forecast, palette: palette, appleWeather: appleWeather)
+        RectangularRainView(forecast: forecast, palette: palette, issued: issued, appleWeather: appleWeather)
             .padding(.horizontal, 10)
             .padding(.top, 6)
             .padding(.bottom, 4)

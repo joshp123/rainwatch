@@ -160,8 +160,16 @@ public struct Snapshot: Codable, Sendable {
         #endif
     }
 
+    /// The saved forecast. Apple's terms let its data be kept only for a while (Attachment 8, 1.6),
+    /// so an Apple forecast is deleted once it is too old to show. KNMI's (CC BY 4.0) is kept, to
+    /// say when the last forecast was made.
     public static var saved: Snapshot? {
-        (try? Data(contentsOf: file)).flatMap { try? JSONDecoder().decode(Snapshot.self, from: $0) }
+        guard let snapshot = (try? Data(contentsOf: file)).flatMap({ try? JSONDecoder().decode(Snapshot.self, from: $0) }) else { return nil }
+        if snapshot.source.isApple, Date.now >= snapshot.staleAt {
+            forget()
+            return nil
+        }
+        return snapshot
     }
 
     public static func forget() {

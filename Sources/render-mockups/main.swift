@@ -56,6 +56,10 @@ struct FamilySheet: View {
             // hour, the hourly one rain by clock hour.
             row("Apple, next hour (example)", RainForecast(samples: Array(Scenario.rainComing.forecast.samples.prefix(12))), apple: true)
             row("Apple, hourly (example)", Self.hourly, apple: true)
+            // Once 20 minutes old, Apple's credit stays, with the forecast's time.
+            row("Apple, next hour, 30 min old (example)", RainForecast(samples: Array(Scenario.rainComing.forecast.samples.prefix(12))), apple: true,
+                issued: Scenario.start.addingTimeInterval(-30 * 60))
+            row("Apple, hourly, 40 min old (example)", Self.hourly, apple: true, issued: Scenario.start.addingTimeInterval(-40 * 60))
         }
         .padding(28)
         .background(.black)
@@ -63,13 +67,13 @@ struct FamilySheet: View {
 }
 
 extension FamilySheet {
-    @ViewBuilder func row(_ title: String, _ forecast: RainForecast, apple: Bool = false) -> some View {
+    @ViewBuilder func row(_ title: String, _ forecast: RainForecast, apple: Bool = false, issued: Date? = nil) -> some View {
         GridRow(alignment: .center) {
             Caption(title: title)
                 .frame(width: 120, alignment: .leading)
             CircularMock(forecast: forecast, palette: palette)
-            RectangularMock(forecast: forecast, palette: palette, appleWeather: apple)
-            SmartStackMock(forecast: forecast, palette: palette, appleWeather: apple)
+            RectangularMock(forecast: forecast, palette: palette, appleWeather: apple, issued: issued)
+            SmartStackMock(forecast: forecast, palette: palette, appleWeather: apple, issued: issued)
             CornerTile { CornerMock(forecast: forecast, palette: palette) }
             InlineMock(forecast: forecast, palette: palette)
         }

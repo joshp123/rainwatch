@@ -32,6 +32,7 @@ struct RadarPage: View {
     @State private var problem = false
     @FocusState private var crownFocused: Bool
     @Environment(\.isLuminanceReduced) private var dimmed
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.scenePhase) private var scenePhase
 
     init(place: CLLocationCoordinate2D, forecast: RainForecast) {
@@ -79,7 +80,7 @@ struct RadarPage: View {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     zoom = zoom == .near ? .region : .near
-                    withAnimation(.easeInOut(duration: 0.4)) { camera = Self.camera(place, zoom) }
+                    withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.4)) { camera = Self.camera(place, zoom) }
                 } label: {
                     Label(zoom == .near ? localized("Zoom out") : localized("Zoom in"),
                           systemImage: zoom == .near ? "minus.magnifyingglass" : "plus.magnifyingglass")
@@ -90,7 +91,11 @@ struct RadarPage: View {
         .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
         .focusable()
         .focused($crownFocused)
-        .onAppear { crownFocused = true }
+        .onAppear {
+            crownFocused = true
+            // With Reduce Motion on, the radar waits on the present until asked to play.
+            if reduceMotion { playing = false }
+        }
         .digitalCrownRotation($crown, from: 0, through: Double(max(frames.count - 1, 0)), by: 1,
                               sensitivity: .low, isContinuous: false, isHapticFeedbackEnabled: true)
         .onChange(of: crown) { _, value in
@@ -105,7 +110,7 @@ struct RadarPage: View {
     }
 
     /// The timeline sits on the bottom edge; its padding clears the screen's rounded corners.
-    static let timelineHeight: CGFloat = 70
+    static let timelineHeight: CGFloat = 74
 
     /// The moment on the map and where it sits in the rain line for your spot. Solid black under
     /// it keeps it legible and leaves the map round you uncovered.
@@ -113,9 +118,12 @@ struct RadarPage: View {
         VStack(alignment: .leading, spacing: 4) {
             HStack(spacing: 5) {
                 Button { playing.toggle() } label: {
+                    // The symbol stays small; the space round it is part of the button, so it can be hit.
                     Image(systemName: playing ? "pause.fill" : "play.fill")
                         .font(.footnote)
                         .frame(width: 18, height: 18)
+                        .padding(6)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .handGestureShortcut(.primaryAction)
@@ -137,6 +145,19 @@ struct RadarPage: View {
                 RadarStrip(series: radar.series, now: nowFrameDate ?? first,
                            selected: frames[safe: index]?.date ?? first)
                     .frame(height: 30)
+                    // VoiceOver steps through the frames as the crown does: swipe up or down.
+                    .accessibilityElement()
+                    .accessibilityLabel(localized("Radar"))
+                    .accessibilityValue(timeLabel)
+                    .accessibilityAdjustableAction { direction in
+                        playing = false
+                        switch direction {
+                        case .increment: index = min(index + 1, frames.count - 1)
+                        case .decrement: index = max(index - 1, 0)
+                        @unknown default: break
+                        }
+                        crown = Double(index)
+                    }
             } else {
                 ProgressView().frame(maxWidth: .infinity, maxHeight: 30)
             }
@@ -300,7 +321,6 @@ struct RadarStrip: View {
                     .position(x: x(selected), y: plot / 2)
             }
         }
-        .accessibilityHidden(true)
     }
 
     /// Runs of steps with and without data.

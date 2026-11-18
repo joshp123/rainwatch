@@ -12,6 +12,17 @@
         }
       }
     },
+    "%@, from %@": {
+      "comment": "Face, second line with Apple's data once it is 20 minutes old: Apple Weather, from 23:40",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@, van %2$@"
+          }
+        }
+      }
+    },
     "%@, hourly": {
       "comment": "Face, second line with Apple's hourly data: Apple Weather, hourly",
       "localizations": {
@@ -67,6 +78,17 @@
         }
       }
     },
+    "About": {
+      "comment": "Button and page title: privacy policy and the data's terms",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Info"
+          }
+        }
+      }
+    },
     "Allow it in Settings.": {
       "comment": "Under Location Off",
       "localizations": {
@@ -85,6 +107,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Wijzig plaats"
+          }
+        }
+      }
+    },
+    "Changed by %@ into rain or dry, in five-minute or hourly steps.": {
+      "comment": "About page, under Apple's Weather mark; %@ is the app's name",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Door %@ omgezet in regen of droog, per vijf minuten of per uur."
           }
         }
       }
@@ -298,6 +331,17 @@
         }
       }
     },
+    "Hourly forecast from %@": {
+      "comment": "Second line of an hourly forecast once it is 20 minutes old",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verwachting per uur van %@"
+          }
+        }
+      }
+    },
     "IN": {
       "comment": "Circle, above the number, dry now: rain IN 39 MIN",
       "localizations": {
@@ -408,6 +452,17 @@
         }
       }
     },
+    "My Location": {
+      "comment": "Title of the forecast for where the wearer is, beside the location arrow",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mijn locatie"
+          }
+        }
+      }
+    },
     "No": {
       "comment": "Circle without a forecast, first line: No PLACE, No DATA",
       "localizations": {
@@ -507,6 +562,17 @@
         }
       }
     },
+    "Privacy Policy": {
+      "comment": "Link on the About page",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Privacybeleid"
+          }
+        }
+      }
+    },
     "Radar": {
       "comment": "Button and page title",
       "localizations": {
@@ -536,6 +602,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Regen"
+          }
+        }
+      }
+    },
+    "Rain data from KNMI under CC BY 4.0, changed by %@.": {
+      "comment": "About page, KNMI's licence; %@ is the app's name",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Regendata van het KNMI onder CC BY 4.0, bewerkt door %@."
           }
         }
       }

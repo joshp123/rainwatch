@@ -1,4 +1,4 @@
-<!-- Written by AI on 2026.11.18 by model claude fable 5.2, at Josh's request. -->
+<!-- Written by AI on 2026.11.18 by model claude fable 5.2, at Josh's request; updated 2026.11.18 by model claude opus 5.5 for the App Review fixes. -->
 
 # What RainWatch shows, and when
 
@@ -14,7 +14,7 @@ Three facts, each with a few values.
 |---|---|
 | A picked place | The wearer chose a town or postcode. It stays until they change it. |
 | Where you are | Location is allowed and the watch has a fix under an hour old. |
-| Not set | Location was never answered, or Allow Once has run out, and there is no fix under an hour old. |
+| Not set | Location was never answered, or Allow Once has run out. The last fix is then forgotten, never used again. |
 | Off | Location is refused or turned off, and no place is picked. |
 | Not found | Location is allowed, but there has been no fix for an hour. |
 
@@ -28,6 +28,8 @@ Three facts, each with a few values.
 | 20 to 60 minutes | The forecast, with "Forecast from 23:40" on the second line. |
 | 60 minutes or more (120 for Apple's hourly) | No forecast: "No recent forecast", with its time. |
 
+An Apple forecast is deleted from the watch once it reaches that age: Apple's terms let its data be kept only for a while (Attachment 8, 1.6). A KNMI forecast is kept, to say when the last one was made.
+
 ## The rules
 
 1. A problem with the place comes first. Without a place there is no forecast on screen, whatever is saved.
@@ -37,7 +39,7 @@ Three facts, each with a few values.
 5. A saved forecast stands in for a failed fetch only under rules 2 and 3, and the app then says "Couldn't update".
 6. No forecast is never shown as dry.
 7. The app and the face name a problem with the same words: the face's first line is the app's title.
-8. A fix is trusted for an hour. A picked place does not expire.
+8. A fix is trusted for an hour, and not at all once Allow Once has run out. A picked place does not expire.
 
 ## Every state
 
@@ -47,7 +49,7 @@ Three facts, each with a few values.
 | Forecast, dry now, rain coming | IN 36 MIN | Dry for 36 min | Headline, then "Drizzle 00:50–01:20" in blue |
 | Forecast, raining, stops within the hour | FOR 10 MIN | Rain stops in 10 min | Headline, then "Dry 00:25–01:20" in grey |
 | Forecast, raining for an hour or more | FOR 1+ HRS | Rain until 01:25 | Headline, then "Heaviest around 00:25" |
-| Forecast, 20 to 60 minutes old | as above | Headline, then "Forecast from 23:40" | The same two lines; "Source: KNMI" under the graph |
+| Forecast, 20 to 60 minutes old | as above | Headline, then "Forecast from 23:40" (Apple's: " Weather, from 23:40") | The same two lines ("Hourly forecast from 23:40" for Apple's hourly); "Source: KNMI" or Apple's mark under the graph |
 | Forecast, last fetch failed | as above | as above | Second line "Couldn't update"; "KNMI forecast from 00:05" under the graph; Try Again |
 | Location not set | No PLACE | Location not set / Tap to set up | The first-launch screen: one sentence, Continue |
 | Location off | No PLACE | Location off / Tap to choose a place | Location Off / Allow it in Settings. / Choose a Place |
@@ -70,7 +72,8 @@ Height means how hard it rains, on one scale in the circle, the large slot and t
 | Location off, not found, or no forecast here | Choose a Place, pick one | Forecast for that place |
 | A picked place | Change Place, Use My Location | Whatever the location answer gives |
 | Forecast | Location turned off in Settings | Location off: in the app when it is next opened, on the face at its next reload |
-| Forecast for where you are | An hour with no new fix | Location not found; Location not set if Allow Once has run out |
+| Forecast for where you are | An hour with no new fix | Location not found |
+| Forecast for where you are | Allow Once runs out | Location not set, at the face's next reload |
 | Forecast | 20 minutes with no newer forecast | Forecast, 20 to 60 minutes old |
 | Forecast, any age | A newer forecast is fetched | Forecast, under 20 minutes old |
 | Forecast | The fetch fails; saved forecast is for here and under an hour old | Forecast, last fetch failed |
@@ -93,7 +96,7 @@ Found by reading every path that writes the screen or the face's timeline, 17 an
 | 3: nothing over an hour old | The same path, an hour later: the app kept the old forecast with "Couldn't update" for ever | the same `fail()` | `Situation.after` returns No recent forecast | `anHourOldForecastIsNotCountedDownFrom` |
 | 2: only for its own place | Travel, then a fetch fails: the app and the face showed the forecast for the place left behind | `fail()`; `timeline(cached: Snapshot.saved…)` in `RainWidget.swift` took the saved forecast without checking its place | `Situation.after` checks the place | `aSavedForecastForAnotherPlaceIsNotShown`, `aSavedForecastForNearbyStillStandsIn` |
 | 1: place first | Location allowed but no fix for an hour: the app kept the forecast with "Couldn't update" while the face said there was no place | `fail(.noLocation)` with a forecast on screen only set `couldNotUpdate` | A place problem always replaces the forecast (`refresh()`) | none: needs Core Location |
-| 8: a fix lasts an hour | After Allow Once the face used the last fix for ever | `Place.current` returned `saved` at any age when permission was not determined | `Place.trustFor`, and `Situation.schedule` ends the timeline at the hour | `theFaceGivesUpAPlaceAnHourAfterItsFix` |
+| 8: a fix lasts an hour | After Allow Once the face used the last fix for ever (since 18 November it uses none once Allow Once has run out) | `Place.current` returned `saved` at any age when permission was not determined | `Place.trustFor`, and `Situation.schedule` ends the timeline at the hour | `theFaceGivesUpAPlaceAnHourAfterItsFix` |
 | 2, by a race | Pick a place while a refresh for your location is still running: whichever finished last won, so the app could show your location's forecast under the picked place | three call sites start `Task { await refresh() }` with nothing to order them | `refreshes` counter: an overtaken refresh writes nothing | none: read from the code, not reproduced; a test needs the simulator |
 | 7: same words | The face said "No forecast / Open RainWatch to try again" where the app said "No Connection", and "Location needed" where the app said either of two things | separate strings in `problemText` and `failed()` | one `Problem` for both | `theFaceAndTheAppNameAProblemAlike` |
 

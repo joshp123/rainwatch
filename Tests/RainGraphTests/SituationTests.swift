@@ -68,8 +68,8 @@ struct SituationTests {
         }
     }
 
-    /// The face after Allow Once: it keeps the place for an hour from the fix, then has no place,
-    /// even though the forecast itself would have lasted longer.
+    /// The face when the watch cannot get a new fix: it keeps the place for an hour from the last
+    /// one, then has no place, even though the forecast itself would have lasted longer.
     @Test func theFaceGivesUpAPlaceAnHourAfterItsFix() throws {
         let fix = Self.run.addingTimeInterval(-30 * 60)
         let now = Self.run.addingTimeInterval(10 * 60)

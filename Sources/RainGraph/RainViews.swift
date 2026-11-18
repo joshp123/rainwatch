@@ -47,11 +47,15 @@ public struct RectangularRainView: View {
                     .font(RainFont.rounded(16, .semibold))
                 // An old forecast always says its time, in any slot: where there is room for only
                 // one line of words, as on Modular Ultra, it takes the place of the hour labels.
+                // Apple's data keeps its name there too.
                 if isOld, let issued {
-                    Text(localized("Forecast from \(RainCopy.clock(issued))"))
+                    Text(credit.map { localized("\($0), from \(RainCopy.clock(issued))") } ?? localized("Forecast from \(RainCopy.clock(issued))"))
                         .font(RainFont.rounded(13.5, .medium))
                         .foregroundStyle(palette.secondary)
-                } else if roomy, let credit {
+                        .minimumScaleFactor(0.8)
+                } else if let credit {
+                    // Apple's terms want its mark wherever its data is shown, so in a short slot
+                    // it takes the line the hour labels would have.
                     Text(credit)
                         .font(RainFont.rounded(13.5, .medium))
                         .foregroundStyle(palette.secondary)
@@ -67,7 +71,7 @@ public struct RectangularRainView: View {
                 }
                 RainChart(forecast: forecast, palette: palette)
                     .padding(.top, 3)
-                if roomy || !isOld {
+                if roomy || (!isOld && credit == nil) {
                     TimeAxis(forecast: forecast, palette: palette)
                         .padding(.top, 4)
                 } else {

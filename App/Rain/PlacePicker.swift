@@ -4,12 +4,27 @@ import SwiftUI
 
 /// Finds a town by name, for people who don't share their location and for anyone who wants the
 /// rain somewhere else. Picking one, or going back to the wearer's location, calls `pick`.
+///
+/// The results come from Apple Maps, whose terms (Attachment 6, 2.4) allow an address result only
+/// with its map: each one shows where it is. What is kept is the wearer's own words (`Place.Chosen`).
 struct PlacePicker: View {
     let pick: (Place.Chosen?) -> Void
 
     @State private var query = ""
-    @State private var results: [Place.Chosen]?
+    @State private var results: [Result]?
     @State private var searching = false
+    /// The words the results were found with: what a picked place is called.
+    @State private var searched = ""
+
+    struct Result: Hashable {
+        let name: String
+        /// Region and country, to tell apart places with the same name.
+        let detail: String
+        let latitude: Double
+        let longitude: Double
+
+        var coordinate: CLLocationCoordinate2D { CLLocationCoordinate2D(latitude: latitude, longitude: longitude) }
+    }
 
     var body: some View {
         NavigationStack {
@@ -26,15 +41,27 @@ struct PlacePicker: View {
                         .foregroundStyle(.secondary)
                 }
                 ForEach(results ?? [], id: \.self) { place in
-                    Button { pick(place) } label: {
-                        VStack(alignment: .leading) {
-                            Text(place.name)
-                            if !place.detail.isEmpty {
-                                Text(place.detail)
-                                    .font(.footnote)
-                                    .foregroundStyle(.secondary)
+                    Section {
+                        Button { pick(Place.Chosen(name: searched, latitude: place.latitude, longitude: place.longitude)) } label: {
+                            VStack(alignment: .leading) {
+                                Text(place.name)
+                                if !place.detail.isEmpty {
+                                    Text(place.detail)
+                                        .font(.footnote)
+                                        .foregroundStyle(.secondary)
+                                }
                             }
                         }
+                        // Outside the button, so Apple's logo and Legal link on the map still work.
+                        Map(initialPosition: .region(MKCoordinateRegion(center: place.coordinate, latitudinalMeters: 20_000, longitudinalMeters: 20_000)),
+                            interactionModes: []) {
+                            Marker(place.name, coordinate: place.coordinate)
+                        }
+                        .mapStyle(.standard(emphasis: .muted, pointsOfInterest: .excludingAll))
+                        .frame(height: 90)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .listRowInsets(EdgeInsets())
+                        .listRowBackground(Color.clear)
                     }
                 }
                 if Place.chosen != nil {
@@ -63,10 +90,10 @@ struct PlacePicker: View {
             let full = item.address?.fullAddress ?? item.addressRepresentations?.regionName ?? ""
             let detail = (full.hasPrefix(name) ? String(full.dropFirst(name.count)) : full)
                 .trimmingCharacters(in: CharacterSet(charactersIn: ", ").union(.whitespaces))
-            return Place.Chosen(name: name, detail: detail,
-                                latitude: item.location.coordinate.latitude, longitude: item.location.coordinate.longitude)
+            return Result(name: name, detail: detail, latitude: item.location.coordinate.latitude, longitude: item.location.coordinate.longitude)
         }
         // The watch can return a town twice, once without its country; one row each is enough.
+        searched = text
         results = found.reduce(into: []) { unique, place in
             let twin = found.contains { $0.name == place.name && !$0.detail.isEmpty }
             if place.detail.isEmpty, twin { return }
