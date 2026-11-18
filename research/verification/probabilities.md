@@ -2,6 +2,8 @@
 
 # Can KNMI's probabilities replace the blend?
 
+The server later adopted the compact blend when it is ready on time. See [the deployed design](../../server/DESIGN.md).
+
 **Leave the blend off on the current schedule.** The probabilities file reproduces the blend's rain vote and takes about a second to fetch and decode on the server when it is ready. In a week of runs, KNMI published it after the server's 5 minute 20 second start time 11% of the time. Waiting for it on those runs would start adding delay at the source, before any CDN or watch refresh delay.
 
 ## What the watch would gain

@@ -7,11 +7,12 @@
 # Run it:  KNMI_KEY=... python3 job.py <folder> [YYYYMMDDHHMM]
 # It writes to a folder. Where the files are then served from (a bucket, a web server) is not decided
 # here: build() only needs a store with get(name) and put(name, data, content_type, max_age).
-import io, json, os, sys, time, urllib.error, urllib.request, zlib
+import io, json, os, subprocess, sys, tempfile, time, urllib.error, urllib.request, zlib
+from contextlib import contextmanager
+from pathlib import Path
 from datetime import datetime, timedelta, timezone
 
-import h5py
-import numpy as np
+from probabilities import EXIT_STATUS, FIRST_STEP
 
 KNMI = "https://api.dataplatform.knmi.nl/open-data/v1/datasets"
 PLAIN = ("radar_forecast", "2.0", "RAD_NL25_RAC_FM_{}.h5")
@@ -26,18 +27,94 @@ NO_DATA = 255
 
 # ---- KNMI ----
 
-def knmi_file(key, dataset, stamp):
+class FileTooLarge(ValueError):
+    pass
+
+
+def knmi_file(key, dataset, stamp, *, max_bytes=None):
     """One file by name: a download link from KNMI's API, then the file. None if KNMI doesn't have it."""
     name, version, pattern = dataset
     url = f"{KNMI}/{name}/versions/{version}/files/{pattern.format(stamp)}/url"
     request = urllib.request.Request(url, headers={"Authorization": key, "User-Agent": "BuienWatch-server/1"})
     try:
-        link = json.load(urllib.request.urlopen(request, timeout=20))["temporaryDownloadUrl"]
+        with urllib.request.urlopen(request, timeout=20) as response:
+            link = json.load(response)["temporaryDownloadUrl"]
     except urllib.error.HTTPError as error:
         if error.code == 404:
             return None
         raise
-    return urllib.request.urlopen(link, timeout=40).read()
+    download = urllib.request.Request(link, headers={"User-Agent": "BuienWatch-server/1"})
+    with urllib.request.urlopen(download, timeout=40) as response:
+        if max_bytes is None:
+            return response.read()
+        length = response.headers.get("Content-Length")
+        if length is not None and int(length) > max_bytes:
+            raise FileTooLarge
+        data = response.read(max_bytes + 1)
+        if len(data) > max_bytes:
+            raise FileTooLarge
+        return data
+
+
+@contextmanager
+def probability_attempt(folder, stamp, key):
+    """Start one optional request. At the packing step, take a finished result or skip it."""
+    attempt = Path(folder) / "observed" / f"probability-{stamp}.attempt"
+    try:
+        attempt.parent.mkdir(parents=True, exist_ok=True)
+        attempt.touch(exist_ok=False)
+    except FileExistsError:
+        yield lambda: (None, "already attempted")
+        return
+    except OSError:
+        yield lambda: (None, "could not record attempt")
+        return
+
+    try:
+        output = tempfile.TemporaryFile()
+    except OSError:
+        yield lambda: (None, "could not open output")
+        return
+    with output:
+        env = {k: v for k, v in os.environ.items()
+               if k in {"PATH", "PYTHONPATH", "SSL_CERT_FILE", "SSL_CERT_DIR", "NIX_SSL_CERT_FILE"}}
+        env.update(KNMI_KEY=key, OPENBLAS_NUM_THREADS="1", OMP_NUM_THREADS="1",
+                   PYTHONDONTWRITEBYTECODE="1")
+        try:
+            worker = subprocess.Popen(
+                [sys.executable, str(Path(__file__).with_name("probabilities.py")), stamp],
+                stdout=output, env=env,
+            )
+        except OSError:
+            yield lambda: (None, "could not start")
+            return
+
+        def ready():
+            import numpy as np
+
+            status = worker.poll()
+            if status is None:
+                return None, "not ready at packing"
+            if status != 0:
+                return None, EXIT_STATUS.get(status, "worker failed")
+            try:
+                expected = (AHEAD - FIRST_STEP) * ROWS * COLS
+                if os.fstat(output.fileno()).st_size != expected:
+                    return None, "invalid output"
+                output.seek(0)
+                return np.fromfile(output, np.uint8, count=expected).reshape(-1, ROWS, COLS), "used"
+            except (OSError, ValueError):
+                return None, "invalid output"
+
+        try:
+            yield ready
+        finally:
+            try:
+                if worker.poll() is None:
+                    worker.kill()
+                worker.poll()  # do not wait on the optional process, even during shutdown
+            except OSError:
+                pass  # the child's own deadline still applies
 
 
 # ---- where files go ----
@@ -61,8 +138,11 @@ class Folder:
 
 # ---- the build ----
 
-def build(run, key, store, log=print):
+def build(run, key, store, log=print, receive_blend=None):
     """Builds and publishes one run. Returns the contents list. Raises if the plain forecast is missing."""
+    import h5py
+    import numpy as np
+
     stamp = run.strftime("%Y%m%d%H%M")
     calls = 0
 
@@ -96,6 +176,17 @@ def build(run, key, store, log=print):
     byte = np.where(wet, np.clip(1 + np.rint(50 * np.log10(np.maximum(rate, WET) / WET)), 1, 250), 0).astype(np.uint8)
     byte[no_data] = NO_DATA
 
+    blend, blend_status = False, "not requested"
+    if receive_blend is not None:
+        overlay, blend_status = receive_blend()
+        if overlay is not None:
+            target = byte[PAST + FIRST_STEP:]
+            use = (overlay != NO_DATA) & (target != NO_DATA)
+            np.copyto(target, overlay, where=use)
+            blend = bool(use.any())
+            if not blend:
+                blend_status = "no overlapping data"
+
     lengths, pack = [], bytearray()
     for top in range(0, ROWS, TILE):
         for left in range(0, COLS, TILE):
@@ -112,7 +203,7 @@ def build(run, key, store, log=print):
     latest = {
         "version": 1,
         "run": run.strftime("%Y-%m-%dT%H:%MZ"),
-        "blend": False,      # the blend is off: 210 to 265 MB a run in widespread rain (DESIGN.md)
+        "blend": blend,
         "first_frame_minutes": -5 * PAST, "frames": PAST + AHEAD, "step_minutes": 5,
         "square_km": TILE, "rows": -(-ROWS // TILE), "columns": -(-COLS // TILE),
         "pack": f"runs/{stamp}.bin",
@@ -120,13 +211,14 @@ def build(run, key, store, log=print):
     }
     store.put(latest["pack"], bytes(pack), "application/octet-stream", 86400)   # the pack first, so `latest`
     store.put("latest", json.dumps(latest, separators=(",", ":")).encode(), "application/json", 60)  # never points at nothing
-    log(json.dumps({"run": latest["run"], "blend": latest["blend"], "knmi_calls": calls, "pack_bytes": len(pack),
+    log(json.dumps({"run": latest["run"], "blend": latest["blend"], "probabilities": blend_status,
+                    "knmi_calls": calls, "pack_bytes": len(pack),
                     "squares_with_rain": sum(n > 0 for n in lengths)}))
     return latest
 
 
 def run_to_build(now):
-    """The run measured 5 to 10 minutes ago: by then KNMI has published it (DESIGN.md, 'Why 5 minutes after')."""
+    """The run measured 5 to 10 minutes ago, by then KNMI publishes the plain forecast."""
     due = now - timedelta(minutes=5)
     return due.replace(minute=due.minute - due.minute % 5, second=0, microsecond=0)
 
@@ -142,6 +234,8 @@ if __name__ == "__main__":
         print(f"{run:%Y-%m-%dT%H:%MZ} is already built; KNMI's rules say not to fetch it again")
         sys.exit(0)
     started = time.perf_counter()
-    build(run, os.environ["KNMI_KEY"], store)
+    key = os.environ["KNMI_KEY"]
+    with probability_attempt(folder, run.strftime("%Y%m%d%H%M"), key) as ready:
+        build(run, key, store, receive_blend=ready)
     peak = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / (2 ** 30 if sys.platform == "darwin" else 2 ** 20)
     print(f"{time.perf_counter() - started:.1f} s, peak memory {peak:.2f} GB")
