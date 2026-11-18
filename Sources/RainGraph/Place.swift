@@ -46,6 +46,18 @@ public enum Place {
             self.longitude = (longitude * 100).rounded() / 100
         }
 
+        /// A place saved by an earlier build is rounded as it is read.
+        public init(from decoder: Decoder) throws {
+            let values = try decoder.container(keyedBy: CodingKeys.self)
+            self.init(name: try values.decode(String.self, forKey: .name),
+                      latitude: try values.decode(Double.self, forKey: .latitude),
+                      longitude: try values.decode(Double.self, forKey: .longitude))
+        }
+
+        private enum CodingKeys: String, CodingKey {
+            case name, latitude, longitude
+        }
+
         public var coordinate: CLLocationCoordinate2D {
             CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
         }

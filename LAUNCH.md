@@ -46,7 +46,7 @@ Who does it: Claude (or another agent), unless it says Josh. "Josh" means only w
 | 13 | iPhone wrapper, the only form App Store Connect accepts | Claude | Done; signs, and is accepted for App Store export |
 | 14 | Dutch translation of every word in the app and of the location prompt | Claude writes, Josh reads | Done 18 Nov: `Sources/RainGraph/Localizable.xcstrings` and `App/Shared/InfoPlist.xcstrings`, checked on the simulator in Dutch in every state. `store/dutch.md` lists every string for Josh to read |
 | 15 | Privacy policy and support page on Josh's website, linked from the app (Guideline 5.1.1(i)) | Claude writes; Josh approves the text before it is published | Drafted 18 Nov in `~/code/website/sites/jjpcodes-home/drafts/rainwatch/`, in English and Dutch, not published. Waits for Josh to approve the text and give the support email address. The listing already points at `https://jjpcodes.com/rainwatch/privacy` and `/support`. The app links the privacy page from its About page (from build 4) |
-| 16 | Version 1.0.0, build 1 | Claude | Done: 1.0.0, build 4, uploaded 18 Nov with `App/upload.sh`: build 3 with the fixes from Sol's review |
+| 16 | Version 1.0.0, build 1 | Claude | Done: 1.0.0, build 5, uploaded 18 Nov with `App/upload.sh`: build 3 with the fixes from Sol's review |
 | 17 | Real-watch pass: every forecast state, Always On, Night Mode, VoiceOver, larger text, offline, and a day's refresh log | Claude, with Josh wearing it | To do |
 | 18 | Josh moves his complication from the old Rain app to BuienWatch; then the old app is removed | Josh, then Claude | BuienWatch is installed next to Rain |
 | 19a | Record Buienradar's forecasts at the 64 Dutch grid points for a month, to compare them with KNMI's over many rainy days: Buienradar keeps no archive, so it could only be scored on the one day its forecasts were saved (13 November) | Claude | Recording since 14 Nov 18:46 on mini-server-1, every 15 minutes (`/var/lib/buienradar-recorder`) |
@@ -67,7 +67,7 @@ Who does it: Claude (or another agent), unless it says Josh. "Josh" means only w
 
 | # | Task | Who | Status |
 |---|---|---|---|
-| 25 | Upload builds; internal TestFlight on Josh's watch | Claude | Build 1.0.0 (4) uploaded 18 Nov from the command line (`App/upload.sh`); the internal group "Internal" takes every build. Josh installs it from TestFlight on his iPhone |
+| 25 | Upload builds; internal TestFlight on Josh's watch | Claude | Build 1.0.0 (5) uploaded 18 Nov from the command line (`App/upload.sh`); the internal group "Internal" takes every build. Josh installs it from TestFlight on his iPhone |
 | 26 | External TestFlight: 5 to 10 Dutch testers for two weeks | Josh picks the testers and approves the invitation; Claude runs it | After 25 |
 | 27 | Nominate for featuring when external testing starts, three weeks or more before release | Claude | With 26 |
 | 28 | Submit for review. Allow two weeks. After a rejection over the listing, resubmit the same build | Claude | After 26 |

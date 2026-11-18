@@ -385,6 +385,12 @@ struct ContentView: View {
         } catch {
             // No place, so no forecast: the one on screen is for where the wearer was.
             guard mine == refreshes else { return }
+            // The question went unanswered: back to the screen that asks it.
+            if error as? Place.Failure == .notAsked {
+                askedForLocation = false
+                move(to: .intro, because: "location still not answered")
+                return
+            }
             move(to: .failed(Problem(error as? Place.Failure ?? .notFound)), because: "no place")
             couldNotUpdate = false
             return
