@@ -1,9 +1,5 @@
-node_modules/
+# Made by render.sh, on the external SSD when it is there (paths.sh).
 out/
-# Made by render.sh from the app's code and the KNMI run, and Apple's artwork, which is not ours to publish.
-public/gen/
-public/fonts/SFCompactRounded.ttf
-public/bezel.png
-public/badge/
 export/.build/
 export/app
+__pycache__/
