@@ -1,23 +1,17 @@
 import React from "react";
 import { AbsoluteFill, Img, random, staticFile, useCurrentFrame } from "remotion";
-import { blue, dusk, night, white } from "./theme";
+import { blue, night, ramp, type, white } from "./theme";
 
 export type Layout = { W: number; H: number; wide: boolean };
 
-/** The sky behind everything: the app's own night blue, lighter where the watch sits. */
-export const Sky: React.FC<{ layout: Layout; glow?: number }> = ({ layout, glow = 1 }) => {
-  const at = layout.wide ? "73% 52%" : "50% 60%";
-  return (
-    <AbsoluteFill
-      style={{ background: `radial-gradient(ellipse 75% 60% at ${at}, ${mix(glow)} 0%, ${night} 100%)` }}
-    />
-  );
-};
-
-const mix = (glow: number) => {
-  const channel = (a: number, b: number) => Math.round(a + (b - a) * glow);
-  return `rgb(${channel(4, parseInt(dusk.slice(1, 3), 16))}, ${channel(7, parseInt(dusk.slice(3, 5), 16))}, ${channel(12, parseInt(dusk.slice(5, 7), 16))})`;
-};
+/** The film's background: the app's night, a little lighter where the subject sits. */
+export const Sky: React.FC<{ layout: Layout }> = ({ layout }) => (
+  <AbsoluteFill
+    style={{
+      background: `radial-gradient(ellipse 80% 65% at ${layout.wide ? "70% 55%" : "50% 62%"}, #0D1A2C 0%, ${night} 100%)`,
+    }}
+  />
+);
 
 /**
  * Rain, drawn from fixed random numbers so every render is the same. `amount` from 0 to 1 is how
@@ -25,6 +19,7 @@ const mix = (glow: number) => {
  */
 export const Rain: React.FC<{ layout: Layout; amount: number; layer?: 0 | 1 }> = ({ layout, amount, layer = 0 }) => {
   const frame = useCurrentFrame();
+  if (amount <= 0) return null;
   const count = layer === 0 ? 150 : 46;
   const slant = 0.2;
   const streaks = [];
@@ -44,7 +39,7 @@ export const Rain: React.FC<{ layout: Layout; amount: number; layer?: 0 | 1 }> =
         x2={x - length * slant}
         y2={y + length}
         stroke={layer === 0 ? blue : white}
-        strokeOpacity={layer === 0 ? 0.16 + depth * 0.3 : 0.22}
+        strokeOpacity={layer === 0 ? 0.16 + depth * 0.3 : 0.2}
         strokeWidth={layer === 0 ? 1.5 + depth * 2.2 : 3.2 * depth}
         strokeLinecap="round"
       />,
@@ -52,94 +47,75 @@ export const Rain: React.FC<{ layout: Layout; amount: number; layer?: 0 | 1 }> =
   }
   return (
     <AbsoluteFill>
-      <svg width={layout.W} height={layout.H}>
-        {streaks}
-      </svg>
+      <svg width={layout.W} height={layout.H}>{streaks}</svg>
     </AbsoluteFill>
   );
 };
 
-/** Apple's Ultra 3 frame is 600 x 960 with the 422 x 514 screen at (89, 223) (design/frame.py). */
-export const frameSize = { w: 600, h: 960 };
-export const screen = { x: 89, y: 223, w: 422, h: 514, radius: 104 };
-
 /**
- * The watch, centred on (x, y) at `scale`. Children are drawn on the screen in its own 422 x 514
- * points, so a capture fills it exactly. `focus` moves a screen point to (x, y) instead of the
- * watch's middle, for close-ups.
+ * Apple's Apple Watch Ultra 4 bezel (Apple Design Resources), natural titanium with the grey Ocean
+ * Band: 620 x 940, its screen 422 x 514 at (98.5, 212.5) in a see-through opening. Apple's rules
+ * for product images: shown whole, upright and unaltered; it may be placed and scaled, and it fades
+ * in and out, nothing more.
  */
+export const bezel = { w: 620, h: 940, screen: { x: 98.5, y: 212.5, w: 422, h: 514 }, hole: { x: 81, y: 194, w: 458, h: 552 } };
+
 export const Watch: React.FC<{
-  x: number;
-  y: number;
-  scale: number;
-  focus?: { x: number; y: number };
-  crown?: number;
+  x: number; y: number; height: number; opacity?: number;
+  /** Push in: `zoom` times larger, the bezel point `focus` moving to `to`. Only after the whole watch has been shown. */
+  zoom?: number; focus?: { x: number; y: number }; to?: { x: number; y: number }; push?: number;
   children: React.ReactNode;
-}> = ({ x, y, scale, focus, crown = 0, children }) => {
-  const frame = useCurrentFrame();
-  const origin = focus
-    ? { x: screen.x + focus.x, y: screen.y + focus.y }
-    : { x: frameSize.w / 2, y: frameSize.h / 2 };
-  const pulse = 0.75 + 0.25 * Math.sin(frame / 3.2);
+}> = ({ x, y, height, opacity = 1, zoom = 1, focus, to, push = 0, children }) => {
+  const base = height / bezel.h;
+  const left0 = x - (bezel.w * base) / 2, top0 = y - height / 2;
+  const f = focus ?? { x: bezel.w / 2, y: bezel.h / 2 };
+  const target = to ?? { x: left0 + f.x * base, y: top0 + f.y * base };
+  const s = base * (1 + (zoom - 1) * push);
+  const px = left0 + f.x * base + (target.x - (left0 + f.x * base)) * push;
+  const py = top0 + f.y * base + (target.y - (top0 + f.y * base)) * push;
   return (
-    <div
-      style={{
-        position: "absolute",
-        left: x - origin.x,
-        top: y - origin.y,
-        width: frameSize.w,
-        height: frameSize.h,
-        transform: `scale(${scale})`,
-        transformOrigin: `${origin.x}px ${origin.y}px`,
-        filter: "drop-shadow(0 40px 60px rgba(0,0,0,0.55))",
-      }}
-    >
-      <div
-        style={{
-          position: "absolute",
-          left: screen.x,
-          top: screen.y,
-          width: screen.w,
-          height: screen.h,
-          borderRadius: screen.radius,
-          overflow: "hidden",
-          background: "#000",
-        }}
-      >
+    <div style={{ position: "absolute", left: px - f.x * s, top: py - f.y * s, width: bezel.w, height: bezel.h, transform: `scale(${s})`, transformOrigin: "0 0", opacity }}>
+      <div style={{ position: "absolute", left: bezel.hole.x, top: bezel.hole.y, width: bezel.hole.w, height: bezel.hole.h, borderRadius: 120, background: "#000" }} />
+      <div style={{ position: "absolute", left: bezel.screen.x, top: bezel.screen.y, width: bezel.screen.w, height: bezel.screen.h, borderRadius: 100, overflow: "hidden", background: "#000" }}>
         {children}
       </div>
-      <Img src={staticFile("ultra-3-frame.png")} style={{ position: "absolute", inset: 0, width: frameSize.w, height: frameSize.h }} />
-      {crown > 0 ? (
-        <svg style={{ position: "absolute", left: 500, top: 290, overflow: "visible" }} width={160} height={190} opacity={crown}>
-          <ellipse cx={73} cy={95} rx={30} ry={58} fill="none" stroke={blue} strokeWidth={5} opacity={pulse} />
-          <ellipse cx={73} cy={95} rx={30 + 16 * pulse} ry={58 + 16 * pulse} fill="none" stroke={blue} strokeWidth={2} opacity={0.5 * (1 - pulse * 0.6)} />
-          {[0, 1, 2, 3, 4, 5, 6].map((tick) => {
-            const turn = (((frame * 2.4 + tick * 20) % 140) + 140) % 140;
-            const fade = Math.sin((turn / 140) * Math.PI);
-            return <line key={tick} x1={122} y1={25 + turn} x2={140} y2={25 + turn} stroke={white} strokeWidth={4} strokeLinecap="round" opacity={fade} />;
-          })}
-        </svg>
-      ) : null}
+      <Img src={staticFile("bezel.png")} style={{ position: "absolute", inset: 0, width: bezel.w, height: bezel.h }} />
     </div>
   );
 };
 
-/** A capture filling the screen. */
-export const Shot: React.FC<{ src: string; opacity?: number }> = ({ src, opacity = 1 }) => (
-  <Img src={staticFile(src)} style={{ position: "absolute", inset: 0, width: screen.w, height: screen.h, opacity }} />
+/** A picture filling the watch's screen. */
+export const Screen: React.FC<{ src: string; opacity?: number }> = ({ src, opacity = 1 }) => (
+  <Img src={staticFile(src)} style={{ position: "absolute", inset: 0, width: bezel.screen.w, height: bezel.screen.h, opacity }} />
 );
 
-/**
- * Dims the screen except the wide slot and the circle, to point at a complication without drawing
- * on it. `slot` and `circle` from 0 to 1 are how far each is let through.
- */
-export const Spotlight: React.FC<{ slot: number; circle: number; strength: number }> = ({ slot, circle, strength }) => (
-  <svg width={422} height={514} style={{ position: "absolute", inset: 0 }}>
-    <mask id="spotlight">
-      <rect width={422} height={514} fill="#fff" />
-      <rect x={20} y={236} width={382} height={132} rx={14} fill="#000" fillOpacity={slot} />
-      <circle cx={211} cy={428} r={50} fill="#000" fillOpacity={circle} />
-    </mask>
-    <rect width={422} height={514} fill="#000" fillOpacity={0.72 * strength} mask="url(#spotlight)" />
-  </svg>
-);
+/** Where captions sit: above the subject when tall, to its left when wide. */
+export const captionBox = (layout: Layout): React.CSSProperties =>
+  layout.wide
+    ? { position: "absolute", left: 120, top: 0, width: 760, height: layout.H, display: "flex", flexDirection: "column", justifyContent: "center" }
+    : { position: "absolute", left: 84, top: 170, width: layout.W - 168 };
+
+export const captionSize = (layout: Layout) => (layout.wide ? 64 : 72);
+
+/** A caption that rises into place at `at` and leaves at `until`. */
+export const Caption: React.FC<{ at: number; until?: number; size: number; colour?: string; weight?: number; children: React.ReactNode }> = ({
+  at, until, size, colour = white, weight = 700, children,
+}) => {
+  const frame = useCurrentFrame();
+  if (frame < at || (until !== undefined && frame >= until)) return null;
+  const enter = ramp(frame, at, at + 16);
+  const leave = until === undefined ? 0 : ramp(frame, until - 10, until, 0, 1);
+  return (
+    <div
+      style={{
+        ...type(size, weight),
+        color: colour,
+        opacity: enter * (1 - leave),
+        transform: `translateY(${(1 - enter) * size * 0.5 - leave * size * 0.25}px)`,
+        filter: `blur(${(1 - enter) * 6}px)`,
+      }}
+    >
+      {children}
+    </div>
+  );
+};

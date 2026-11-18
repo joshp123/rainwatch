@@ -1,2 +1,6 @@
 node_modules/
 out/
+# Made by render.sh from the app's code and the KNMI run; Apple's face font is not ours to publish.
+public/gen/
+public/fonts/SFCompactRounded.ttf
+export/.build/

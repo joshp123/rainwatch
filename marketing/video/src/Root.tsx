@@ -3,11 +3,14 @@ import { Composition, continueRender, delayRender, staticFile } from "remotion";
 import { Film, FilmProps } from "./Film";
 import { cut, fps } from "./theme";
 
-// Archivo (SIL Open Font Licence), with its weight and width axes.
-const wait = delayRender("Archivo");
-const font = new FontFace("Archivo", `url(${staticFile("fonts/Archivo.ttf")})`, { weight: "100 900", stretch: "62% 125%" });
-font.load().then((loaded) => {
-  document.fonts.add(loaded);
+// Inter (SIL Open Font Licence) for the film's words; SF Compact Rounded, the watch's face font,
+// for the app's words, copied from macOS by render.sh and never committed (Apple's licence).
+const wait = delayRender("fonts");
+Promise.all([
+  new FontFace("Inter", `url(${staticFile("fonts/Inter.ttf")})`, { weight: "100 900" }).load(),
+  new FontFace("SF Compact Rounded", `url(${staticFile("fonts/SFCompactRounded.ttf")})`, { weight: "1 1000" }).load(),
+]).then((faces) => {
+  faces.forEach((face) => document.fonts.add(face));
   continueRender(wait);
 });
 
