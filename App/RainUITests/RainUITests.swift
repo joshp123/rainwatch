@@ -301,7 +301,10 @@ final class RainUITests: XCTestCase {
         choose.tap()
         let field = app.textFields["Town or postcode"].firstMatch
         XCTAssertTrue(field.waitForExistence(timeout: 5))
+        // A tap while the sheet is still sliding in does not open the keyboard.
+        sleep(2)
         field.tap()
+        sleep(2)
         app.typeText("Utrecht")
         // The watch keyboard runs outside the app; a person finishes with its Done button.
         let done = [app, XCUIApplication(bundleIdentifier: "com.apple.Carousel")]
