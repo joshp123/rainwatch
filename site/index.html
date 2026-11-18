@@ -1,0 +1,360 @@
+<!doctype html>
+<!-- Written by AI on 2026.11.18 by model claude fable 5.2. A prototype for the website proposal: the copy is a draft until Josh approves it in Paper. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>RainWatch</title>
+<style>
+  :root {
+    --rain: #5A9BD3; --white: #fff; --grey: rgba(255,255,255,.62); --line: rgba(255,255,255,.38);
+    --grid: rgba(255,255,255,.16); --plate: rgba(255,255,255,.13);
+    --round: ui-rounded, Round, system-ui, sans-serif;
+    --text: -apple-system, system-ui, "SF Pro Text", "Helvetica Neue", sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  /* Apple's browsers have the watch's rounded face as ui-rounded. Elsewhere it is used where it is installed. */
+  @font-face { font-family: Round; font-weight: 500; src: local("SFProRounded-Medium"), local("SF Pro Rounded Medium"); }
+  @font-face { font-family: Round; font-weight: 600; src: local("SFProRounded-Semibold"), local("SF Pro Rounded Semibold"); }
+  * { box-sizing: border-box; margin: 0; }
+  html { background: #000; color: var(--white); font: 17px/1.5 var(--text); -webkit-font-smoothing: antialiased; }
+  body { min-height: 100vh; }
+  a { color: inherit; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+  .wrap { width: min(100% - 48px, 1120px); margin: 0 auto; }
+
+  nav { display: flex; align-items: center; gap: 28px; height: 72px; font-size: 15px; color: var(--grey); }
+  nav a { text-decoration: none; }
+  nav a:hover { color: var(--white); }
+  .mark { display: flex; align-items: center; gap: 10px; margin-right: auto; color: var(--white); font: 600 19px var(--round); }
+  .mark img { width: 30px; height: 30px; border-radius: 50%; }
+
+  .hero { display: grid; grid-template-columns: 1fr 380px; align-items: center; gap: 48px; padding: 24px 0 72px; }
+  h1 { font: 600 clamp(40px, 5.6vw, 76px)/1.05 var(--round); letter-spacing: -.02em; white-space: pre-line; }
+  .hero p { margin-top: 22px; max-width: 24em; font-size: 21px; color: var(--grey); }
+  .badge { display: inline-block; margin-top: 30px; }
+  .badge img { display: block; height: 52px; }
+  .hero .watch { width: 100%; display: block; }
+
+  .live { border-top: 1px solid var(--grid); padding: 56px 0 64px; }
+  .where { display: flex; align-items: baseline; gap: 8px; font: 500 19px var(--round); color: var(--grey); }
+  .where select { appearance: none; border: 0; border-bottom: 1.5px solid var(--rain); border-radius: 0; color: var(--rain); font: inherit; padding: 0 20px 1px 2px; cursor: pointer;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1.5 1.5L6 6l4.5-4.5' fill='none' stroke='%235A9BD3' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 2px center; }
+  .where button { margin-left: 8px; background: none; border: 0; color: var(--grey); font: inherit; font-size: 15px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+  .headline { margin-top: 10px; font: 600 clamp(40px, 7.4vw, 92px)/1.04 var(--round); letter-spacing: -.02em; }
+  .detail { min-height: 1.4em; margin-top: 8px; font: 500 clamp(19px, 2.4vw, 28px)/1.3 var(--round); color: var(--grey); }
+  .detail.rain { color: var(--rain); }
+  #chart { display: block; width: 100%; margin-top: 28px; overflow: visible; }
+  #chart text { font: 500 14px var(--round); fill: var(--grey); }
+  .under { margin-top: 14px; font-size: 14px; color: var(--grey); }
+
+  .server { border-top: 1px solid var(--grid); padding: 64px 0; }
+  .receipt { display: grid; grid-template-columns: 1fr 1.25fr; gap: 56px; }
+  h2 { font: 600 24px/1.2 var(--round); }
+  .receipt p { margin-top: 10px; color: var(--grey); max-width: 26em; }
+  .requests { list-style: none; padding: 0; border-top: 1px solid var(--grid); }
+  .requests li { display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; padding: 14px 0; border-bottom: 1px solid var(--grid); }
+  .requests code { font: 14px/1.4 var(--mono); overflow-wrap: anywhere; }
+  .requests .size { font: 14px/1.4 var(--mono); color: var(--grey); text-align: right; }
+  .requests .what { grid-column: 1 / -1; font-size: 14px; color: var(--grey); }
+
+  .shower { border-top: 1px solid var(--grid); padding: 64px 0; }
+  .strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 40px; margin: 0; }
+  .strip figure { margin: 0; text-align: center; }
+  .strip img, .app img { display: block; width: 100%; }
+  .strip img { max-width: 220px; margin: 0 auto; }
+  .strip figcaption { margin-top: 14px; font: 500 19px var(--round); color: var(--grey); font-variant-numeric: tabular-nums; }
+  .also { display: flex; align-items: center; justify-content: space-between; gap: 40px; margin-top: 44px; }
+  .also p { max-width: 30em; color: var(--grey); }
+  .also img { width: 396px; flex-shrink: 0; }
+
+  .app { border-top: 1px solid var(--grid); padding: 64px 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 56px; }
+  .app img { width: min(100%, 300px); }
+  .strip img { width: 100%; }
+  .app h3, .facts h3 { font: 600 19px/1.3 var(--round); }
+  .app h3 { margin-top: 18px; }
+  .app p, .facts p { margin-top: 4px; font-size: 15px; color: var(--grey); }
+
+  .facts { border-top: 1px solid var(--grid); padding: 64px 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 56px; }
+
+  footer { border-top: 1px solid var(--grid); padding: 32px 0 64px; font-size: 13px; color: var(--grey); display: grid; gap: 8px; }
+  footer .links { display: flex; gap: 20px; flex-wrap: wrap; font-size: 15px; color: var(--white); margin-bottom: 8px; }
+
+  @media (max-width: 800px) {
+    .wrap { width: min(100% - 40px, 1120px); }
+    nav { height: 60px; gap: 18px; }
+    .hero { grid-template-columns: 1fr; gap: 28px; padding: 16px 0 48px; }
+    .hero .watch { width: 280px; margin: 0 auto; }
+    .hero p { font-size: 19px; }
+    .live { padding: 40px 0 48px; }
+    .receipt { grid-template-columns: 1fr; gap: 28px; }
+    .headline { font-size: 36px; white-space: nowrap; }
+    h1 { font-size: 40px; }
+    .also { flex-direction: column; align-items: flex-start; gap: 24px; margin-top: 32px; }
+    .also img { width: 100%; }
+    .shower, .app, .server, .facts { padding: 48px 0; }
+    .strip { grid-template-columns: repeat(2, 1fr); gap: 28px 16px; }
+    .strip img { max-width: 150px; }
+    .app { grid-template-columns: 1fr; gap: 40px; }
+    .app img { width: 240px; margin: 0 auto; }
+    .facts { grid-template-columns: 1fr; gap: 24px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <span class="mark"><img src="assets/icon.png" alt=""><span data-t="name"></span></span>
+    <a id="language" href="#"></a>
+    <a href="https://github.com/joshp123/rainwatch">GitHub</a>
+  </nav>
+
+  <section class="hero">
+    <div>
+      <h1 data-t="h1"></h1>
+      <p data-t="sub"></p>
+      <a class="badge" href="https://apps.apple.com/app/id6834856580"><img id="badge" alt=""></a>
+    </div>
+    <img class="watch" id="hero-watch" alt="">
+  </section>
+
+  <section class="live">
+    <div class="where">
+      <label for="town" data-t="nowIn"></label>
+      <select id="town"></select>
+      <button id="here" hidden data-t="useLocation"></button>
+    </div>
+    <div class="headline" id="headline">&nbsp;</div>
+    <div class="detail" id="detail"></div>
+    <svg id="chart" role="img"></svg>
+    <div class="under" id="made"></div>
+  </section>
+
+  <section class="shower">
+    <div class="strip">
+      <figure><img id="s1" alt=""><figcaption>07:39</figcaption></figure>
+      <figure><img id="s2" alt=""><figcaption>07:47</figcaption></figure>
+      <figure><img id="s3" alt=""><figcaption>07:51</figcaption></figure>
+      <figure><img id="s4" alt=""><figcaption>08:06</figcaption></figure>
+    </div>
+    <div class="also"><p data-t="shower"></p><img id="stack" alt=""></div>
+  </section>
+
+  <section class="app">
+    <div><img id="w1" alt=""><h3 data-t="graph"></h3><p data-t="graphText"></p></div>
+    <div><img id="w2" alt=""><h3 data-t="radar"></h3><p data-t="radarText"></p></div>
+    <div><img id="w3" alt=""><h3 data-t="abroadTitle"></h3><p data-t="abroadText"></p></div>
+  </section>
+
+  <section class="server">
+    <div class="receipt">
+      <div>
+        <h2 data-t="asked"></h2>
+        <p data-t="askedText"></p>
+        <p><a href="https://github.com/joshp123/rainwatch" data-t="code"></a></p>
+      </div>
+      <ul class="requests" id="requests"></ul>
+    </div>
+  </section>
+
+  <section class="facts">
+    <div><h3 data-t="f1"></h3><p data-t="f1t"></p></div>
+    <div><h3 data-t="f2"></h3><p data-t="f2t"></p></div>
+    <div><h3 data-t="f3"></h3><p data-t="f3t"></p></div>
+  </section>
+
+  <footer>
+    <div class="links">
+      <a href="https://jjpcodes.com/rainwatch/privacy" data-t="privacy"></a>
+      <a href="https://jjpcodes.com/rainwatch/support" data-t="support"></a>
+      <a href="https://github.com/joshp123/rainwatch">GitHub</a>
+    </div>
+    <span data-t="data"></span>
+    <span data-t="apple"></span>
+    <span>© 2026 Josh Palmer</span>
+  </footer>
+</div>
+
+<script type="module">
+import { readLatest, forecastFor, forecastAt, copy, clock, words, chart, cell, squareOf } from './rain.js';
+
+// With ?direct the page asks the live server from another address, to show what a browser does then.
+const query = new URLSearchParams(location.search);
+const BASE = query.has('direct') ? 'https://rain.jjpcodes.com' : '';
+
+const TEXT = {
+  en: {
+    name: 'RainWatch', other: 'Nederlands',
+    h1: 'The next rain,\non your watch face.',
+    sub: 'KNMI’s rain forecast for the next two hours, on your Apple Watch. Free, with no ads and no account.',
+    nowIn: 'Now in', useLocation: 'Use my location', myLocation: 'My Location', rainNear: 'Rain nearby', dryNear: 'Dry',
+    asked: 'What this page asked the server',
+    askedText: 'Your watch asks for the same two files. The server is a folder of files. It sees which block was asked for, never where you are in it, and it keeps no logs.',
+    latest: 'When the forecast was made, and which blocks have rain',
+    square: town => `The forecast for the 32 km block with ${town} in it, kilometre by kilometre`,
+    dry: town => `The block with ${town} in it is dry, so there was no second request.`,
+    bytes: (a, b) => `bytes ${a}–${b}`,
+    code: 'The code for the app and the server is on GitHub.',
+    shower: 'One shower over Arnhem, from a real KNMI forecast. RainWatch also fits the wider slot, the corner, the line at the top and the Smart Stack.',
+    graph: 'Graph', graphText: 'Tap the watch face to see the next two hours as a graph.',
+    radar: 'Radar', radarText: 'KNMI’s radar and its forecast, up to two hours ahead. Turn the Digital Crown to move through it.',
+    abroadTitle: 'Abroad', abroadText: 'Outside KNMI’s area RainWatch uses Apple Weather: the next hour where Apple has one, such as the UK and Ireland, and hour by hour elsewhere.',
+    f1: 'Your square kilometre', f1t: 'KNMI forecasts rain for every square kilometre, in five-minute steps, up to two hours ahead. RainWatch shows the one you are in.',
+    f2: 'Collects nothing', f2t: 'No accounts, ads, analytics or tracking. Your exact position stays on your watch.',
+    f3: 'Old or missing data', f3t: 'When the forecast is old, the watch face shows its time instead of a countdown. Missing data is never shown as dry.',
+    privacy: 'Privacy', support: 'Support',
+    data: 'Rain data: KNMI (CC BY 4.0) and Apple Weather.',
+    apple: 'Apple Watch and App Store are trademarks of Apple Inc.',
+    failed: 'This page could not reach the forecast.',
+    abroad: 'Outside KNMI’s area your watch uses Apple Weather.',
+  },
+  nl: {
+    name: 'BuienWatch', other: 'English',
+    h1: 'De volgende bui,\nop je wijzerplaat.',
+    sub: 'De regenverwachting van het KNMI voor de komende twee uur, op je Apple Watch. Gratis, zonder reclame en zonder account.',
+    nowIn: 'Nu in', useLocation: 'Gebruik mijn locatie', myLocation: 'Mijn locatie', rainNear: 'Regen in de buurt', dryNear: 'Droog',
+    asked: 'Wat deze pagina bij de server opvroeg',
+    askedText: 'Je horloge vraagt dezelfde twee bestanden op. De server is een map met bestanden. Hij ziet welk blok is opgevraagd, nooit waar je daarin bent, en houdt geen logboek bij.',
+    latest: 'Wanneer de verwachting is gemaakt, en in welke blokken het regent',
+    square: town => `De verwachting voor het blok van 32 bij 32 km waar ${town} in ligt, per vierkante kilometer`,
+    dry: town => `Het blok waar ${town} in ligt is droog, dus er was geen tweede verzoek.`,
+    bytes: (a, b) => `bytes ${a}–${b}`,
+    code: 'De code van de app en de server staat op GitHub.',
+    shower: 'Eén bui boven Arnhem, uit een echte KNMI-verwachting. BuienWatch past ook in het bredere vak, de hoek, de regel bovenaan en de Smart Stack.',
+    graph: 'Grafiek', graphText: 'Tik op de wijzerplaat voor de grafiek van de komende twee uur.',
+    radar: 'Radar', radarText: 'De radar van het KNMI en de verwachting, tot twee uur vooruit. Draai aan de Digital Crown om erdoorheen te gaan.',
+    abroadTitle: 'In het buitenland', abroadText: 'Buiten het gebied van het KNMI gebruikt BuienWatch Apple Weather: het komende uur waar Apple dat heeft, zoals in het Verenigd Koninkrijk en Ierland, en elders per uur.',
+    f1: 'Jouw vierkante kilometer', f1t: 'Het KNMI voorspelt de regen per vierkante kilometer, in stappen van vijf minuten, tot twee uur vooruit. BuienWatch toont die van jouw plek.',
+    f2: 'Verzamelt niets', f2t: 'Geen accounts, reclame, statistieken of tracking. Je precieze positie blijft op je horloge.',
+    f3: 'Oude of ontbrekende data', f3t: 'Is de verwachting oud, dan toont de wijzerplaat de tijd ervan in plaats van af te tellen. Ontbrekende data wordt nooit als droog getoond.',
+    privacy: 'Privacy', support: 'Hulp',
+    data: 'Regendata: KNMI (CC BY 4.0) en Apple Weather.',
+    apple: 'Apple Watch en App Store zijn handelsmerken van Apple Inc.',
+    failed: 'Deze pagina kon de verwachting niet bereiken.',
+    abroad: 'Buiten het gebied van het KNMI gebruikt je horloge Apple Weather.',
+  },
+};
+
+const TOWNS = [
+  ['Amsterdam', 52.3728, 4.8936], ['Rotterdam', 51.9225, 4.4792], ['Den Haag', 52.0705, 4.3007], ['Utrecht', 52.0907, 5.1214],
+  ['Eindhoven', 51.4416, 5.4697], ['Groningen', 53.2194, 6.5665], ['Maastricht', 50.8514, 5.6910], ['Zwolle', 52.5168, 6.0830],
+  ['Arnhem', 51.9851, 5.8987], ['Leeuwarden', 53.2012, 5.7999], ['Middelburg', 51.4988, 3.6110], ['Den Helder', 52.9563, 4.7608],
+  ['Enschede', 52.2215, 6.8937], ['Breda', 51.5719, 4.7683], ['Antwerpen', 51.2194, 4.4025], ['Brussel', 50.8503, 4.3517],
+  ['Gent', 51.0543, 3.7174], ['Luxemburg', 49.6116, 6.1319], ['Keulen', 50.9375, 6.9603],
+];
+
+let language = query.get('lang') ?? (navigator.language.startsWith('nl') ? 'nl' : 'en');
+if (!TEXT[language]) language = 'en';
+const t = TEXT[language], $ = id => document.getElementById(id);
+
+document.documentElement.lang = language;
+document.title = t.name;
+for (const node of document.querySelectorAll('[data-t]')) node.textContent = t[node.dataset.t];
+$('language').textContent = t.other;
+$('language').href = `?lang=${language === 'nl' ? 'en' : 'nl'}${query.has('direct') ? '&direct' : ''}${location.hash}`;
+$('badge').src = `assets/badge-${language}.svg`;
+$('badge').alt = language === 'nl' ? 'Download in de App Store' : 'Download on the App Store';
+$('hero-watch').src = `assets/${language}-hero.png`;
+['00', '08', '12', '27'].forEach((minute, index) => { $(`s${index + 1}`).src = `assets/${language}-circle-${minute}.png`; });
+$('stack').src = `assets/${language}-stack.png`;
+$('w1').src = `assets/${language}-app-graph.png`;
+$('w2').src = `assets/${language}-app-radar.png`;
+$('w3').src = `assets/${language}-app-abroad.png`;
+
+let place = TOWNS.find(town => town[0].toLowerCase().replace(' ', '-') === decodeURIComponent(location.hash.slice(1))) ?? TOWNS[3];
+let latest, data;
+
+function fillTowns() {
+  const wet = [], dry = [];
+  for (const town of TOWNS) {
+    const square = latest && squareOf(latest, cell(town[1], town[2]));
+    (square && square.length > 0 ? wet : dry).push(town);
+  }
+  const group = (label, towns) => towns.length
+    ? `<optgroup label="${label}">${towns.map(town => `<option${town === place ? ' selected' : ''}>${town[0]}</option>`).join('')}</optgroup>` : '';
+  const mine = place.length === 4 ? `<option selected>${place[0]}</option>` : '';
+  $('town').innerHTML = mine + group(t.rainNear, wet) + group(t.dryNear, dry);
+}
+
+function size(bytes) { return bytes < 1000 ? `${bytes} B` : `${(bytes / 1000).toFixed(1)} KB`; }
+
+function showRequests() {
+  const rows = data.requests.map(request => request.first === undefined
+    ? `<li><code>${request.name}</code><span class="size">${size(request.bytes)}</span><span class="what">${t.latest}</span></li>`
+    : `<li><code>${request.name}, ${t.bytes(request.first.toLocaleString('en-GB'), request.last.toLocaleString('en-GB'))}</code><span class="size">${size(request.bytes)}</span><span class="what">${t.square(place[0])}</span></li>`);
+  if (data.requests.length === 1) rows.push(`<li><span class="what">${t.dry(place[0])}</span></li>`);
+  $('requests').innerHTML = rows.join('');
+}
+
+function draw() {
+  const w = words(language), svg = $('chart');
+  $('detail').className = 'detail';
+  if (!data) return;
+  const now = Date.now(), forecast = forecastAt(now, data);
+  $('made').textContent = w.made(clock(data.run, language));
+  if (!forecast) {
+    const stale = now >= data.run + 3_600_000;
+    $('headline').textContent = stale ? w.tooOld : w.noneHere;
+    $('detail').textContent = stale ? w.last(clock(data.run, language)) : '';
+    svg.innerHTML = ''; svg.setAttribute('height', 0);
+    return;
+  }
+  const said = copy(forecast, language);
+  $('headline').textContent = said.headline;
+  $('detail').textContent = said.detail ?? '';
+  if (said.detailIsAboutRain) $('detail').classList.add('rain');
+
+  const drawn = chart(forecast, said, language, svg.clientWidth);
+  svg.setAttribute('viewBox', `0 0 ${drawn.width} ${drawn.height}`); svg.setAttribute('height', drawn.height);
+  svg.innerHTML = drawn.shapes + drawn.labels.map(l => `<text x="${l.x}" y="${l.y}" text-anchor="${l.anchor}">${l.text}</text>`).join('');
+  svg.setAttribute('aria-label', [said.headline, said.detail].filter(Boolean).join('. '));
+}
+
+async function load() {
+  try {
+    latest = await readLatest(BASE);
+    fillTowns();
+    const fresh = await forecastFor(BASE, latest, place[1], place[2]);
+    if (!fresh) {
+      data = null;
+      $('headline').textContent = words(language).noneHere;
+      $('detail').textContent = t.abroad; $('made').textContent = ''; $('chart').innerHTML = ''; $('requests').innerHTML = '';
+      return;
+    }
+    data = fresh;
+    showRequests();
+    draw();
+  } catch (error) {
+    console.error(error);
+    data = null;
+    $('headline').textContent = words(language).unavailable;
+    $('detail').textContent = t.failed; $('chart').innerHTML = ''; $('requests').innerHTML = '';
+    window.__error = String(error);
+  }
+}
+
+$('town').addEventListener('change', event => {
+  place = TOWNS.find(town => town[0] === event.target.value) ?? place;
+  history.replaceState(null, '', `#${place[0].toLowerCase().replace(' ', '-')}`);
+  load();
+});
+if (window.isSecureContext && navigator.geolocation) {
+  $('here').hidden = false;
+  $('here').addEventListener('click', () => navigator.geolocation.getCurrentPosition(position => {
+    // The position stays in this page: only the square's byte range is asked for.
+    place = [t.myLocation, position.coords.latitude, position.coords.longitude, true];
+    load();
+  }));
+}
+addEventListener('resize', draw);
+setInterval(draw, 15_000);
+// A new KNMI run every five minutes; `latest` is cached for one.
+setInterval(async () => {
+  if (document.hidden) return;
+  const next = await readLatest(BASE).catch(() => null);
+  if (next && next.run !== latest?.run) load();
+}, 60_000);
+load();
+</script>
+</body>
+</html>
