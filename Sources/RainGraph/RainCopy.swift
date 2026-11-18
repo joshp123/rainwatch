@@ -89,16 +89,18 @@ public struct RainCopy: Sendable {
         return "Heaviest around \(Self.clock(peak.date))"
     }
 
-    /// Circular middle, read top to bottom as the headline in three words: what it is doing now and
-    /// how long that lasts. "DRY 39 MIN" is the headline "Dry for 39 min"; "RAIN 14 MIN" is "Rain
-    /// stops in 14 min". The number always answers "how long does this last", so it never means
-    /// opposite things. An hour or more reads "1+ HRS", so the number never needs three digits.
-    /// With no rain in sight there is no arc and the two lines sit as one block: "Dry", "2+ HRS".
-    /// An hourly forecast's change is at the next whole hour, so it reads "<1 HR" rather than a
-    /// count of minutes it doesn't know.
-    public var circular: (lead: String?, value: String, unit: String?) {
+    /// Circular middle, read top to bottom as one phrase, always about rain, as the blue line is:
+    /// "IN 30 MIN" until rain arrives when it is dry, "FOR 5 MIN" while it lasts when it is raining.
+    /// An hour or more reads "1+ HRS", so the number never needs three digits. With no rain in
+    /// sight there is no arc and the two lines sit as one block: "Dry", "2+ HRS". An hourly
+    /// forecast's change is at the next whole hour, so it reads "<1 HR" rather than a count of
+    /// minutes it doesn't know. `state` words lead with "DRY" or "RAIN" instead.
+    public func circular(_ words: CircleWords = .countdown) -> (lead: String?, value: String, unit: String?) {
         guard forecast.hasRain else { return (nil, "Dry", "\(reach.value) \(reach.unit)") }
-        let lead = isRainingNow ? "RAIN" : "DRY"
+        let lead = switch words {
+        case .countdown: isRainingNow ? "FOR" : "IN"
+        case .state: isRainingNow ? "RAIN" : "DRY"
+        }
         guard let minutesLeft else { return (lead, reach.value, reach.unit) }
         if minutesLeft >= 60 { return (lead, "1+", "HRS") }
         return hourly ? (lead, "<1", "HR") : (lead, "\(minutesLeft)", "MIN")

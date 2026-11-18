@@ -44,9 +44,9 @@ Three facts, each with a few values.
 | State | Face circle | Face, large slot | App |
 |---|---|---|---|
 | Forecast, no rain in it | Dry, 1+ HRS | Dry for 1+ hours | The same headline, no graph scale, black page |
-| Forecast, dry now, rain coming | DRY 36 MIN (grey words) | Dry for 36 min | Headline, then "Drizzle 00:50–01:20" in blue |
-| Forecast, raining, stops within the hour | RAIN 10 MIN (blue words) | Rain stops in 10 min | Headline, then "Dry 00:25–01:20" in grey |
-| Forecast, raining for an hour or more | RAIN 1+ HRS | Rain until 01:25 | Headline, then "Heaviest around 00:25" |
+| Forecast, dry now, rain coming | IN 36 MIN | Dry for 36 min | Headline, then "Drizzle 00:50–01:20" in blue |
+| Forecast, raining, stops within the hour | FOR 10 MIN | Rain stops in 10 min | Headline, then "Dry 00:25–01:20" in grey |
+| Forecast, raining for an hour or more | FOR 1+ HRS | Rain until 01:25 | Headline, then "Heaviest around 00:25" |
 | Forecast, 20 to 60 minutes old | as above | Headline, then "Forecast from 23:40" | The same two lines; "Source: KNMI" under the graph |
 | Forecast, last fetch failed | as above | as above | Second line "Couldn't update"; "KNMI forecast from 00:05" under the graph; Try Again |
 | Location not set | No PLACE | Location not set / Tap to set up | The first-launch screen: one sentence, Continue |
@@ -56,7 +56,9 @@ Three facts, each with a few values.
 | No forecast here | No DATA | No forecast here / Tap to try again | No Forecast Here / Try Again, Choose a Place |
 | No recent forecast | No DATA | No recent forecast / Last forecast 23:00 | No Recent Forecast / Last forecast 23:00 / Try Again |
 
-Blue means rain: the line, the arc, and words about rain. The circle's words are blue only while it rains. White is the answer (the number, the headline, the dot). Grey is everything else. The white dot is the moment the weather changes: when rain starts, or when it stops. The number counts down to it.
+Blue means rain: the line, the arc, and words about rain. The circle's words count to the rain ("IN 36 MIN" until it starts, "FOR 10 MIN" while it lasts), so they are blue whenever rain is forecast. White is the answer (the number, the headline, the dot). Grey is everything else. The white dot is the moment the weather changes: when rain starts, or when it stops. The number counts down to it.
+
+Height means how hard it rains, on one scale in the circle, the large slot and the app's graph (`RainCurve.Scale.rate`): rain in mm/h, a little compressed, full height at Buienradar's Heavy line (11.3 mm/h). Drizzle is a thin band, light rain a fifth of the height and moderate rain half, so a burst of heavy rain stands clear of the light rain round it.
 
 ## What moves it from one state to another
 

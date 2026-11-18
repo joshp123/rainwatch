@@ -13,6 +13,9 @@ public enum Scenario: String, CaseIterable, Sendable {
     case rainComing = "Rain in 25 min, Alkmaar"
     case rainAllWindow = "Rain all along, Düsseldorf"
     case heavy = "Heavy rain, Osnabrück"
+    /// TEST DATA, NOT A FORECAST: light rain with ten minutes of downpour in it, made up to judge
+    /// how a burst shows on the face. None of the saved runs has one.
+    case burst = "Test data: light rain with a burst, Zwolle"
 
     /// The town in the scenario's name.
     public var place: String {
@@ -30,6 +33,7 @@ public enum Scenario: String, CaseIterable, Sendable {
         case .rainComing: (52.63, 4.75)
         case .rainAllWindow: (51.23, 6.78)
         case .heavy: (52.28, 8.05)
+        case .burst: (52.52, 6.08)
         }
     }
 
@@ -60,6 +64,7 @@ public enum Scenario: String, CaseIterable, Sendable {
         case .rainingEasing: [3.02, 1.58, 3.16, 5.50, 1.32, 0.40, 0.55, 0.60, 0.48, 0.40, 0.32, 0.29, 0.19, 0.13, 0.13, 0, 0, 0, 0, 0, 0, 0, 0]
         case .rainComing: [0, 0, 0, 0, 0, 0.12, 0.12, 0.24, 0.36, 0.55, 0.66, 0.60, 0.58, 0.42, 0.25, 0.24, 0.20, 0.12, 0.18, 0.12, 0.13, 0.11, 0]
         case .rainAllWindow: [0.36, 0.36, 0.24, 3.31, 1.82, 0.48, 0.79, 0.72, 0.87, 1.20, 1.15, 1.10, 1.05, 1.00, 0.95, 0.72, 0.55, 0.38, 0.24, 0.16, 0.12, 0.14, 0.22]
+        case .burst: [0.3, 0.4, 0.5, 0.4, 0.3, 0.4, 0.6, 0.5, 0.9, 4.5, 9.0, 6.0, 1.2, 0.5, 0.4, 0.3, 0.3, 0.4, 0.3, 0.2, 0.3, 0.2, 0.2]
         case .heavy: [2.40, 5.01, 6.92, 7.24, 2.88, 0.29, 0.24, 0.32, 0.21, 0.28, 0.30, 0.29, 0.19, 0.16, 0, 0, 0.16, 0.12, 0, 0, 0, 0, 0]
         }
     }

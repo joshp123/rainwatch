@@ -222,7 +222,7 @@ struct AppScreen: View {
 }
 
 struct AppSheet: View {
-    static let scenarios: [Scenario] = [.showerComing, .drizzleStops, .rainingEasing, .rainAllWindow, .dry]
+    static let scenarios: [Scenario] = [.showerComing, .rainComing, .rainingEasing, .heavy, .burst]
 
     var body: some View {
         HStack(spacing: 22) {
@@ -233,7 +233,35 @@ struct AppSheet: View {
     }
 }
 
+/// The circle alone, enlarged, on the black of the face: one picture for each arc style and
+/// forecast, and for each set of words, for the design file.
+struct LargeCircle: View {
+    let forecast: RainForecast
+    var style = ArcStyle.chosen
+    var words = CircleWords.countdown
+
+    var body: some View {
+        CircularRainGauge(forecast: forecast, palette: .fullColour, plate: true, style: style, words: words)
+            .frame(width: Ultra3.circular, height: Ultra3.circular)
+            .padding(3)
+            .background(Circle().fill(.black))
+    }
+}
+
 try MainActor.assumeIsolated {
+    if arguments.count > 1, arguments[1] == "arcs" {
+        let forecasts: [(String, Scenario)] = [("light", .rainComing), ("heavy", .heavy), ("burst", .burst)]
+        for index in ArcStyle.options.indices {
+            for (name, scenario) in forecasts {
+                try render(LargeCircle(forecast: scenario.forecast, style: ArcStyle.options[index]), to: "arc-\(index)-\(name).png", scale: 8)
+            }
+        }
+        for (name, scenario) in [("coming", Scenario.showerComing), ("stopping", .onAndOff)] {
+            try render(LargeCircle(forecast: scenario.forecast, words: .countdown), to: "words-old-\(name).png", scale: 8)
+            try render(LargeCircle(forecast: scenario.forecast, words: .state), to: "words-new-\(name).png", scale: 8)
+        }
+        exit(0)
+    }
     if let screenshot {
         try render(MiddleComparison(screenshot: screenshot), to: "circular-middles.png")
     }

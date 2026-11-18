@@ -22,8 +22,10 @@ struct RainApp: App {
         shared?.set(UserDefaults.standard.string(forKey: "server"), forKey: "debugServer")
         // `-age 32` makes the saved forecast that many minutes old, on the face too.
         shared?.set(UserDefaults.standard.integer(forKey: "age"), forKey: "debugAge")
-        // `-slotStyle 2` draws the face's large slot in one of the styles under comparison.
-        shared?.set(UserDefaults.standard.integer(forKey: "slotStyle"), forKey: "debugSlotStyle")
+        // `-arcStyle 0` draws the face's circle in one of the styles under comparison, and
+        // `-circleWords state` gives it the words "DRY 39 MIN" and "RAIN 14 MIN".
+        shared?.set(UserDefaults.standard.string(forKey: "arcStyle"), forKey: "debugArcStyle")
+        shared?.set(UserDefaults.standard.string(forKey: "circleWords"), forKey: "debugCircleWords")
         // `-freshInstall YES` starts as a new install would, for the path Apple's reviewer takes.
         if UserDefaults.standard.bool(forKey: "freshInstall") {
             Place.forget()

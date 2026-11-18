@@ -12,7 +12,7 @@ cd "$(dirname "$0")"
 U="$1"; shift
 APP=../App/build/Build/Products/Debug-watchsimulator/Rain.app
 RAW=captures/raw
-STATES="${*:-dry coming raining stopping ageing not-updated abroad picked first-launch location-off location-not-found forecast-unavailable no-forecast-here too-old slot-0-light slot-1-light slot-2-light slot-3-light slot-0-heavy slot-1-heavy slot-2-heavy slot-3-heavy}"
+STATES="${*:-dry coming raining stopping ageing not-updated abroad picked first-launch location-off location-not-found forecast-unavailable no-forecast-here too-old arc-0-light arc-0-heavy arc-0-burst arc-1-light arc-1-heavy arc-1-burst arc-2-light arc-2-heavy arc-2-burst arc-3-light arc-3-heavy arc-3-burst arc-4-light arc-4-heavy arc-4-burst words-new-coming words-new-stopping}"
 
 options() {
   case "$1" in
@@ -30,8 +30,11 @@ options() {
     forecast-unavailable) echo "-failure offline" ;;
     no-forecast-here) echo "-failure noForecast" ;;
     too-old) echo "-failure stale" ;;
-    slot-*-light) echo "-scenario onAndOff -slotStyle $(echo "$1" | cut -d- -f2)" ;;
-    slot-*-heavy) echo "-scenario heavy -slotStyle $(echo "$1" | cut -d- -f2)" ;;
+    arc-*-light) echo "-scenario rainComing -arcStyle $(echo "$1" | cut -d- -f2)" ;;
+    arc-*-heavy) echo "-scenario heavy -arcStyle $(echo "$1" | cut -d- -f2)" ;;
+    arc-*-burst) echo "-scenario burst -arcStyle $(echo "$1" | cut -d- -f2)" ;;
+    words-new-coming) echo "-scenario showerComing -circleWords state" ;;
+    words-new-stopping) echo "-scenario onAndOff -circleWords state" ;;
     *) echo "unknown state $1" >&2; exit 1 ;;
   esac
 }
@@ -40,7 +43,7 @@ mkdir -p "$RAW"
 LISTEN=$(mktemp -d)
 swiftc -O listen.swift -o "$LISTEN/listen"
 COUNT=$(echo $STATES | wc -w)
-"$LISTEN/listen" $((COUNT * 16 + 60)) CoreSimulator mute > "$LISTEN/log" 2>&1 &
+"$LISTEN/listen" $((COUNT * 16 + 240)) CoreSimulator mute > "$LISTEN/log" 2>&1 &
 METER=$!
 sleep 1
 xcrun simctl boot "$U" 2>/dev/null || true
@@ -58,7 +61,8 @@ done
 xcrun simctl shutdown "$U"
 kill "$METER" 2>/dev/null || true
 wait "$METER" 2>/dev/null || true
-LOUD=$(grep -c " peak " "$LISTEN/log" || true)
+# The meter's own closing line also says "peak"; it is not a sound.
+LOUD=$(grep -v "^SUMMARY" "$LISTEN/log" | grep -c -E " peak |TAP FAILED" || true)
 grep -E " peak |TAP FAILED" "$LISTEN/log" || true
 rm -rf "$LISTEN"
 if [ "$LOUD" != "0" ]; then echo "THE SIMULATOR PLAYED SOUND $LOUD TIMES" >&2; exit 1; fi

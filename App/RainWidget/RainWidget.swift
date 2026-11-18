@@ -160,14 +160,25 @@ struct RainComplicationView: View {
     @Environment(\.widgetRenderingMode) private var renderingMode
     let entry: RainEntry
 
-    /// The graph style under comparison (`-slotStyle 2`), in debug builds only.
-    private var slotStyle: SlotStyle {
+    /// The circle's style and words under comparison (`-arcStyle 0`, `-circleWords state`), in
+    /// debug builds only.
+    private var arcStyle: ArcStyle {
         #if DEBUG
-        let index = UserDefaults(suiteName: Place.appGroup)?.integer(forKey: "debugSlotStyle") ?? 0
-        return SlotStyle.options.indices.contains(index) ? SlotStyle.options[index] : .today
-        #else
-        return .today
+        if let index = UserDefaults(suiteName: Place.appGroup)?.string(forKey: "debugArcStyle").flatMap(Int.init),
+           ArcStyle.options.indices.contains(index) {
+            return ArcStyle.options[index]
+        }
         #endif
+        return .chosen
+    }
+
+    private var circleWords: CircleWords {
+        #if DEBUG
+        if let words = UserDefaults(suiteName: Place.appGroup)?.string(forKey: "debugCircleWords").flatMap(CircleWords.init) {
+            return words
+        }
+        #endif
+        return .countdown
     }
 
     private var palette: RainPalette {
@@ -188,11 +199,11 @@ struct RainComplicationView: View {
             // The grey disc Apple's own complications sit on, so Rain's edge is as clear as theirs.
             ZStack {
                 AccessoryWidgetBackground()
-                CircularRainGauge(forecast: forecast, palette: palette)
+                CircularRainGauge(forecast: forecast, palette: palette, style: arcStyle, words: circleWords)
             }
             .containerBackground(for: .widget) { Color.clear }
         case .accessoryRectangular:
-            RectangularRainView(forecast: forecast, palette: palette, issued: entry.issued, appleWeather: entry.source?.isApple ?? false, style: slotStyle)
+            RectangularRainView(forecast: forecast, palette: palette, issued: entry.issued, appleWeather: entry.source?.isApple ?? false, scale: arcStyle.scale)
                 .containerBackground(for: .widget) { forecast.hasRain ? palette.stack : palette.stackDry }
         case .accessoryCorner:
             // Words along the edge; a drop in the corner, filled when rain is due.

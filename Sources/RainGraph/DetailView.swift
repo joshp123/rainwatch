@@ -53,7 +53,7 @@ public struct ForecastDetailView: View {
 }
 
 /// The rain graph in Swift Charts: a line with a fading fill over its wet stretches only, on
-/// the complications' square-root height, with the Light and Heavy lines labelled inside the plot
+/// the complications' height scale, with the Light and Heavy lines labelled inside the plot
 /// so the chart keeps the full width; "Now" and whole hours below.
 /// The labels sit at the far end, two hours out, where rain matters least if they cover it.
 public struct ForecastChart: View {
@@ -64,9 +64,9 @@ public struct ForecastChart: View {
     }
 
     public var body: some View {
-        // The same square-root height as the complications, so one shower has one shape; the
-        // Light and Heavy lines then sit at half and seven-eighths of the height.
-        let runs = RainCurve.wetRuns(forecast, scale: .squareRoot)
+        // The same height as the complications, so one shower has one shape. The Heavy line is
+        // full height there, so the plot runs a little higher to keep room for its label.
+        let runs = RainCurve.wetRuns(forecast, scale: .rate)
         Chart {
             ForEach(runs.indices, id: \.self) { run in
                 ForEach(runs[run].indices, id: \.self) { index in
@@ -90,7 +90,7 @@ public struct ForecastChart: View {
             }
         }
         .chartXScale(domain: forecast.start...forecast.end)
-        .chartYScale(domain: 0...100)
+        .chartYScale(domain: 0...122)
         .chartXAxis {
             // Every hour has a tick; a label sits centred under its own tick, so it is read with the
             // right moment on the line. "Now" hangs from the left edge and the last hour from the
@@ -139,7 +139,7 @@ public struct ForecastChart: View {
         .accessibilityLabel(RainCopy(forecast).spoken)
     }
 
-    /// The Light and Heavy lines (25 and 75 on Buienradar's graph scale) on the square-root height.
+    /// The Light and Heavy lines (25 and 75 on Buienradar's graph scale) on the complications' height.
     static let scaleLines = [RainCurve.display(25) * 100, RainCurve.display(75) * 100]
 
     private func date(_ t: Double) -> Date {
