@@ -9,7 +9,7 @@ Choices worth a look:
 - The circle reads "OVER 40 MIN" and "NOG 14 MIN", "OVER" a size smaller so its four letters clear the arc.
 - "No PLACE" is "Geen PLEK": "PLAATS" is too wide for the circle.
 - "Forecast Unavailable" is "Geen verwachting", and "No Recent Forecast" is "Verwachting te oud": the longer forms were cut short on the face.
-- The first-launch and Location Expired sentences quote watchOS's own Dutch button, "Bij gebruik van app" (checked on the watchOS 27 simulator in Dutch), and Location Off spells out the way in Dutch Settings: Instellingen > Privacy en beveiliging > Locatievoorzieningen > BuienWatch > Bij gebruik van app.
+- The first-launch and Location Expired sentences quote watchOS's own Dutch button, "Bij gebruik van app" (checked on the watchOS 27 simulator in Dutch), and Location Off spells out the way in the iPhone's Dutch Settings: Instellingen > Privacy en beveiliging > Locatievoorzieningen > BuienWatch > Bij gebruik van app.
 
 | English | Dutch | Where |
 |---|---|---|
@@ -41,12 +41,11 @@ Choices worth a look:
 | Hourly forecast | Verwachting per uur | Second line, where Apple has only an hourly forecast |
 | Hourly forecast made %@ | Verwachting per uur van %@ | Second line of an hourly forecast once it is 20 minutes old: when it was made |
 | IN | OVER | Circle, above the number, dry now: rain IN 39 MIN |
-| KNMI forecast made %@ | KNMI-data van %@ | Credit under the app's graph: whose forecast, and when it was made |
+| KNMI forecast made %@ | KNMI-verwachting %@ | Credit under the app's graph: whose forecast, and when it was made |
 | Last forecast %@ | Laatste verwachting %@ | Under No Recent Forecast, and on the face |
 | Legal | Juridisch | Apple Weather's legal link |
 | Light | Licht | Scale line in the app's graph |
 | Light rain | Lichte regen | How hard, second line |
-| Location Expired | Locatie verlopen | Problem title: Allow Once has run out, so the system must ask again |
 | Location Not Found | Locatie niet gevonden | Problem title |
 | Location Not Set | Locatie niet ingesteld | Problem title |
 | Location Off | Locatie uit | Problem title |
@@ -57,9 +56,10 @@ Choices worth a look:
 | No Recent Forecast | Verwachting te oud | Problem title, forecast over an hour old |
 | No places found | Geen plaatsen gevonden | Place search with no results |
 | Now | Nu | Start of the time axis, and the radar's present frame |
-| Open Settings, then Privacy & Security > Location Services > %@ > While Using the App. | Open Instellingen, dan Privacy en beveiliging > Locatievoorzieningen > %@ > Bij gebruik van app. | Under Location Off: the way to turn location on, in watchOS's own words (Settings on the watch, watchOS 27). watchOS lets no app open Settings; %@ is the app's name |
+| On your iPhone, open Settings, then Privacy & Security > Location Services > %@ > While Using the App. | Open op je iPhone Instellingen, dan Privacy en beveiliging > Locatievoorzieningen > %@ > Bij gebruik van app. | Under Location Off: the way to turn location on, in iOS's own words. It is on the paired iPhone: the watch's row for a watch app is locked (checked on paired watchOS and iOS 27.2 simulators). %@ is the app's name |
 | PLACE | PLEK | Circle without a place, second line |
 | Pause | Pauzeer | Radar button, for VoiceOver |
+| Permission Expired | Toestemming verlopen | Problem title: Allow Once has run out, so the system must ask again |
 | Place | Plaats | Title of the place search |
 | Play | Speel af | Radar button, for VoiceOver |
 | Privacy Policy | Privacybeleid | Link on the About page |
@@ -71,12 +71,12 @@ Choices worth a look:
 | Rain stops in %lld min | Nog %lld min regen | Headline, rain stops within the hour |
 | Rain until %@ | Regen tot %@ | Headline, rain for an hour or more: Rain until 15:10 |
 | Source: KNMI | Bron: KNMI | Credit under an old forecast, and on the radar |
-| Tap to allow again | Tik om weer toe te staan | Face, second line of Location expired |
+| Tap for steps | Tik voor de stappen | Face, second line of Location off: a tap opens the steps to turn location on |
+| Tap to allow location | Tik om locatie toe te staan | Face, second line of Permission expired |
 | Tap to choose a place | Tik om een plaats te kiezen | Face, second line of a problem |
-| Tap to fix | Tik om op te lossen | Face, second line of Location off |
 | Tap to set up | Tik om in te stellen | Face, second line before the first launch |
 | Tap to try again | Tik om opnieuw te proberen | Face, second line of a problem |
-| To keep your watch face up to date, choose Allow While Using App. | Kies ‘Bij gebruik van app’ om je wijzerplaat bij te houden. | Under Location Expired, before the system's location question. The quoted words are watchOS's own button |
+| To keep your watch face up to date, choose Allow While Using App. | Kies ‘Bij gebruik van app’ om je wijzerplaat bij te houden. | Under Permission Expired, before the system's location question. The quoted words are watchOS's own button |
 | To see the rain where you are, choose Allow While Using App. | Kies ‘Bij gebruik van app’ om de regen te zien waar je bent. | First launch, before the system's location question. The quoted words are watchOS's own button |
 | Town or postcode | Plaats of postcode | Prompt in the place search field |
 | Try Again | Probeer opnieuw | Button |

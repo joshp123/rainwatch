@@ -1,4 +1,5 @@
 import CoreLocation
+import MapKit
 import RainGraph
 import SwiftUI
 import WidgetKit
@@ -84,6 +85,8 @@ struct ContentView: View {
     @State private var couldNotUpdate = false
     @State private var session: CLServiceSession?
     @State private var picking = false
+    /// The town where the wearer is, from Apple Maps; "My Location" until it is known.
+    @State private var placeName: String?
     /// The radar page is open. Debug builds can start on it (`-radar YES`), for screenshots.
     @State private var showsRadar = ContentView.startsOnRadar
     /// Set once Continue is tapped on the intro, so the system's question comes when it's expected.
@@ -177,16 +180,15 @@ struct ContentView: View {
                     .buttonStyle(.plain)
                     .scenePadding(.horizontal)
                 }
-                // The arrow is Apple's mark for "where you are"; a picked place has none. A town's
-                // name from Apple Maps would need its map beside it (Attachment 6, 2.4), so where you
-                // are is "My Location", and a picked place is called what the wearer typed.
+                // The arrow is Apple's mark for "where you are"; a picked place has none. Both are
+                // named by Apple Maps; where you are says "My Location" until its town is known.
                 .navigationTitle {
                     // A long name shrinks before it is cut short.
                     Group {
                         if let chosen = Place.chosen {
                             Text(chosen.name)
                         } else {
-                            Label(localized("My Location"), systemImage: "location.fill")
+                            Label(placeName ?? localized("My Location"), systemImage: "location.fill")
                                 .labelStyle(.titleAndIcon)
                         }
                     }
@@ -267,16 +269,24 @@ struct ContentView: View {
         }
     }
 
+    /// Full width, as on the first launch: Apple's watchOS guidance is to "prefer buttons that span
+    /// the width of the screen for primary actions".
     @ViewBuilder private func button(_ action: Problem.Action) -> some View {
         switch action {
-        case .tryAgain: Button(localized("Try Again")) { Task { await refresh("Try Again") } }
-        case .choosePlace: Button(localized("Choose a Place")) { picking = true }
+        case .tryAgain:
+            Button { Task { await refresh("Try Again") } } label: { wide(localized("Try Again")) }
+        case .choosePlace:
+            Button { picking = true } label: { wide(localized("Choose a Place")) }
         // Blue, as on the first launch: the button that opens the system's question.
         case .allowLocation:
-            Button(localized("Continue")) { askForLocation() }
+            Button { askForLocation() } label: { wide(localized("Continue")) }
                 .buttonStyle(.borderedProminent)
                 .tint(RainPalette.buienradarBlue)
         }
+    }
+
+    private func wide(_ title: String) -> some View {
+        Text(title).frame(maxWidth: .infinity)
     }
 
     private static var startsOnRadar: Bool {
@@ -346,6 +356,7 @@ struct ContentView: View {
             let age = max(Scenario.age, Double(UserDefaults.standard.integer(forKey: "age")) * 60)
             let run = Date(timeIntervalSince1970: ((RainApp.launched.timeIntervalSince1970 - age) / 300).rounded(.down) * 300)
             guard let forecast = RainForecast.at(.now, from: scenario.forecast(at: run.addingTimeInterval(Scenario.age)).samples) else { return }
+            placeName = scenario.place
             move(to: .ready(forecast, issued: run, source: .knmi,
                             place: CLLocationCoordinate2D(latitude: scenario.coordinate.latitude, longitude: scenario.coordinate.longitude)),
                  because: "-scenario option")
@@ -357,6 +368,7 @@ struct ContentView: View {
            let forecast = scenario.forecast(at: .now) {
             // `-age 40` makes Apple's test forecast that many minutes old.
             let age = Double(max(5, UserDefaults.standard.integer(forKey: "age"))) * 60
+            placeName = scenario.place
             move(to: .ready(forecast, issued: .now.addingTimeInterval(-age), source: scenario.resolution == .hourly ? .appleHourly : .appleMinute,
                             place: CLLocationCoordinate2D(latitude: scenario.coordinate.latitude, longitude: scenario.coordinate.longitude)),
                  because: "-scenario option")
@@ -376,6 +388,10 @@ struct ContentView: View {
             Log.event("refresh \(mine): \(mine == refreshes ? "done" : "overtaken by refresh \(refreshes)") after \(Log.seconds(since: started))")
         }
         let chosen = Place.chosen
+        // Opened on the saved forecast: name its town at once rather than after the fetch.
+        if chosen == nil, placeName == nil, case let .ready(_, _, _, saved) = load {
+            Task { if placeName == nil { placeName = await Self.town(at: saved) } }
+        }
         // Someone who refused location gets the choice of a place, not their last known position.
         let status = CLLocationManager().authorizationStatus
         if chosen == nil, status == .denied || status == .restricted {
@@ -423,6 +439,17 @@ struct ContentView: View {
         _ = await fetchAndShow(place, refresh: mine)
     }
 
+    /// The town's name, asked for with the position rounded to about 1 km, as the location question
+    /// promises.
+    private static func town(at place: CLLocationCoordinate2D) async -> String? {
+        let rounded = CLLocation(latitude: (place.latitude * 100).rounded() / 100, longitude: (place.longitude * 100).rounded() / 100)
+        let name = try? await MKReverseGeocodingRequest(location: rounded)?
+            .mapItems.first?.addressRepresentations?.cityName
+        // Apple names some places with their region, "City of Westminster, London": the first
+        // part is the town, and all the title has room for.
+        return name?.split(separator: ",").first.map(String.init)
+    }
+
     /// Fetches the forecast for a place and shows what `Situation.after` decides. False when a
     /// newer refresh has taken over the screen.
     private func fetchAndShow(_ place: CLLocationCoordinate2D, refresh mine: Int) async -> Bool {
@@ -437,6 +464,12 @@ struct ContentView: View {
         // A refresh started later owns the screen: its place and its forecast are the newer ones.
         guard mine == refreshes else { return false }
         show(.after(fetch, latitude: place.latitude, longitude: place.longitude, saved: Snapshot.saved, now: .now), place: place)
+        // The town's name follows; nothing waits for it.
+        if Place.chosen == nil {
+            Task {
+                if let town = await Log.stage("Town name", { await Self.town(at: place) }), mine == refreshes { placeName = town }
+            }
+        }
         guard case let .fetched(snapshot) = fetch else { return true }
         // Free of the widget budget while the app is in front. A reused forecast is one the widgets
         // already have.

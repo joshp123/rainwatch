@@ -474,13 +474,13 @@
         }
       }
     },
-    "Open Settings, then Privacy & Security > Location Services > %@ > While Using the App.": {
-      "comment": "Under Location Off: the way to turn location on, in watchOS's own words (Settings on the watch, watchOS 27). watchOS lets no app open Settings; %@ is the app's name",
+    "On your iPhone, open Settings, then Privacy & Security > Location Services > %@ > While Using the App.": {
+      "comment": "Under Location Off: the way to turn location on, in iOS's own words. It is on the paired iPhone: the watch's row for a watch app is locked (checked on paired watchOS and iOS 27.2 simulators). %@ is the app's name",
       "localizations": {
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Open Instellingen, dan Privacy en beveiliging > Locatievoorzieningen > %@ > Bij gebruik van app."
+            "value": "Open op je iPhone Instellingen, dan Privacy en beveiliging > Locatievoorzieningen > %@ > Bij gebruik van app."
           }
         }
       }

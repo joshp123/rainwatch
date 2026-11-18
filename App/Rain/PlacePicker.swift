@@ -5,16 +5,14 @@ import SwiftUI
 /// Finds a town by name, for people who don't share their location and for anyone who wants the
 /// rain somewhere else. Picking one, or going back to the wearer's location, calls `pick`.
 ///
-/// The results come from Apple Maps, whose terms (Attachment 6, 2.4) allow an address result only
-/// with its map: each one shows where it is. What is kept is the wearer's own words (`Place.Chosen`).
+/// The results come from Apple Maps, whose terms (Attachment 6, 2.4) ask for an address result to be
+/// shown with its map: each one shows where it is. A picked place keeps Apple's name for it.
 struct PlacePicker: View {
     let pick: (Place.Chosen?) -> Void
 
     @State private var query = ""
     @State private var results: [Result]?
     @State private var searching = false
-    /// The words the results were found with: what a picked place is called.
-    @State private var searched = ""
 
     struct Result: Hashable {
         let name: String
@@ -42,7 +40,7 @@ struct PlacePicker: View {
                 }
                 ForEach(results ?? [], id: \.self) { place in
                     Section {
-                        Button { pick(Place.Chosen(name: searched, latitude: place.latitude, longitude: place.longitude)) } label: {
+                        Button { pick(Place.Chosen(name: place.name, latitude: place.latitude, longitude: place.longitude)) } label: {
                             VStack(alignment: .leading) {
                                 Text(place.name)
                                 if !place.detail.isEmpty {
@@ -93,7 +91,6 @@ struct PlacePicker: View {
             return Result(name: name, detail: detail, latitude: item.location.coordinate.latitude, longitude: item.location.coordinate.longitude)
         }
         // The watch can return a town twice, once without its country; one row each is enough.
-        searched = text
         results = found.reduce(into: []) { unique, place in
             let twin = found.contains { $0.name == place.name && !$0.detail.isEmpty }
             if place.detail.isEmpty, twin { return }

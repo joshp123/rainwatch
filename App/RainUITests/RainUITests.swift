@@ -30,7 +30,7 @@ final class RainUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label BEGINSWITH 'KNMI forecast made'")).firstMatch.exists,
                       "KNMI's forecast should name KNMI and say when it was made")
         XCTAssertTrue(app.buttons["Radar"].exists, "KNMI's area has the radar")
-        XCTAssertTrue(app.staticTexts["My Location"].exists, "The page should say it is for where you are")
+        XCTAssertTrue(app.staticTexts["Rotterdam"].waitForExistence(timeout: 20), "The page should name the town where you are")
         keep("forecast")
         audit("forecast")
         // The privacy policy and KNMI's licence, at the end of the page.
@@ -295,7 +295,7 @@ final class RainUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Location Off"].waitForExistence(timeout: 30), "Refusing location should say so")
         let choose = app.buttons["Choose a Place"].firstMatch
         XCTAssertTrue(choose.exists, "Refusing location should offer a place instead")
-        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label BEGINSWITH 'Open Settings, then Privacy'")).firstMatch.exists,
+        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label BEGINSWITH 'On your iPhone, open Settings'")).firstMatch.exists,
                       "Location Off should say how to turn it on: watchOS lets no app open Settings")
         keep("place-location-refused")
         choose.tap()

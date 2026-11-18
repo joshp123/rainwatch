@@ -34,11 +34,10 @@ public enum Place {
     /// A place picked by name instead of the wearer's location. Apple requires a way in for people
     /// who don't share their location, and it also lets anyone watch the rain somewhere else.
     ///
-    /// Apple's Maps terms allow its search results to be kept only for a while (Attachment 6, 2.5),
-    /// and towns have no Place ID, the one thing they let an app keep. So only the words the wearer
-    /// typed are kept, with the position rounded to the 0.01 degrees the forecast is asked for.
+    /// It keeps Apple Maps' name for the place and its position rounded to the 0.01 degrees the
+    /// forecast is asked for.
     public struct Chosen: Codable, Hashable, Sendable {
-        /// What the wearer typed, never Apple's name for the place.
+        /// Apple Maps' name for the place.
         public let name: String
         public let latitude: Double
         public let longitude: Double
