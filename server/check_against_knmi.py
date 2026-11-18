@@ -49,13 +49,16 @@ def check(folder, stamp, offline):
 
     job.knmi_file = cached
     try:
-        compact = cached(key, probabilities.PRODUCT, stamp, max_bytes=probabilities.MAX_BYTES)
-        overlay = (probabilities.read_overlay(compact, stamp, job.ROWS, job.COLS, job.AHEAD)
+        older = probabilities.previous_run(run).strftime("%Y%m%d%H%M")
+        compact = cached(key, probabilities.PRODUCT, older, max_bytes=probabilities.MAX_BYTES)
+        overlay = (probabilities.read_overlay(compact, older, job.ROWS, job.COLS, job.AHEAD)
                    if compact is not None else None)
         result = job.build(run, key, job.Folder(folder), receive_blend=lambda: (overlay, "archive"))
     finally:
         job.knmi_file = original_fetch
     assert result["blend"] == (compact is not None)
+    assert result["blend_run"] == (probabilities.previous_run(run).strftime("%Y-%m-%dT%H:%MZ")
+                                   if compact is not None else None)
 
     observed = []
     for lead in range(-30, 5, 5):
@@ -73,7 +76,7 @@ def check(folder, stamp, offline):
         with h5py.File(io.BytesIO(compact)) as file:
             thresholds = file["threshold"][:]
             lat_axis, lon_axis = file["lat"][:], file["lon"][:]
-            field = file["exceedance_probability"][:, 6:24]
+            field = file["exceedance_probability"][:, 13:25]  # older issue's +70…125
 
     # Sample uniformly plus cells that are rainy in the plain forecast, and cells outside radar.
     rng = random.Random(1)
@@ -101,8 +104,8 @@ def check(folder, stamp, offline):
             frame = observed[index] if lead < 0 else deterministic[index - 6]
             value = 65534 if frame is None else frame[row, col]
             want = None if outside[row, col] or value >= 65534 else value * 0.12
-            if want is not None and lead > 30 and compact is not None and covered:
-                estimated = probability_rate(field[:, lead // 5 - 7, i, j], thresholds)
+            if want is not None and lead > 60 and compact is not None and covered:
+                estimated = probability_rate(field[:, lead // 5 - 13, i, j], thresholds)
                 if estimated is not None:
                     blended += 1
                     changed += (estimated > 0) != (want > 0)

@@ -35,7 +35,7 @@ def nearest(file, places):
     return np.array(points).T
 
 
-def read_case(path, rows):
+def read_case(path, rows, *, issue=None, age_steps=0):
     places = sorted({(float(r["lat"]), float(r["lon"])) for r in rows})
     place_index = {p: i for i, p in enumerate(places)}
     assert len(places) == 48
@@ -43,12 +43,12 @@ def read_case(path, rows):
     assert len(row_index) == len(set(row_index)) == 48 * len(LEADS)
     with h5py.File(path) as file:
         verify_axes(file)
-        issue = rows[0]["issue"]
+        issue = issue or rows[0]["issue"]
         units = file["time"].attrs["units"].decode()
         assert datetime.fromisoformat(units.removeprefix("seconds since ")).strftime("%Y%m%d%H%M") == issue
         field = file["exceedance_probability"]
         i, j = nearest(file, places)
-        sample = field[0, :len(LEADS)][:, i, j]
+        sample = field[0, age_steps:age_steps + len(LEADS)][:, i, j]
         grid = field.shape[-2:]
     valid = sample != 255
     assert np.all(sample[valid] <= 100) and np.all(sample[valid] % 5 == 0)

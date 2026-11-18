@@ -7,12 +7,10 @@
 # Run it:  KNMI_KEY=... python3 job.py <folder> [YYYYMMDDHHMM]
 # It writes to a folder. Where the files are then served from (a bucket, a web server) is not decided
 # here: build() only needs a store with get(name) and put(name, data, content_type, max_age).
-import io, json, os, subprocess, sys, tempfile, time, urllib.error, urllib.request, zlib
-from contextlib import contextmanager
-from pathlib import Path
+import io, json, os, sys, time, urllib.error, urllib.request, zlib
 from datetime import datetime, timedelta, timezone
 
-from probabilities import EXIT_STATUS, FIRST_STEP
+from probabilities import FIRST_STEP, cached_overlay, previous_run
 
 KNMI = "https://api.dataplatform.knmi.nl/open-data/v1/datasets"
 PLAIN = ("radar_forecast", "2.0", "RAD_NL25_RAC_FM_{}.h5")
@@ -54,67 +52,6 @@ def knmi_file(key, dataset, stamp, *, max_bytes=None):
         if len(data) > max_bytes:
             raise FileTooLarge
         return data
-
-
-@contextmanager
-def probability_attempt(folder, stamp, key):
-    """Start one optional request. At the packing step, take a finished result or skip it."""
-    attempt = Path(folder) / "observed" / f"probability-{stamp}.attempt"
-    try:
-        attempt.parent.mkdir(parents=True, exist_ok=True)
-        attempt.touch(exist_ok=False)
-    except FileExistsError:
-        yield lambda: (None, "already attempted")
-        return
-    except OSError:
-        yield lambda: (None, "could not record attempt")
-        return
-
-    try:
-        output = tempfile.TemporaryFile()
-    except OSError:
-        yield lambda: (None, "could not open output")
-        return
-    with output:
-        env = {k: v for k, v in os.environ.items()
-               if k in {"PATH", "PYTHONPATH", "SSL_CERT_FILE", "SSL_CERT_DIR", "NIX_SSL_CERT_FILE"}}
-        env.update(KNMI_KEY=key, OPENBLAS_NUM_THREADS="1", OMP_NUM_THREADS="1",
-                   PYTHONDONTWRITEBYTECODE="1")
-        try:
-            worker = subprocess.Popen(
-                [sys.executable, str(Path(__file__).with_name("probabilities.py")), stamp],
-                stdout=output, env=env,
-            )
-        except OSError:
-            yield lambda: (None, "could not start")
-            return
-
-        def ready():
-            import numpy as np
-
-            status = worker.poll()
-            if status is None:
-                return None, "not ready at packing"
-            if status != 0:
-                return None, EXIT_STATUS.get(status, "worker failed")
-            try:
-                expected = (AHEAD - FIRST_STEP) * ROWS * COLS
-                if os.fstat(output.fileno()).st_size != expected:
-                    return None, "invalid output"
-                output.seek(0)
-                return np.fromfile(output, np.uint8, count=expected).reshape(-1, ROWS, COLS), "used"
-            except (OSError, ValueError):
-                return None, "invalid output"
-
-        try:
-            yield ready
-        finally:
-            try:
-                if worker.poll() is None:
-                    worker.kill()
-                worker.poll()  # do not wait on the optional process, even during shutdown
-            except OSError:
-                pass  # the child's own deadline still applies
 
 
 # ---- where files go ----
@@ -200,10 +137,12 @@ def build(run, key, store, log=print, receive_blend=None):
                 data = deflate.compress(np.ascontiguousarray(square.transpose(1, 2, 0)).tobytes()) + deflate.flush()
                 lengths.append(len(data)); pack += data
 
+    blend_run = previous_run(run).strftime("%Y-%m-%dT%H:%MZ") if blend else None
     latest = {
         "version": 1,
         "run": run.strftime("%Y-%m-%dT%H:%MZ"),
         "blend": blend,
+        "blend_run": blend_run,
         "first_frame_minutes": -5 * PAST, "frames": PAST + AHEAD, "step_minutes": 5,
         "square_km": TILE, "rows": -(-ROWS // TILE), "columns": -(-COLS // TILE),
         "pack": f"runs/{stamp}.bin",
@@ -211,7 +150,7 @@ def build(run, key, store, log=print, receive_blend=None):
     }
     store.put(latest["pack"], bytes(pack), "application/octet-stream", 86400)   # the pack first, so `latest`
     store.put("latest", json.dumps(latest, separators=(",", ":")).encode(), "application/json", 60)  # never points at nothing
-    log(json.dumps({"run": latest["run"], "blend": latest["blend"], "probabilities": blend_status,
+    log(json.dumps({"run": latest["run"], "blend": latest["blend"], "blend_run": blend_run, "probabilities": blend_status,
                     "knmi_calls": calls, "pack_bytes": len(pack),
                     "squares_with_rain": sum(n > 0 for n in lengths)}))
     return latest
@@ -235,7 +174,6 @@ if __name__ == "__main__":
         sys.exit(0)
     started = time.perf_counter()
     key = os.environ["KNMI_KEY"]
-    with probability_attempt(folder, run.strftime("%Y%m%d%H%M"), key) as ready:
-        build(run, key, store, receive_blend=ready)
+    build(run, key, store, receive_blend=lambda: cached_overlay(folder, previous_run(run), ROWS, COLS, AHEAD))
     peak = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / (2 ** 30 if sys.platform == "darwin" else 2 ** 20)
     print(f"{time.perf_counter() - started:.1f} s, peak memory {peak:.2f} GB")

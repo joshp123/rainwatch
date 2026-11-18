@@ -2,7 +2,7 @@
 
 # Can KNMI's probabilities replace the blend?
 
-The server later adopted the compact blend when it is ready on time. See [the deployed design](../../server/DESIGN.md).
+See [Using the previous issue](#using-the-previous-issue) for the follow-up and [the deployed design](../../server/DESIGN.md) for production behavior.
 
 **Leave the blend off on the current schedule.** The probabilities file reproduces the blend's rain vote and takes about a second to fetch and decode on the server when it is ready. In a week of runs, KNMI published it after the server's 5 minute 20 second start time 11% of the time. Waiting for it on those runs would start adding delay at the source, before any CDN or watch refresh delay.
 
@@ -80,3 +80,25 @@ done
 ```
 
 Forecast and observation source is KNMI. Timings, comparisons and decision are derived here. [KNMI Open Data API](https://developer.dataplatform.knmi.nl/open-data-api), [KNMI fair use](https://developer.dataplatform.knmi.nl/fair-use).
+
+## Using the previous issue
+
+On 18 November, only 1 of 8 rainy production runs from 15:10 to 15:45 UTC used the same-issue blend. Three probability files arrived 75–81 seconds after the scheduled start. Four more were published before the start, but the worker missed the server's packing cutoff. The 11% late figure measures publication at KNMI before allowing any time for local download and decoding.
+
+In the 2,016-file week above, 12 of 460 probability files smaller than 5 MB were late (2.6%) and 89 of 468 files of at least 15 MB were late (19.0%). Size is a proxy for rain coverage. The 15–20 MB files were late 56 times out of 194, compared with 33 times out of 274 for larger files. The latest recorded creation time in the week was issue +7:09. Adding the 191 issues through 15:50 UTC on 18 November did not extend that maximum. In six distinct files of 15.5–25.7 MB timed on mini-server-1, lookup, transfer and decoding for the second hour took 0.99–1.67 seconds in five cases and 7.31 seconds in the sixth. A local wait could help the four workers that missed the packing cutoff. The three late files had already returned 404.
+
+The table compares the previous issue at the target run's valid time, scored against the same radar truth. The previous issue's +70 to +125 becomes the current run's +65 to +120. The original member vote stands in for the same-issue probability, which matched it over the scored archive. All 86 previous issues were available. Confidence intervals resample whole cases as in the season test.
+
+| Cases | Lead | Plain CSI | Same-issue blend CSI | Previous-issue blend CSI |
+|---|---|---:|---:|---:|
+| 66 season cases | 35–60 min | .554 | .577 | .554 |
+| 66 season cases | 65–120 min | .435 | .475 | .465 |
+| 18 widespread season cases | 65–120 min | .563 | .603 | .590 |
+| 30 current-grid cases | 35–60 min | .585 | .598 | .570 |
+| 30 current-grid cases | 65–120 min | .455 | .507 | .511 |
+
+In hour two, the previous issue detected 12.71 of 20 wet samples in the season test (plain 11.73, same-issue blend 12.76) and 7.31 of every 20 rain predictions stayed dry (plain 7.44, same-issue blend 6.98). Its paired CSI gain over plain was +0.030 [95% interval +0.014 to +0.047] across the season. On the 18 widespread days it was +0.028 [+0.009 to +0.047]. For those days, the difference from the same-issue blend was −0.013 [−0.025 to −0.002].
+
+Prepare the previous issue once at +8:20, two minutes before the publisher needs it. Use its blend in hour two only. This leaves the publisher independent of KNMI's probability delivery and keeps the freshest radar across the first hour.
+
+With the previous-issue files in the scratch directory, reproduce the comparison with `python research/verification/probabilities_previous.py "$scratch"`. The script's `--stamps` option prints the filenames' issue times for the existing collector's `--only` argument.

@@ -1,13 +1,15 @@
 # Written by AI on 2026.11.18 by model gpt-6.2-sol.
-"""Decode KNMI's compact forecast in the optional worker, away from the publisher."""
+"""Prepare the next publish run’s second hour from KNMI’s compact blend."""
 
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 import io
+import json
 import math
 import os
-import resource
-import signal
+from pathlib import Path
 import sys
+import tempfile
+import time
 from urllib.error import HTTPError
 
 PRODUCT = (
@@ -16,10 +18,9 @@ PRODUCT = (
     "KNMI_PYSTEPS_BLEND_PROB_{}.nc",
 )
 MAX_BYTES = 40_000_000
-FIRST_STEP = 7  # +35 minutes, leaving plain through +30
+FIRST_STEP = 13  # +65 minutes, leaving plain through +60
+AGE_STEPS = 1    # a five-minute-older issue, for the same valid times
 THRESHOLDS = (0.1, 0.3, 1.0, 3.0, 10.0, 30.0)
-UNAVAILABLE, OVERSIZED, INVALID = 2, 3, 4
-EXIT_STATUS = {UNAVAILABLE: "unavailable", OVERSIZED: "oversized", INVALID: "invalid"}
 
 def cell_centres(rows, cols):
     """The latitude and longitude at the centre of each radar cell."""
@@ -88,7 +89,7 @@ def codes_at_time(p, tables):
 
 
 def read_overlay(data, stamp, rows, cols, ahead):
-    """Read one complete grid of optional codes for +35…120 minutes."""
+    """Read the previous issue’s +70…125-minute fields for current leads +65…120."""
     import h5py
     import numpy as np
 
@@ -124,34 +125,91 @@ def read_overlay(data, stamp, rows, cols, ahead):
         tables = median_codes()
         overlay = np.empty((ahead - FIRST_STEP, rows, cols), dtype=np.uint8)
         for index, step in enumerate(range(FIRST_STEP, ahead)):
-            overlay[index] = codes_at_time(field[:, step - 1], tables).take(index_map)
+            overlay[index] = codes_at_time(field[:, step + AGE_STEPS - 1], tables).take(index_map)
         overlay[:, ~inside] = 255
         return overlay
 
 
-def worker(stamp):
-    # A damaged input can take down HDF5, so only this child opens it. Bound its
-    # address space beneath the service's 1 GiB limit, including room for the plain build.
-    if sys.platform == "linux":
-        limit = 512 * 1024**2
-        resource.setrlimit(resource.RLIMIT_AS, (limit, limit))
-    signal.alarm(5)
-    from job import AHEAD, COLS, ROWS, knmi_file, FileTooLarge
+def previous_run(run):
+    return run - timedelta(minutes=5 * AGE_STEPS)
+
+
+def cache_path(folder, run):
+    return Path(folder) / "observed" / f"probability-{run:%Y%m%d%H%M}.bin"
+
+
+def cached_overlay(folder, run, rows, cols, ahead):
+    """Read only a completed overlay for the expected issue. A cache miss is plain."""
+    import numpy as np
+
+    path = cache_path(folder, run)
+    shape = (ahead - FIRST_STEP, rows, cols)
+    expected = math.prod(shape)
     try:
-        data = knmi_file(os.environ["KNMI_KEY"], PRODUCT, stamp, max_bytes=MAX_BYTES)
+        with path.open("rb") as file:
+            if os.fstat(file.fileno()).st_size != expected:
+                return None, "invalid cache"
+            codes = np.fromfile(file, np.uint8, count=expected).reshape(shape)
+    except FileNotFoundError:
+        return None, "no cached blend"
+    except (OSError, ValueError):
+        return None, "invalid cache"
+    return codes, "cached"
+
+
+def prepare(folder, run, key):
+    from job import AHEAD, COLS, ROWS, FileTooLarge, knmi_file
+
+    stamp = run.strftime("%Y%m%d%H%M")
+    path = cache_path(folder, run)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        # The old publisher also used this marker. Keep it through the switch
+        # so that an issue it already tried is left alone.
+        path.with_suffix(".attempt").touch(exist_ok=False)
+    except FileExistsError:
+        return {"probability_run": stamp, "status": "already attempted"}
+
+    result = {"probability_run": stamp}
+    try:
+        cutoff = time.time() - 1200
+        for old in path.parent.glob("probability-*.bin"):
+            try:
+                if old.stat().st_mtime < cutoff:
+                    old.unlink(missing_ok=True)
+            except OSError:
+                pass  # cache retention is also enforced by the publisher's daily cleanup
+        started = time.monotonic()
+        data = knmi_file(key, PRODUCT, stamp, max_bytes=MAX_BYTES)
         if data is None:
-            return UNAVAILABLE
+            return dict(result, status="unavailable")
+        fetched = time.monotonic()
         overlay = read_overlay(data, stamp, ROWS, COLS, AHEAD)
-        sys.stdout.buffer.write(overlay.tobytes())
-        return 0
+        decoded = time.monotonic()
+        # A failed download, decode or write leaves no partial cache entry.
+        with tempfile.NamedTemporaryFile(dir=path.parent, delete=False) as out:
+            not_ready = Path(out.name)
+            try:
+                out.write(overlay.tobytes())
+                out.close()
+                os.replace(not_ready, path)
+            finally:
+                not_ready.unlink(missing_ok=True)
+        return dict(result, status="cached", bytes=len(data), fetch_s=round(fetched - started, 3),
+                    decode_s=round(decoded - fetched, 3))
     except FileTooLarge:
-        return OVERSIZED
-    except HTTPError:
-        return UNAVAILABLE
-    except Exception:
-        # Don't put a presigned download URL or credential in the journal.
-        return INVALID
+        return dict(result, status="oversized")
+    except HTTPError as error:
+        return dict(result, status="HTTP error", code=error.code)
+    except Exception as error:
+        # Errors can contain a signed URL. Log only the type.
+        return dict(result, status="failed", error=type(error).__name__)
 
 
 if __name__ == "__main__":
-    sys.exit(worker(sys.argv[1]))
+    from job import run_to_build
+
+    # The timer fires at issue +8:20. Select the same issue if systemd jitters.
+    run = run_to_build(datetime.now(timezone.utc) - timedelta(minutes=3))
+    key = (Path(os.environ["CREDENTIALS_DIRECTORY"]) / "knmi-key").read_text().rstrip("\n")
+    print(json.dumps(prepare(sys.argv[1], run, key)), flush=True)
