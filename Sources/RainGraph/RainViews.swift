@@ -298,9 +298,10 @@ public struct CircularRainGauge: View {
                 // Three lines at the neighbours' sizes don't fit inside the arc on a 45 point
                 // disc, so the lead word is smaller; the number and the unit match theirs.
                 if let lead {
-                    // Four letters at that size touch the arc; the Dutch "OVER" has four.
-                    word(lead, side: side, size: lead.count > 3 ? 0.15 : 0.18)
-                        .position(x: mid, y: mid - side * 0.15)
+                    // Four letters at that size touch the arc, and the change dot on it; the Dutch
+                    // "OVER" has four, so it is smaller and a little lower.
+                    word(lead, side: side, size: lead.count > 3 ? 0.14 : 0.18)
+                        .position(x: mid, y: mid - side * (lead.count > 3 ? 0.13 : 0.15))
                 }
                 // Three characters at the two-character size would touch the arc.
                 Text(value)

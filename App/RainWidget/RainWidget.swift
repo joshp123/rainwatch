@@ -94,7 +94,7 @@ struct RainProvider: TimelineProvider {
         let entries: [RainEntry]
         switch situation {
         case let .forecast(_, snapshot, _):
-            // Once Allow Once has run out, the next reload finds no place and says Location Expired.
+            // Once Allow Once has run out, the next reload finds no place and says Permission Expired.
             entries = Situation.schedule(snapshot, now: now, placeExpires: placeExpires)
                 .map { RainEntry(date: $0.date, situation: $0.situation) }
         case .problem:

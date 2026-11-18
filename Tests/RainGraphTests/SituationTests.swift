@@ -100,9 +100,9 @@ struct SituationTests {
     @Test func theFaceAndTheAppNameAProblemAlike() {
         #expect(Problem.locationNotFound.faceHeadline == "Location not found")
         #expect(Problem.forecastTooOld(since: Self.run).faceHeadline == "No recent forecast")
-        #expect(Problem.locationExpired.faceHeadline == "Location expired")
-        #expect(Problem.locationOff.faceHint == "Tap to fix")
-        #expect(Problem.locationExpired.faceHint == "Tap to allow again")
+        #expect(Problem.locationExpired.faceHeadline == "Permission expired")
+        #expect(Problem.locationOff.faceHint == "Tap for steps")
+        #expect(Problem.locationExpired.faceHint == "Tap to allow location")
         #expect(Problem.forecastUnavailable.circleWord == "DATA")
         #expect(Problem.locationOff.circleWord == "PLACE")
         #expect(Problem.locationExpired.circleWord == "PLACE")

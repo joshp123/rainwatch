@@ -165,10 +165,17 @@ struct ContentView: View {
                         }
                         .padding(.top, 10)
                     }
+                    // Quiet, as Josh asked: the privacy policy and the data's terms, for whoever looks.
                     NavigationLink { AboutPage() } label: {
-                        Label(localized("About"), systemImage: "info.circle")
+                        Text(localized("About"))
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .underline()
+                            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                            .contentShape(Rectangle())
                     }
-                    .padding(.top, 10)
+                    .buttonStyle(.plain)
+                    .scenePadding(.horizontal)
                 }
                 // The arrow is Apple's mark for "where you are"; a picked place has none. A town's
                 // name from Apple Maps would need its map beside it (Attachment 6, 2.4), so where you
@@ -292,7 +299,7 @@ struct ContentView: View {
         Place.wasAllowed ? .failed(.locationExpired) : .intro
     }
 
-    /// Opens the system's location question: Continue on the intro, and on Location Expired.
+    /// Opens the system's location question: Continue on the intro, and on Permission Expired.
     private func askForLocation() {
         move(to: .loading, because: "Continue")
         askedForLocation = true

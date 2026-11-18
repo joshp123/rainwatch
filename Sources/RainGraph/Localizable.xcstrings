@@ -315,7 +315,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "KNMI-data van %@"
+            "value": "KNMI-verwachting %@"
           }
         }
       }
@@ -360,17 +360,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Lichte regen"
-          }
-        }
-      }
-    },
-    "Location Expired": {
-      "comment": "Problem title: Allow Once has run out, so the system must ask again",
-      "localizations": {
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Locatie verlopen"
           }
         }
       }
@@ -518,6 +507,17 @@
         }
       }
     },
+    "Permission Expired": {
+      "comment": "Problem title: Allow Once has run out, so the system must ask again",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toestemming verlopen"
+          }
+        }
+      }
+    },
     "Place": {
       "comment": "Title of the place search",
       "localizations": {
@@ -639,13 +639,24 @@
         }
       }
     },
-    "Tap to allow again": {
-      "comment": "Face, second line of Location expired",
+    "Tap for steps": {
+      "comment": "Face, second line of Location off: a tap opens the steps to turn location on",
       "localizations": {
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tik om weer toe te staan"
+            "value": "Tik voor de stappen"
+          }
+        }
+      }
+    },
+    "Tap to allow location": {
+      "comment": "Face, second line of Permission expired",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tik om locatie toe te staan"
           }
         }
       }
@@ -657,17 +668,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tik om een plaats te kiezen"
-          }
-        }
-      }
-    },
-    "Tap to fix": {
-      "comment": "Face, second line of Location off",
-      "localizations": {
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tik om op te lossen"
           }
         }
       }
@@ -690,17 +690,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tik om opnieuw te proberen"
-          }
-        }
-      }
-    },
-    "To keep your watch face up to date, choose Allow While Using App.": {
-      "comment": "Under Location Expired, before the system's location question. The quoted words are watchOS's own button",
-      "localizations": {
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kies ‘Bij gebruik van app’ om je wijzerplaat bij te houden."
           }
         }
       }
@@ -756,6 +745,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Wanneer de volgende bui begint of stopt."
+          }
+        }
+      }
+    },
+    "Your location was allowed once. To keep your watch face up to date, choose Allow While Using App.": {
+      "comment": "Under Permission Expired, before the system's location question. The quoted words are watchOS's own button",
+      "localizations": {
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Je locatie was één keer toegestaan. Kies ‘Bij gebruik van app’ om je wijzerplaat bij te houden."
           }
         }
       }

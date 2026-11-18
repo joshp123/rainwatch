@@ -38,7 +38,7 @@ public enum Problem: Equatable, Sendable {
     public var title: String {
         switch self {
         case .locationNotAsked: localized("Location Not Set")
-        case .locationExpired: localized("Location Expired")
+        case .locationExpired: localized("Permission Expired")
         case .locationOff: localized("Location Off")
         case .locationNotFound: localized("Location Not Found")
         case .forecastUnavailable: localized("Forecast Unavailable")
@@ -52,7 +52,7 @@ public enum Problem: Equatable, Sendable {
         switch self {
         // watchOS lets no app open Settings, so the way there is spelled out.
         case .locationOff: localized("Open Settings, then Privacy & Security > Location Services > \(Bundle.main.displayName) > While Using the App.")
-        case .locationExpired: localized("To keep your watch face up to date, choose Allow While Using App.")
+        case .locationExpired: localized("Your location was allowed once. To keep your watch face up to date, choose Allow While Using App.")
         case let .forecastTooOld(since): localized("Last forecast \(RainCopy.clock(since))")
         default: nil
         }
@@ -88,11 +88,11 @@ public enum Problem: Equatable, Sendable {
     /// tap does.
     public var faceHint: String {
         if let detail, case .forecastTooOld = self { return detail }
-        if self == .locationOff { return localized("Tap to fix") }
+        if self == .locationOff { return localized("Tap for steps") }
         switch actions.first {
         case .tryAgain: return localized("Tap to try again")
         case .choosePlace: return localized("Tap to choose a place")
-        case .allowLocation: return localized("Tap to allow again")
+        case .allowLocation: return localized("Tap to allow location")
         case nil: return localized("Tap to set up")
         }
     }

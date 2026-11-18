@@ -22,7 +22,7 @@ CASE_TOP = 163                        # first row of the case in the frame; the 
 SHOTS = {
     'en-GB': [
         ('face-coming', 'The next rain,', 'on your watch face.', None),
-        ('app-uk', 'The next hour of rain,', 'in the UK too.', 'From Apple Weather; hour by hour in some countries'),
+        ('app-uk', 'Rain in the next hour,', 'in the UK.', 'Forecast from Apple Weather'),
         ('app-raining', 'When the rain stops,', 'and how hard it falls.', 'Benelux and western Germany: up to two hours ahead'),
         ('app-radar', 'Turn the crown', 'to see the rain move.', 'Radar map in the Benelux and western Germany'),
         ('app-later', 'Free, with no ads.', 'No account needed.', None),
@@ -30,7 +30,7 @@ SHOTS = {
     'nl-NL': [
         ('face-coming', 'De volgende bui,', 'op je wijzerplaat.', None),
         ('app-coming', 'Wanneer het gaat regenen,', 'en hoe hard.', 'KNMI-radar, tot twee uur vooruit'),
-        ('app-raining', 'Wanneer de bui stopt,', 'en hoe hard het regent.', None),
+        ('app-raining', 'Hoe lang het nog regent,', 'en wanneer het droog is.', None),
         ('app-radar', 'Draai aan de kroon', 'en zie de bui komen.', 'Radarkaart van de Benelux en West-Duitsland'),
         ('app-later', 'Gratis en zonder reclame.', 'Geen account nodig.', None),
     ],
